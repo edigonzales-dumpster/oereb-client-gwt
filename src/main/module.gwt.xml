@@ -5,7 +5,8 @@
 	<inherits name='com.google.gwt.user.User' />
     <inherits name='com.google.gwt.user.theme.clean.Clean'/>
 	 
-	<source path="gwt" />
-    <entry-point class='com.gwidgets.gwt.AppEntryPoint' />
+    <source path="client" />
+    <source path="shared" />
+    <entry-point class='com.gwidgets.client.AppEntryPoint' />
  
 </module>
