@@ -1,12 +1,15 @@
 package com.gwidgets.client;
 
-import gwt.material.design.addins.client.autocomplete.base.MaterialSuggestionOracle;
+//import gwt.material.design.addins.client.autocomplete.base.MaterialSuggestionOracle;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-public class UserOracle extends MaterialSuggestionOracle{
+import com.google.gwt.user.client.ui.SuggestOracle;
+
+//public class UserOracle extends MaterialSuggestionOracle{
+public class UserOracle extends SuggestOracle{
 
     private List<User> contacts = new LinkedList<>();
 
