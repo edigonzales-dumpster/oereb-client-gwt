@@ -51,7 +51,6 @@
 			<artifactId>gwt-dev</artifactId>
 			<version>${gwtVersion}</version>
 		</dependency>
-		<!-- 
         <dependency>
             <groupId>com.github.gwtmaterialdesign</groupId>
             <artifactId>gwt-material</artifactId>
@@ -62,13 +61,11 @@
             <artifactId>gwt-material-addins</artifactId>
             <version>2.1.1</version>
         </dependency>
-		<dependency>
-		    <groupId>com.github.gwtmaterialdesign</groupId>
-		    <artifactId>gwt-material-themes</artifactId>
-		    <version>2.1.1</version>
-		</dependency>
-        
-		 -->
+        <dependency>
+            <groupId>com.github.gwtmaterialdesign</groupId>
+            <artifactId>gwt-material-themes</artifactId>
+            <version>2.1.1</version>
+        </dependency>
 	</dependencies>
 
 	<build>

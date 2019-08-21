@@ -3,8 +3,10 @@
 <module rename-to="module1">
 	
 	<inherits name='com.google.gwt.user.User' />
-    <inherits name='com.google.gwt.user.theme.clean.Clean'/>
-	 
+    <!-- <inherits name='com.google.gwt.user.theme.clean.Clean'/> --> 
+    <inherits name="gwt.material.design.GwtMaterialDesignBasic" />
+    <inherits name="gwt.material.design.themes.ThemeBlue"/>
+
     <source path="client" />
     <source path="shared" />
     <entry-point class='com.gwidgets.client.AppEntryPoint' />

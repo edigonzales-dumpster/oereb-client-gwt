@@ -20,6 +20,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.MultiWordSuggestOracle;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
+import com.google.gwt.user.client.ui.SuggestBox.SuggestionDisplay;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.gwidgets.client.User.Position;
@@ -27,6 +28,13 @@ import com.gwidgets.shared.FieldVerifier;
 import com.gwidgets.shared.GreetingResponse;
 import com.gwidgets.shared.GreetingService;
 import com.gwidgets.shared.GreetingServiceAsync;
+
+import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
+import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
+import gwt.material.design.client.constants.Color;
+import gwt.material.design.client.ui.MaterialColumn;
+import gwt.material.design.client.ui.MaterialPanel;
+import gwt.material.design.client.ui.MaterialRow;
 
 //import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 
@@ -46,6 +54,47 @@ public class AppEntryPoint implements EntryPoint {
     private final GreetingServiceAsync greetingService = GWT.create(GreetingService.class);
 
 	public void onModuleLoad() {
+//	    MaterialPanel panel = new MaterialPanel();
+//	    panel.setContainerEnabled(true);
+//	    panel.setBackgroundColor(Color.GREEN);
+//	    panel.setGrid("s6 l3");
+
+	    MaterialRow row = new MaterialRow();
+
+	    MaterialColumn columnLeft = new MaterialColumn();
+	    columnLeft.setGrid("s4");
+	    columnLeft.setBackgroundColor(Color.WHITE);
+	    columnLeft.add(new Label("Controls belong here."));
+
+	    MaterialColumn columnRight = new MaterialColumn();
+	    columnRight.setGrid("s8");
+	    columnRight.setBackgroundColor(Color.LIGHT_GREEN);
+	    columnRight.add(new Label("Map belongs here."));
+	    
+	    row.add(columnLeft);
+        row.add(columnRight);
+        
+
+        
+        List<User> users = new ArrayList<User>();
+        users.add(new User("picture", Position.CEO, true, "Ziegler Stefan", "email", "password", "contactNo", "address", "AGI"));
+        users.add(new User("picture", Position.CEO, true, "Foo Bar", "email", "password", "contactNo", "address", "AGI"));
+
+        UserOracle userOracle = new UserOracle();
+        userOracle.addContacts(users);
+
+        MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
+        autocomplete.setType(AutocompleteType.TEXT);
+        autocomplete.setPlaceholder("Suche");
+
+        columnLeft.add(autocomplete);
+        
+        
+        
+        RootPanel.get().add(row);
+//        RootPanel.get().add(column);
+
+	    
 	    //https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?_dc=1566232303797&limit=15&query=egr+CH1070080
 	 
 //	    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET /*.POST or .PUT or .DELETE*/, someStringUrl);
@@ -175,36 +224,36 @@ public class AppEntryPoint implements EntryPoint {
 
 		//RootPanel.get().add(new Label("zakaria. Hallo Welt."));
 		
-        MultiWordSuggestOracle oracle = new MultiWordSuggestOracle();
-        oracle.add("A");
-        oracle.add("AB");
-        oracle.add("ABC");
-        oracle.add("ABCD");
-        oracle.add("B");
-        oracle.add("BC");
-        oracle.add("BCD");
-        oracle.add("BCDE");
-        oracle.add("C");
-        oracle.add("CD");
-        oracle.add("CDE");
-        oracle.add("CDEF");
-        oracle.add("D");
-        oracle.add("DE");
-        oracle.add("DEF");
-        oracle.add("DEFGH");
+//        MultiWordSuggestOracle oracle = new MultiWordSuggestOracle();
+//        oracle.add("A");
+//        oracle.add("AB");
+//        oracle.add("ABC");
+//        oracle.add("ABCD");
+//        oracle.add("B");
+//        oracle.add("BC");
+//        oracle.add("BCD");
+//        oracle.add("BCDE");
+//        oracle.add("C");
+//        oracle.add("CD");
+//        oracle.add("CDE");
+//        oracle.add("CDEF");
+//        oracle.add("D");
+//        oracle.add("DE");
+//        oracle.add("DEF");
+//        oracle.add("DEFGH");
 
         // create the suggestion box and pass it the data created above
 //        SuggestBox suggestionBox = new SuggestBox(oracle);
-        MySuggestBox suggestionBox = new MySuggestBox();
+//        MySuggestBox suggestionBox = new MySuggestBox();
 
         // set width to 200px.
         //suggestionBox.setWidth("200");
 
         // Add suggestionbox to the root panel.
-        VerticalPanel panel = new VerticalPanel();
-        panel.add(suggestionBox);
-
-        RootPanel.get().add(panel);
+//        VerticalPanel panel = new VerticalPanel();
+//        panel.add(suggestionBox);
+//
+//        RootPanel.get().add(panel);
 		
 	    
 //	    List<User> users = new ArrayList<User>();
