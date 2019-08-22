@@ -1,7 +1,7 @@
 # oereb-client-gwt
 
 ```
-mvn spring-boot:run
+mvn clean spring-boot:run
 mvn gwt:generate-module gwt:codeserver
 
 

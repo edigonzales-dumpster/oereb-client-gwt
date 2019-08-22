@@ -7,9 +7,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.RequestException;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONValue;
 import com.google.gwt.user.client.ui.SuggestOracle;
 
 import gwt.material.design.addins.client.autocomplete.base.MaterialSuggestionOracle;
@@ -40,6 +45,14 @@ public class UserOracle extends MaterialSuggestionOracle {
                             if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
                                 String responseBody = response.getText();
                                 //GWT.log(responseBody);
+                                
+                                JSONObject jsonObj = new JSONObject(JsonUtils.safeEval(responseBody));
+//                                GWT.log(jsonObj.toString());
+                                JSONObject foo = jsonObj.isObject();
+                                JSONValue bar = foo.get("features");
+                                GWT.log(bar.toString());
+                                
+                                
                             } else {
                                 GWT.log("error");
                             }

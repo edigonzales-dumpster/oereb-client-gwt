@@ -3,6 +3,8 @@
 <module rename-to="module1">
 	
 	<inherits name='com.google.gwt.user.User' />
+    <inherits name="com.google.gwt.json.JSON" />
+	
     <!-- <inherits name='com.google.gwt.user.theme.clean.Clean'/> --> 
     <inherits name="gwt.material.design.GwtMaterialDesignBasic" />
     <inherits name="gwt.material.design.themes.ThemeBlue"/>
