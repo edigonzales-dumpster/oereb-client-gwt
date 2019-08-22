@@ -10,3 +10,7 @@ mvn package
 
 (mvn clean gwt:generate-module gwt:compile)
 ```
+
+maven local löschen...
+http://127.0.0.1:9876/ -> "Clean"
+
