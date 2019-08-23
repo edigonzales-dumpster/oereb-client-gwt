@@ -31,11 +31,16 @@ public class UserOracle extends MaterialSuggestionOracle {
     @Override
     public void requestSuggestions(SuggestOracle.Request suggestRequest, SuggestOracle.Callback callback) {
         
-        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?_dc=1566232303797&limit=15&query=egr+CH1070080");
+        String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
+     
+        String searchText = suggestRequest.getQuery();
+        searchText = searchText.toLowerCase();
+
+        RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, baseUrl + searchText);
         builder.setHeader("content-type", "application/json");
 
         try {
-            com.google.gwt.http.client.Request response = builder.sendRequest("CH1070080",
+            com.google.gwt.http.client.Request response = builder.sendRequest("",
                     new RequestCallback() {
                         @Override
                         public void onResponseReceived(com.google.gwt.http.client.Request request,
@@ -46,15 +51,34 @@ public class UserOracle extends MaterialSuggestionOracle {
                                 String responseBody = response.getText();
                                 //GWT.log(responseBody);
                                 
-                                JSONObject jsonObj = new JSONObject(JsonUtils.safeEval(responseBody));
-//                                GWT.log(jsonObj.toString());
-                                JSONObject foo = jsonObj.isObject();
-                                JSONValue bar = foo.get("features");
-                                GWT.log(bar.toString());
+                                JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
+                                JSONObject rootObj = responseObj.isObject();
+                                JSONArray featuresArray = rootObj.get("features").isArray();
                                 
+                                List<EgridSuggestion> list = new ArrayList<>();
+                                for (int i = 0; i < featuresArray.size(); i++) {
+                                    JSONObject properties = featuresArray.get(i).isObject().get("properties").isObject();
+                                    
+                                    // generisches Suchresultat. Enum (egrid, etc..
+                                    Egrid egrid = new Egrid();
+                                    egrid.setEgrid(properties.get("label").toString().replace("(EGRID)", "").replaceAll("^.|.$", ""));
+                                    egrid.setLabel(properties.get("label").toString().replaceAll("^.|.$", ""));
+                                    list.add(new EgridSuggestion(egrid));
+                                }
                                 
+                                Response resp = new Response();
+                                if (list.isEmpty()) {
+                                    resp.setSuggestions(null);
+                                    callback.onSuggestionsReady(suggestRequest, resp);
+                                    return;
+                                }
+                                
+                                resp.setSuggestions(list);
+                                callback.onSuggestionsReady(suggestRequest, resp);
                             } else {
                                 GWT.log("error");
+                                GWT.log(String.valueOf(statusCode));
+                                GWT.log(response.getStatusText());
                             }
                         }
 
@@ -66,24 +90,5 @@ public class UserOracle extends MaterialSuggestionOracle {
         } catch (RequestException e) {
             e.printStackTrace();
         }
-
-        Response resp = new Response();
-        if(contacts.isEmpty()){
-            callback.onSuggestionsReady(suggestRequest, resp);
-            return;
-        }
-        String text = suggestRequest.getQuery();
-        text = text.toLowerCase();
-        GWT.log(text);
-
-        List<UserSuggestion> list = new ArrayList<>();
-
-        for(User contact : contacts){
-            if(contact.getName().toLowerCase().contains(text)){
-                list.add(new UserSuggestion(contact));
-            }
-        }
-        resp.setSuggestions(list);
-        callback.onSuggestionsReady(suggestRequest, resp);
     }
 }

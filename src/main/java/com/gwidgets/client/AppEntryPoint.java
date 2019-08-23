@@ -73,19 +73,14 @@ public class AppEntryPoint implements EntryPoint {
 	    
 	    row.add(columnLeft);
         row.add(columnRight);
-        
-
-        
-        List<User> users = new ArrayList<User>();
-        users.add(new User("picture", Position.CEO, true, "Ziegler Stefan", "email", "password", "contactNo", "address", "AGI"));
-        users.add(new User("picture", Position.CEO, true, "Foo Bar", "email", "password", "contactNo", "address", "AGI"));
-
+       
         UserOracle userOracle = new UserOracle();
-        userOracle.addContacts(users);
 
         MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
         autocomplete.setType(AutocompleteType.TEXT);
         autocomplete.setPlaceholder("Suche");
+//        autocomplete.setLimit(5);
+        autocomplete.setAutoSuggestLimit(5);
 
         columnLeft.add(autocomplete);
         
