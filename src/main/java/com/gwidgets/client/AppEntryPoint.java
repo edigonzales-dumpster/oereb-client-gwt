@@ -6,6 +6,7 @@ import java.util.List;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -13,6 +14,8 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
 import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -29,6 +32,7 @@ import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.SuggestBox.SuggestionDisplay;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 import com.gwidgets.client.User.Position;
 import com.gwidgets.shared.FieldVerifier;
 import com.gwidgets.shared.GreetingResponse;
@@ -38,10 +42,16 @@ import com.gwidgets.shared.GreetingServiceAsync;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
 import gwt.material.design.addins.client.combobox.MaterialComboBox;
+import gwt.material.design.client.base.SearchObject;
 import gwt.material.design.client.constants.Color;
+import gwt.material.design.client.constants.IconType;
+import gwt.material.design.client.events.HandlerRegistry;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialColumn;
 import gwt.material.design.client.ui.MaterialDropDown;
+import gwt.material.design.client.ui.MaterialLink;
+import gwt.material.design.client.ui.MaterialNavBar;
+import gwt.material.design.client.ui.MaterialNavBrand;
 import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialRow;
 import gwt.material.design.client.ui.MaterialSearch;
@@ -49,6 +59,7 @@ import gwt.material.design.client.ui.MaterialToast;
 import gwt.material.design.client.ui.html.Div;
 import gwt.material.design.client.ui.html.Option;
 import gwt.material.design.jquery.client.api.JQueryElement;
+
 
 import static gwt.material.design.addins.client.combobox.js.JsComboBox.$;
 
@@ -70,47 +81,167 @@ public class AppEntryPoint implements EntryPoint {
     private final GreetingServiceAsync greetingService = GWT.create(GreetingService.class);
 
 	public void onModuleLoad() {
-//	    MaterialPanel panel = new MaterialPanel();
-//	    panel.setContainerEnabled(true);
-//	    panel.setBackgroundColor(Color.GREEN);
-//	    panel.setGrid("s6 l3");
+//	    MaterialRow row = new MaterialRow();
+//
+//	    MaterialColumn columnLeft = new MaterialColumn();
+//	    columnLeft.setGrid("s4");
+//	    columnLeft.setBackgroundColor(Color.WHITE);
+//	    columnLeft.add(new Label("Controls belong here."));
+//
+//	    MaterialColumn columnRight = new MaterialColumn();
+//	    columnRight.setGrid("s8");
+//	    columnRight.setBackgroundColor(Color.LIGHT_GREEN);
+//	    columnRight.add(new Label("Map belongs here."));
+//	    
+//	    row.add(columnLeft);
+//        row.add(columnRight);
+//       
+//        UserOracle userOracle = new UserOracle();
+//
+//        MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
+//        autocomplete.setType(AutocompleteType.TEXT);
+//        autocomplete.setPlaceholder("Suche");
+////        autocomplete.setLimit(5);
+//        autocomplete.setAutoSuggestLimit(5);
+//        
+//        // FIXME: remove text on select            
+//        
+//        MaterialButton button = new MaterialButton();
+//        button.setText("PDF");
+//        
+//        Div div = new Div();
+//        div.add(autocomplete);
+//        div.add(button);
+//
+//        columnLeft.add(div);
+//        
+//
+//        RootPanel.get().add(row);
 
-	    MaterialRow row = new MaterialRow();
-
-	    MaterialColumn columnLeft = new MaterialColumn();
-	    columnLeft.setGrid("s4");
-	    columnLeft.setBackgroundColor(Color.WHITE);
-	    columnLeft.add(new Label("Controls belong here."));
-
-	    MaterialColumn columnRight = new MaterialColumn();
-	    columnRight.setGrid("s8");
-	    columnRight.setBackgroundColor(Color.LIGHT_GREEN);
-	    columnRight.add(new Label("Map belongs here."));
+        
+	    MaterialNavBar navBar = new MaterialNavBar();
+        
+	    MaterialNavBrand navBarBrand = new MaterialNavBrand();
+	    navBarBrand.setText("GWT Material");
+	    navBar.add(navBarBrand);
 	    
-	    row.add(columnLeft);
-        row.add(columnRight);
-       
-        UserOracle userOracle = new UserOracle();
+	    MaterialLink link = new MaterialLink();
+	    link.setIconType(IconType.SEARCH);
+	    link.setFloat(Style.Float.RIGHT);
+	    navBar.add(link);
+	    
+	    MaterialNavBar navBarSearch = new MaterialNavBar();
+	    navBarSearch.setVisible(false);
+	    
+	    MaterialSearch search = new MaterialSearch();
+	    search.setPlaceholder("Suche");
+	    search.setIconColor(Color.BLACK);
+	    search.setBackgroundColor(Color.WHITE);
+	    search.setActive(true);
+	    search.setShadow(1);
+	    navBarSearch.add(search);
+	    
+        RootPanel.get().add(navBar);
+        RootPanel.get().add(navBarSearch);
+        
+        link.addClickHandler(event -> {
+            search.open();
+        });
+        
+        search.addOpenHandler(event -> {
+            navBar.setVisible(false);
+            navBarSearch.setVisible(true);
+        });
+        
+        search.addCloseHandler(new CloseHandler<String>() {
+            @Override
+            public void onClose(CloseEvent<String> event) {
+                navBar.setVisible(true);
+                navBarSearch.setVisible(false);
+            }
+        });
+        
+        GWT.log(String.valueOf(search.getWidgetCount()));
+        
+        TextBox textBox = new TextBox();
+        List<Widget> list = search.getChildrenList();
+        for (Widget widget : list) {
+            if (widget instanceof com.google.gwt.user.client.ui.TextBox) {
+                GWT.log("fooo");
+                textBox = (TextBox) widget;
+            }
+        }
+        
+        
+        List<SearchObject> objects = new ArrayList<>();
+        
+        
+        
+        // You can use a addKeyPressHandler but then 
+        // pasting does not work.
+        // If you use a lambda expression instead
+        // of the for loop it throws a compilation
+        // error with the custom InputHandler.
+        textBox.addDomHandler(new InputHandler() {
+            @Override
+            public void onInput(InputEvent event) {
+                GWT.log("InputHandler");
 
-        MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
-        autocomplete.setType(AutocompleteType.TEXT);
-        autocomplete.setPlaceholder("Suche");
-//        autocomplete.setLimit(5);
-        autocomplete.setAutoSuggestLimit(5);
-        
-//        columnLeft.add(autocomplete);
-        
-        MaterialButton button = new MaterialButton();
-        button.setText("PDF");
-//        columnLeft.add(button);
-        
-        
-        
-        Div div = new Div();
-        div.add(autocomplete);
-        div.add(button);
+                List<SearchObject> objects = new ArrayList<>();
+                for(Hero hero : DataHelper.getAllHeroes()){
+                    objects.add(hero);
+                }
+                
+                search.setListSearches(objects);
 
-        columnLeft.add(div);
+            }
+        }, InputEvent.getType());
+
+        
+        
+        
+        
+//        search.getChildren().forEach(widget -> {
+//            GWT.log(widget.getClass().toString());
+//            
+//            if (widget instanceof com.google.gwt.user.client.ui.TextBox) {
+//                TextBox textBox = (TextBox) widget;
+////                textBox.addChangeHandler(event -> {
+////                    GWT.log("change");
+////                });
+//                
+//                GWT.log(textBox.getClass().toString());
+//                
+//                textBox.addKeyPressHandler(event -> {
+//                    GWT.log("addKeyPressHandler");
+//                });
+//                
+////                textBox.addDomHandler(new InputHandler() {
+////
+////                    @Override
+////                    public void onInput(InputEvent event) {
+////                        GWT.log("InputHandler");
+////                    }
+////                }, InputEvent.getType());
+//                
+//            }
+//        });
+
+        
+//        TextBox textBox = new TextBox();
+//        textBox.addDomHandler(new InputHandler() {
+//
+//            @Override
+//            public void onInput(InputEvent event) {
+//                GWT.log("InputHandler");
+//            }
+//        }, InputEvent.getType());
+//
+//        
+//        GWT.log(textBox.getClass().toString());
+//
+//        RootPanel.get().add(textBox);
+
         
 //        MaterialSearch search = new MaterialSearch();
 //        columnLeft.add(search);
@@ -201,16 +332,13 @@ public class AppEntryPoint implements EntryPoint {
         
 //        columnLeft.add(combobox);
         
-        RootPanel.get().add(row);
-//        RootPanel.get().add(column);
-
-	    
-	    //https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?_dc=1566232303797&limit=15&query=egr+CH1070080
-	 
-//	    RequestBuilder builder = new RequestBuilder(RequestBuilder.GET /*.POST or .PUT or .DELETE*/, someStringUrl);
+//        RootPanel.get().add(row);
 
 	    
 	    
+/*
+ * RPC stuff
+ * */	    
 //        final Button sendButton = new Button("Send");
 //        final TextBox nameField = new TextBox();
 //        nameField.setText("GWT User Foo");

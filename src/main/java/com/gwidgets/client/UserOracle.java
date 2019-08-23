@@ -33,7 +33,7 @@ public class UserOracle extends MaterialSuggestionOracle {
         
         String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
      
-        String searchText = suggestRequest.getQuery();
+        String searchText = suggestRequest.getQuery().replace("(EGRID)", "");
         searchText = searchText.toLowerCase();
 
         RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, baseUrl + searchText);
