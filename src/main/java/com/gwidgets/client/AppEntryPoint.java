@@ -5,13 +5,19 @@ import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
+import com.google.gwt.event.logical.shared.SelectionEvent;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -31,10 +37,20 @@ import com.gwidgets.shared.GreetingServiceAsync;
 
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
+import gwt.material.design.addins.client.combobox.MaterialComboBox;
 import gwt.material.design.client.constants.Color;
+import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialColumn;
+import gwt.material.design.client.ui.MaterialDropDown;
 import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialRow;
+import gwt.material.design.client.ui.MaterialSearch;
+import gwt.material.design.client.ui.MaterialToast;
+import gwt.material.design.client.ui.html.Div;
+import gwt.material.design.client.ui.html.Option;
+import gwt.material.design.jquery.client.api.JQueryElement;
+
+import static gwt.material.design.addins.client.combobox.js.JsComboBox.$;
 
 //import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 
@@ -81,10 +97,109 @@ public class AppEntryPoint implements EntryPoint {
         autocomplete.setPlaceholder("Suche");
 //        autocomplete.setLimit(5);
         autocomplete.setAutoSuggestLimit(5);
+        
+//        columnLeft.add(autocomplete);
+        
+        MaterialButton button = new MaterialButton();
+        button.setText("PDF");
+//        columnLeft.add(button);
+        
+        
+        
+        Div div = new Div();
+        div.add(autocomplete);
+        div.add(button);
 
-        columnLeft.add(autocomplete);
+        columnLeft.add(div);
+        
+//        MaterialSearch search = new MaterialSearch();
+//        columnLeft.add(search);
+        
+//        MaterialComboBox combobox = new MaterialComboBox();
+//        combobox.setPlaceholder("Suche");
+//        combobox.setAllowClear(true);
+//        combobox.addItem("", "");
+//        combobox.addItem("foo", "foo");
+//        combobox.addItem("bar", "bar");
+//        
+//        combobox.getListbox().addDomHandler(new InputHandler() {
+//            @Override
+//            public void onInput(InputEvent event) {
+//                GWT.log("***********");
+//            }
+//        }, InputEvent.getType());
+//        
+//        columnLeft.add(combobox);
+//        combobox.addOpenHandler(foo -> {
+//            MaterialToast.fireToast("Event: ValueChange State : " + combobox.getSingleValue() + " Value: " + foo);
+//            
+//            
+//            GWT.log($(combobox.getElement()).html());
+//
+//        });
+        
+//        combobox.addValueChangeHandler(foo -> {
+//            MaterialToast.fireToast("Event: asdfasdf : " + combobox.getSingleValue() + " Value: " + foo);
+//        });
+        
+//        GWT.log(String.valueOf(combobox.getChildrenList().size()));
+//        GWT.log(String.valueOf(combobox.getListbox().getWidgetCount()));
         
         
+//        combobox.getListbox().forEach(widget -> {
+//            GWT.log("foo");
+//            GWT.log(widget.getParent().getClass().toString());
+//        });
+//        
+//        Element element = combobox.getListbox().getElement();
+        //GWT.log(String.valueOf(element.get));
+        
+        
+//        Element input = combobox.getListbox().getElement();
+//        DOM.sinkBitlessEvent(input, "input");
+//        DOM.setEventListener(input, event -> GWT.log("Event!"));
+
+        
+        
+//        combobox.get.getListbox().addDomHandler(event -> {
+//            MaterialToast.fireToast("Event: ClickEvent : " + combobox.getSingleValue() + " Value: " + event);
+//        }, ClickEvent.getType());
+      
+//        combobox.getListbox().addDomHandler(event -> {
+//            MaterialToast.fireToast("Event: ChangeEvent : " + combobox.getSingleValue() + " Value: " + event);
+//        }, ChangeEvent.getType());        
+        
+        
+//        combobox.getListbox().getChildren().forEach(widget -> {
+//            GWT.log(widget.getClass().toString());
+//            Option option = (gwt.material.design.client.ui.html.Option) widget;
+//            GWT.log(option.getLabel());
+//            
+//            Element input = widget.getElement();
+//            DOM.sinkBitlessEvent(input, "input");
+//            DOM.setEventListener(input, event -> GWT.log("Event!"));
+//        });
+
+//        combobox..forEach(widget -> {
+//            GWT.log(widget.getClass().toString());
+////            Option option = (gwt.material.design.client.ui.html.Option) widget;
+////            GWT.log(option.getLabel());
+//            
+////            Element input = widget.getElement();
+////            DOM.sinkBitlessEvent(input, "input");
+////            DOM.setEventListener(input, event -> GWT.log("Event!"));
+//          
+//            
+//            
+//        });        
+        
+//        combobox.getListbox().addHandler(new ChangeHandler() {
+//            public void onChange(ChangeEvent event) {
+//                // Get the index of the fselected Item
+//                Window.alert("foo");
+//              }}, ChangeEvent.getType());
+        
+//        columnLeft.add(combobox);
         
         RootPanel.get().add(row);
 //        RootPanel.get().add(column);
