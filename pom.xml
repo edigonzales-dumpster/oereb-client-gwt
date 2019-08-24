@@ -67,6 +67,19 @@
             <version>2.1.1</version>
         </dependency>
         
+<dependency>
+    <groupId>org.gwtbootstrap3</groupId>
+    <artifactId>gwtbootstrap3</artifactId>
+    <version>0.9.4</version>
+</dependency>
+      
+<dependency>
+    <groupId>org.gwtbootstrap3</groupId>
+    <artifactId>gwtbootstrap3-extras</artifactId>
+    <version>0.9.4</version>
+</dependency>
+        
+        
 		<dependency>
 		    <groupId>javax.xml.bind</groupId>
 		    <artifactId>jaxb-api</artifactId>
