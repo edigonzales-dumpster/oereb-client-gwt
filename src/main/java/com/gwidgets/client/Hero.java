@@ -11,10 +11,11 @@ public class Hero extends SearchObject {
     public Hero() {}
 
     public Hero(String imgProfile, String name, String description, int power) {
-        super(imgProfile, name);
+        //super(imgProfile, name);
         this.name = name;
         this.description = description;
         this.power = power;
+        setKeyword(name);
     }
 
     public String getName() {
