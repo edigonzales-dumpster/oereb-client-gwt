@@ -4,6 +4,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.gwtbootstrap3.client.ui.Button;
+import org.gwtbootstrap3.client.ui.Column;
+import org.gwtbootstrap3.client.ui.Container;
+import org.gwtbootstrap3.client.ui.Row;
+import org.gwtbootstrap3.client.ui.constants.ButtonType;
+import org.gwtbootstrap3.client.ui.constants.IconType;
+import org.gwtbootstrap3.extras.typeahead.client.base.StringDataset;
+import org.gwtbootstrap3.extras.typeahead.client.base.Suggestion;
+import org.gwtbootstrap3.extras.typeahead.client.base.SuggestionCallback;
+import org.gwtbootstrap3.extras.typeahead.client.ui.Typeahead;
+import org.gwtbootstrap3.extras.typeahead.client.base.Dataset;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Label;
@@ -17,23 +29,23 @@ import com.gwidgets.shared.GreetingResponse;
 import com.gwidgets.shared.GreetingService;
 import com.gwidgets.shared.GreetingServiceAsync;
 
-import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
-import gwt.material.design.addins.client.autocomplete.base.MaterialSuggestionOracle;
-import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
-import gwt.material.design.addins.client.combobox.MaterialComboBox;
-import gwt.material.design.client.base.SearchObject;
-import gwt.material.design.client.constants.Color;
-import gwt.material.design.client.constants.IconType;
-import gwt.material.design.client.events.HandlerRegistry;
-import gwt.material.design.client.ui.MaterialButton;
-import gwt.material.design.client.ui.MaterialColumn;
-import gwt.material.design.client.ui.MaterialDropDown;
-import gwt.material.design.client.ui.MaterialLink;
-import gwt.material.design.client.ui.MaterialNavBar;
-import gwt.material.design.client.ui.MaterialNavBrand;
-import gwt.material.design.client.ui.MaterialPanel;
-import gwt.material.design.client.ui.MaterialRow;
-import gwt.material.design.client.ui.html.Div;
+//import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
+//import gwt.material.design.addins.client.autocomplete.base.MaterialSuggestionOracle;
+//import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
+//import gwt.material.design.addins.client.combobox.MaterialComboBox;
+//import gwt.material.design.client.base.SearchObject;
+//import gwt.material.design.client.constants.Color;
+//import gwt.material.design.client.constants.IconType;
+//import gwt.material.design.client.events.HandlerRegistry;
+//import gwt.material.design.client.ui.MaterialButton;
+//import gwt.material.design.client.ui.MaterialColumn;
+//import gwt.material.design.client.ui.MaterialDropDown;
+//import gwt.material.design.client.ui.MaterialLink;
+//import gwt.material.design.client.ui.MaterialNavBar;
+//import gwt.material.design.client.ui.MaterialNavBrand;
+//import gwt.material.design.client.ui.MaterialPanel;
+//import gwt.material.design.client.ui.MaterialRow;
+//import gwt.material.design.client.ui.html.Div;
 
 
 
@@ -47,70 +59,151 @@ public class AppEntryPoint implements EntryPoint {
     private final GreetingServiceAsync greetingService = GWT.create(GreetingService.class);
     
 	public void onModuleLoad() {
-	    MaterialRow row = new MaterialRow();
+	    
+	    Button button = new Button();
+	    button.setType(ButtonType.DEFAULT);
+	    button.setIcon(IconType.STAR);
+	    button.setText("PDF");
+	    
+	    
+	    Container container = new Container();
+	    Row row = new Row();
+	    
+        Column columnLeft = new Column("MD_4");
+        Column columnRight = new Column("MD_8");
+	    
+        columnLeft.add(new Label("controls belongs here"));
+        columnRight.add(new Label("map belongs here"));
 
-	    MaterialColumn columnLeft = new MaterialColumn();
-	    columnLeft.setGrid("s4");
-	    columnLeft.setBackgroundColor(Color.WHITE);
-	    columnLeft.add(new Label("Controls belong here."));
+	    
+        
+        final List<Person> persons = new ArrayList<Person>();
+        persons.add(new Person("Bill", 50));
+        persons.add(new Person("Bob", 38));
+        persons.add(new Person("Bobak", 24));
+        persons.add(new Person("Dawton", 27));
+        persons.add(new Person("Dinkelstein", 66));
+        persons.add(new Person("Eumon", 13));
+        persons.add(new Person("Gene", 42));
+        persons.add(new Person("Gus", 31));
+        persons.add(new Person("Jebediah", 57));
+        persons.add(new Person("Kirrim", 73));
+        persons.add(new Person("Linus", 103));
+        persons.add(new Person("Mortimer", 7));
+        persons.add(new Person("Walt", 15));
+        persons.add(new Person("Wernher", 52));
 
-	    MaterialColumn columnRight = new MaterialColumn();
-	    columnRight.setGrid("s8");
-	    columnRight.setBackgroundColor(Color.LIGHT_GREEN);
-	    columnRight.add(new Label("Map belongs here."));
-   
-	    row.add(columnLeft);
+        List<String> names = new ArrayList<String>();
+        for (Person person : persons) {
+          names.add(person.name);
+        }
+
+//        StringDataset dataset = new StringDataset(names);
+//        Typeahead<String> typeahead = new Typeahead<String>(dataset);
+//        typeahead.setPlaceholder("Enter a name");
+//        typeahead.setWidth("300px");
+        
+        
+        Typeahead<Person> typeahead = new Typeahead<Person>(new Dataset<Person>() {
+            @Override
+            public void findMatches(String query, SuggestionCallback<Person> callback) {
+                
+                
+                
+                
+                List<Suggestion<Person>> suggestions = new ArrayList<Suggestion<Person>>();
+                String queryLower = query.toLowerCase();
+                for (Person person : persons) {
+                    String name = person.getName();
+                    if (name.toLowerCase().contains(queryLower)) {
+                        Suggestion<Person> s = Suggestion.create(name, person, this);
+                        suggestions.add(s);
+                    }
+                }
+                callback.execute(suggestions);
+            }
+        });
+        typeahead.setPlaceholder("Enter a name");
+        
+        
+        
+        
+        columnLeft.add(typeahead);
+	    
+//	    columnLeft.add(button);
+	    
+	    
+	    
+        row.add(columnLeft);
         row.add(columnRight);
-       
-        UserOracle userOracle = new UserOracle();
-
-        MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
-        autocomplete.setType(AutocompleteType.TEXT);
-        autocomplete.setPlaceholder("Suche");
-        autocomplete.setAutoSuggestLimit(5);
-        // FIXME: remove text on select 
-        
-//        autocomplete.addKeyUpHandler(event -> {
-////           GWT.log("key down"); 
-//           GWT.log(autocomplete.getSuggestBox().getText());
-//           if (autocomplete.getSuggestBox().getText().trim().equalsIgnoreCase("")) {
-////               GWT.log("emptY");
-////               userOracle.clear();
-//               MaterialSuggestionOracle oracle = (MaterialSuggestionOracle) autocomplete.getSuggestions();
-//               oracle.clear();
-//               
-//           }
-////           userOracle.clear();
-//        });
-        
-        MaterialRow buttonRow = new MaterialRow();
-        
-        MaterialButton button1 = new MaterialButton();
-        button1.setText("PDF");
-        //button1.setMargin(5.0);
-        button1.setMarginRight(5.0);
-        buttonRow.add(button1);
-        
-        MaterialButton button2 = new MaterialButton();
-        button2.setText("FOO");
-        button2.setBackgroundColor(Color.WHITE);
-        button2.setTextColor(Color.RED_DARKEN_4);
-        buttonRow.add(button2);
-        
-
-//        Div div1 = new Div();
-//        div1.add(button1);
-//        
-//        Div div2 = new Div();
-//        div2.add(button2);
-
-        columnLeft.add(autocomplete);
-        columnLeft.add(buttonRow);
-//        columnLeft.add(div1);
-//        columnLeft.add(div2);
-
-        
+	    
         RootPanel.get().add(row);
+	    
+	    
+//	    MaterialRow row = new MaterialRow();
+//
+//	    MaterialColumn columnLeft = new MaterialColumn();
+//	    columnLeft.setGrid("s4");
+//	    columnLeft.setBackgroundColor(Color.WHITE);
+//	    columnLeft.add(new Label("Controls belong here."));
+//
+//	    MaterialColumn columnRight = new MaterialColumn();
+//	    columnRight.setGrid("s8");
+//	    columnRight.setBackgroundColor(Color.LIGHT_GREEN);
+//	    columnRight.add(new Label("Map belongs here."));
+//   
+//	    row.add(columnLeft);
+//        row.add(columnRight);
+//       
+//        UserOracle userOracle = new UserOracle();
+//
+//        MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
+//        autocomplete.setType(AutocompleteType.TEXT);
+//        autocomplete.setPlaceholder("Suche");
+//        autocomplete.setAutoSuggestLimit(5);
+//        // FIXME: remove text on select 
+//        
+////        autocomplete.addKeyUpHandler(event -> {
+//////           GWT.log("key down"); 
+////           GWT.log(autocomplete.getSuggestBox().getText());
+////           if (autocomplete.getSuggestBox().getText().trim().equalsIgnoreCase("")) {
+//////               GWT.log("emptY");
+//////               userOracle.clear();
+////               MaterialSuggestionOracle oracle = (MaterialSuggestionOracle) autocomplete.getSuggestions();
+////               oracle.clear();
+////               
+////           }
+//////           userOracle.clear();
+////        });
+//        
+//        MaterialRow buttonRow = new MaterialRow();
+//        
+//        MaterialButton button1 = new MaterialButton();
+//        button1.setText("PDF");
+//        //button1.setMargin(5.0);
+//        button1.setMarginRight(5.0);
+//        buttonRow.add(button1);
+//        
+//        MaterialButton button2 = new MaterialButton();
+//        button2.setText("FOO");
+//        button2.setBackgroundColor(Color.WHITE);
+//        button2.setTextColor(Color.RED_DARKEN_4);
+//        buttonRow.add(button2);
+//        
+//
+////        Div div1 = new Div();
+////        div1.add(button1);
+////        
+////        Div div2 = new Div();
+////        div2.add(button2);
+//
+//        columnLeft.add(autocomplete);
+//        columnLeft.add(buttonRow);
+////        columnLeft.add(div1);
+////        columnLeft.add(div2);
+//
+//        
+//        RootPanel.get().add(row);
 
      
 /*
