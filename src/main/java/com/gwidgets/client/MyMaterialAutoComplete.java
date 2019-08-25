@@ -38,8 +38,8 @@ public class MyMaterialAutoComplete extends MaterialAutoComplete {
 
                 GWT.log("*:"+searchText);        
                 
+                // Das
                 if (searchText.length() < 3) {
-                    GWT.log("kleiner 3");        
                     resp.setSuggestions(null);
                     callback.onSuggestionsReady(suggestRequest, resp);
                     return;
