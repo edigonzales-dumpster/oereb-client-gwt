@@ -50,7 +50,7 @@ public class UserOracle extends MaterialSuggestionOracle {
         builder.setHeader("content-type", "application/json");
                 
         try {
-            // Verindert, dass ein älterer Request an den Browser
+            // Verhindert, dass ein älterer Request an den Browser
             // geschickt wird, wenn bereits ein neuerer Request
             // geschicht wurde.
             if (request != null) {

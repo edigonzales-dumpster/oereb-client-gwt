@@ -6,6 +6,16 @@ import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JsonUtils;
+import com.google.gwt.event.logical.shared.CloseEvent;
+import com.google.gwt.event.logical.shared.CloseHandler;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.http.client.RequestException;
+import com.google.gwt.http.client.Response;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SuggestBox;
@@ -17,14 +27,22 @@ import com.gwidgets.shared.FieldVerifier;
 import com.gwidgets.shared.GreetingResponse;
 import com.gwidgets.shared.GreetingService;
 import com.gwidgets.shared.GreetingServiceAsync;
+import com.google.gwt.dom.client.Style.Float;
+import com.google.gwt.dom.client.Style.Visibility;
 
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.base.MaterialSuggestionOracle;
 import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
+import gwt.material.design.client.base.SearchObject;
 import gwt.material.design.client.constants.Color;
+import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialColumn;
+import gwt.material.design.client.ui.MaterialLink;
+import gwt.material.design.client.ui.MaterialNavBar;
+import gwt.material.design.client.ui.MaterialNavBrand;
 import gwt.material.design.client.ui.MaterialRow;
+import gwt.material.design.client.ui.MaterialSearch;
 
 //import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 //import gwt.material.design.addins.client.autocomplete.base.MaterialSuggestionOracle;
@@ -55,10 +73,325 @@ public class AppEntryPoint implements EntryPoint {
     
     private final GreetingServiceAsync greetingService = GWT.create(GreetingService.class);
     
+    private TextBox searchTextBox;
+//    private List<SearchObject> objects;
+
+    private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
+
+    Request request = null;
+    
 	public void onModuleLoad() {
 	    
+        MaterialNavBar navBar = new MaterialNavBar();
+
+        MaterialNavBrand navBarBrand = new MaterialNavBrand();
+        navBarBrand.setText("GWT Material");
+        navBar.add(navBarBrand);
+
+        MaterialLink link = new MaterialLink();
+        link.setIconType(IconType.SEARCH);
+        link.setFloat(Float.RIGHT);
+        navBar.add(link);
+
+        MaterialNavBar navBarSearch = new MaterialNavBar();
+        navBarSearch.setVisible(false);
+
+        MaterialSearch search;
+
+        search = new MaterialSearch();
+        search.setPlaceholder("Suche");
+        search.setIconColor(Color.BLACK);
+        search.setBackgroundColor(Color.WHITE);
+        search.setActive(true);
+        search.setShadow(1);
+        navBarSearch.add(search);
+
+        RootPanel.get().add(navBar);
+        RootPanel.get().add(navBarSearch);
+
+        link.addClickHandler(event -> {
+            search.open();
+        });
+
+        search.addOpenHandler(event -> {
+            navBar.setVisible(false);
+            navBarSearch.setVisible(true);
+        });
+
+        search.addCloseHandler(new CloseHandler<String>() {
+            @Override
+            public void onClose(CloseEvent<String> event) {
+                navBar.setVisible(true);
+                navBarSearch.setVisible(false);
+            }
+        });   
 	    
-	    
+        searchTextBox = new TextBox();
+        List<Widget> list = search.getChildrenList();
+        for (Widget widget : list) {
+            if (widget instanceof com.google.gwt.user.client.ui.TextBox) {
+                searchTextBox = (TextBox) widget;
+            }
+        }
+        
+        
+        searchTextBox.addKeyUpHandler(event -> {
+            GWT.log("key pressed");
+            
+            List<SearchObject> objects = new ArrayList<SearchObject>();
+
+            String searchText = searchTextBox.getText().toLowerCase();
+            
+            if (searchText.length() < 3) {
+                search.getListSearches().clear();
+                return;
+            }
+            
+            RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, baseUrl + searchText);
+            builder.setHeader("content-type", "application/json");
+
+            try {
+                
+                if (request != null) {
+                    request.cancel();
+                    GWT.log("previous request canceled");
+                }
+                
+                request = builder.sendRequest("", new RequestCallback() {
+//                  List<SearchObject> objects = new ArrayList<SearchObject>();
+
+                  @Override
+                  public void onResponseReceived(Request request, Response response) {
+//                      List<SearchObject> objects = new ArrayList<>();
+                      GWT.log("clear1");
+//                      search.getSearchResultPanel().clear();
+                      GWT.log("clear2");
+
+                      int statusCode = response.getStatusCode();
+
+                      if (statusCode == Response.SC_OK) {
+                          String responseBody = response.getText();
+
+                          JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
+                          JSONObject rootObj = responseObj.isObject();
+                          JSONArray featuresArray = rootObj.get("features").isArray();
+
+//                          List<SearchObject> objects = new ArrayList<>();
+                          search.getListSearches().clear();
+                          for (int i = 0; i < featuresArray.size(); i++) {
+                              JSONObject properties = featuresArray.get(i).isObject().get("properties").isObject();
+
+                              // generisches Suchresultat. Enum (egrid, etc..
+//                              Egrid egrid = new Egrid();
+//                              egrid.setEgrid(properties.get("label").toString().replace("(EGRID)", "")
+//                                      .replaceAll("^.|.$", ""));
+//                              egrid.setLabel(properties.get("label").toString().replaceAll("^.|.$", ""));
+//                              list.add(new EgridSuggestion(egrid));
+                              
+                              String egrid = properties.get("label").toString().replace("(EGRID)", "").replaceAll("^.|.$", "");
+                              String egridLabel = properties.get("label").toString().replaceAll("^.|.$", "");
+                              EgridSearchObject searchObject = new EgridSearchObject(GWT.getHostPageBaseURL()+"/ch.so.agi.av.grundstuecke.rechtskraeftig.svg", egrid, egridLabel);
+                              objects.add(searchObject);
+//                              search.getListSearches().add(searchObject);
+//                              search.setListSearches(listSearches);
+                          }
+                          
+                          
+//                        List<SearchObject> objects = new ArrayList<>();
+//                        for(Hero hero : DataHelper.getAllHeroes()){
+//                            objects.add(hero);
+//                        }
+                        GWT.log("objects size: " + String.valueOf(objects.size()));
+                        search.setListSearches(objects);
+                        search.setListSearches(objects);
+                        GWT.log(String.valueOf(search.getTempSearches().size()));
+                        return;
+
+
+                      } else {
+                          GWT.log("error");
+                          GWT.log(String.valueOf(statusCode));
+                          GWT.log(response.getStatusText());
+                      }
+                  }
+
+                  @Override
+                  public void onError(Request request, Throwable exception) {
+                      GWT.log("error actually sending the request, never got sent");
+                  }
+              });
+                
+            } catch (RequestException e) {
+                GWT.log("request exception");
+                GWT.log(e.getMessage());
+                e.printStackTrace();
+            }
+        });
+        
+        
+      // You can use a addKeyPressHandler but then 
+      // pasting does not work.
+      // If you use a lambda expression instead
+      // of the for loop it throws a compilation
+      // error with the custom InputHandler.
+//      searchTextBox.addDomHandler(new InputHandler() {
+//          Request request;
+//          
+//          @Override
+//          public void onInput(InputEvent event) {
+//              GWT.log("************************");
+//              GWT.log("InputHandler");
+//              
+//              List<SearchObject> objects = new ArrayList<SearchObject>();
+//
+//              
+////              GWT.log(searchTextBox.getText().toLowerCase());
+//              String searchText = searchTextBox.getText().toLowerCase();
+//
+//              
+//              if (searchText.length() < 3) {
+//                  search.getListSearches().clear();
+//                  return;
+//              }
+//              
+//              RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, baseUrl + searchText);
+//              builder.setHeader("content-type", "application/json");
+//
+//
+//              try {
+//                  // Verhindert, dass ein älterer Request an den Browser
+//                  // geschickt wird, wenn bereits ein neuerer Request
+//                  // geschicht wurde.
+//                  if (request != null) {
+//                      request.cancel();
+//                      GWT.log("previous request canceled");
+//                  }
+//                  
+//                  GWT.log(searchTextBox.getText().toLowerCase());                    
+//                  request = builder.sendRequest("", new RequestCallback() {
+////                      List<SearchObject> objects = new ArrayList<SearchObject>();
+//
+//                      @Override
+//                      public void onResponseReceived(Request request, Response response) {
+////                          List<SearchObject> objects = new ArrayList<>();
+//                          GWT.log("clear1");
+////                          search.getSearchResultPanel().clear();
+//                          GWT.log("clear2");
+//
+//                          int statusCode = response.getStatusCode();
+//
+//                          if (statusCode == Response.SC_OK) {
+//                              String responseBody = response.getText();
+//
+//                              JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
+//                              JSONObject rootObj = responseObj.isObject();
+//                              JSONArray featuresArray = rootObj.get("features").isArray();
+//
+////                              List<SearchObject> objects = new ArrayList<>();
+//                              search.getListSearches().clear();
+//                              for (int i = 0; i < featuresArray.size(); i++) {
+//                                  JSONObject properties = featuresArray.get(i).isObject().get("properties").isObject();
+//
+//                                  // generisches Suchresultat. Enum (egrid, etc..
+////                                  Egrid egrid = new Egrid();
+////                                  egrid.setEgrid(properties.get("label").toString().replace("(EGRID)", "")
+////                                          .replaceAll("^.|.$", ""));
+////                                  egrid.setLabel(properties.get("label").toString().replaceAll("^.|.$", ""));
+////                                  list.add(new EgridSuggestion(egrid));
+//                                  
+//                                  String egrid = properties.get("label").toString().replace("(EGRID)", "").replaceAll("^.|.$", "");
+//                                  String egridLabel = properties.get("label").toString().replaceAll("^.|.$", "");
+//                                  EgridSearchObject searchObject = new EgridSearchObject(GWT.getHostPageBaseURL()+"/ch.so.agi.av.grundstuecke.rechtskraeftig.svg", egrid, egridLabel);
+//                                  objects.add(searchObject);
+////                                  search.getListSearches().add(searchObject);
+////                                  search.setListSearches(listSearches);
+//                              }
+//                              
+//                              
+////                            List<SearchObject> objects = new ArrayList<>();
+////                            for(Hero hero : DataHelper.getAllHeroes()){
+////                                objects.add(hero);
+////                            }
+//                            GWT.log("objects size: " + String.valueOf(objects.size()));
+//                            search.setListSearches(objects);
+//                            
+//                            return;
+//
+////                              search.getListSearches().clear();
+////                              List<SearchObject> objects = new ArrayList<>();
+////                              for (Hero hero : DataHelper.getAllHeroes()) {
+//////                                  GWT.log("add heroes");
+////                                  objects.add(hero);
+////                                  //search.getListSearches().add(hero);
+////                              }
+//                              
+////                              GWT.log(String.valueOf(search.getSearchResultPanel().isVisible()));
+////                              search.getListSearches().clear();
+////                              GWT.log("vorher" + String.valueOf(search.getListSearches().size()));
+////                              search.setListSearches(objects);
+////                              GWT.log("nachher" + String.valueOf(search.getListSearches().size()));
+////                              GWT.log("nachher1: " + String.valueOf(search.getSearchResultPanel().getWidgetCount()));
+//                              
+////                              for (int i=0; i < search.getSearchResultPanel().getWidgetCount(); i++) {
+////                                  Widget w = search.getSearchResultPanel().getWidget(i);
+//////                                  GWT.log(w.getClass().toString());
+////                              }
+//                              
+////                              search.addKeyUpHandler(event -> {
+////                                 GWT.log(new Date().toString()); 
+////                              });
+//                              
+//                              
+////                              for (SearchObject obj : objects) {
+////                                  GWT.log(obj.getKeyword());
+////                              }
+//
+////                              search.getSearchResultPanel().setVisibility(Visibility.VISIBLE);
+//
+////                              GWT.log("size: " + String.valueOf(objects.size()));
+//                              
+////                            List<SearchObject> objects = new ArrayList<>();
+////                            for(Hero hero : DataHelper.getAllHeroes()) {
+////                                GWT.log("add heroes");
+////                                objects.add(hero);
+////                            }
+//
+////                              search.setListSearches(objects);
+////                              search.getSearchResultPanel()..asWidget().setVisible(true);
+//
+//                          } else {
+//                              GWT.log("error");
+//                              GWT.log(String.valueOf(statusCode));
+//                              GWT.log(response.getStatusText());
+//                          }
+//                      }
+//
+//                      @Override
+//                      public void onError(Request request, Throwable exception) {
+//                          GWT.log("error actually sending the request, never got sent");
+//                      }
+//                  });
+//              } catch (RequestException e) {
+//                  GWT.log("request exception");
+//                  GWT.log(e.getMessage());
+//                  e.printStackTrace();
+//              }
+//              
+//
+////              List<SearchObject> objects = new ArrayList<>();
+////              for(Hero hero : DataHelper.getAllHeroes()){
+////                  objects.add(hero);
+////              }            
+////              search.setListSearches(objects);
+//              GWT.log("------------------------");
+//
+//          }
+//      }, InputEvent.getType());
+//	    
+        
+        
+        
+/*	    
 	    MaterialRow row = new MaterialRow();
 
 	    MaterialColumn columnLeft = new MaterialColumn();
@@ -76,34 +409,13 @@ public class AppEntryPoint implements EntryPoint {
        
         UserOracle userOracle = new UserOracle();
 
-//        MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
+        MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
         
-        MyMaterialAutoComplete autocomplete = new MyMaterialAutoComplete();
         autocomplete.setType(AutocompleteType.TEXT);
         autocomplete.setPlaceholder("Suche");
         autocomplete.setAutoSuggestLimit(5);
         // FIXME: remove text on select 
         
-//        autocomplete.addKeyUpHandler(event -> {
-////           GWT.log("key down"); 
-//           GWT.log(autocomplete.getSuggestBox().getText());
-//           if (autocomplete.getSuggestBox().getText().trim().equalsIgnoreCase("")) {
-//               GWT.log("empty");
-//               userOracle.clear();
-//               MaterialSuggestionOracle oracle = (MaterialSuggestionOracle) autocomplete.getSuggestions();
-//               oracle.clear();
-//               
-//               List<String> emptyList = new ArrayList();
-//               emptyList.add("foo");
-//               
-////               oracle.setDefaultSuggestionsFromText(emptyList);
-//               SuggestBox suggestBox = (SuggestBox) autocomplete;
-//               
-//               
-//               
-//           }
-////           userOracle.clear();
-//        });
         
         MaterialRow buttonRow = new MaterialRow();
         
@@ -133,6 +445,8 @@ public class AppEntryPoint implements EntryPoint {
 //
 //        
         RootPanel.get().add(row);
+*/
+	    
 
      
 /*
