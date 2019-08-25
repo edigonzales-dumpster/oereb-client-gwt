@@ -55,7 +55,7 @@ public class UserOracle extends MaterialSuggestionOracle {
             // geschicht wurde.
             if (request != null) {
                 request.cancel();
-                GWT.log("previous request canceled");
+                //GWT.log("previous request canceled");
             }
             request = builder.sendRequest("", new RequestCallback() {
                 
