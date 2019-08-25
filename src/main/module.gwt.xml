@@ -6,11 +6,11 @@
     <inherits name="com.google.gwt.json.JSON" />
 	
     <inherits name='com.google.gwt.user.theme.clean.Clean'/> 
-    <!-- <inherits name="gwt.material.design.GwtMaterialDesignBasic" />-->
-    <!-- <inherits name="gwt.material.design.themes.ThemeBlue"/>-->
+    <inherits name="gwt.material.design.GwtMaterialDesignBasic"/>
+    <inherits name="gwt.material.design.themes.ThemeBlue"/>
     
-    <inherits name="org.gwtbootstrap3.GwtBootstrap3"/>
-    <inherits name="org.gwtbootstrap3.extras.typeahead.Typeahead"/>
+    <!--<inherits name="org.gwtbootstrap3.GwtBootstrap3"/>
+    <inherits name="org.gwtbootstrap3.extras.typeahead.Typeahead"/>  -->
 
     <source path="client" />
     <source path="shared" />

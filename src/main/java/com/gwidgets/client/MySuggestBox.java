@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.TextBox;
 public class MySuggestBox extends SuggestBox {
 
     public MySuggestBox() {
+        
         super(new SuggestOracle() {
             @Override
             public void requestSuggestions(Request request, Callback callback) {
