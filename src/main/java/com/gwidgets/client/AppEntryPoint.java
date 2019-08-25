@@ -79,8 +79,6 @@ public class AppEntryPoint implements EntryPoint {
 //        MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
         
         MyMaterialAutoComplete autocomplete = new MyMaterialAutoComplete();
-        
-        
         autocomplete.setType(AutocompleteType.TEXT);
         autocomplete.setPlaceholder("Suche");
         autocomplete.setAutoSuggestLimit(5);
