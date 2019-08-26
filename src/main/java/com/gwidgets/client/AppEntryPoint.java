@@ -78,7 +78,10 @@ public class AppEntryPoint implements EntryPoint {
     private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
 
 	public void onModuleLoad() {
-	   
+	    VersionType versionType = new VersionType();
+	    versionType.setVersion("fubar");
+	    GWT.log(versionType.getVersion());
+	    
 	    MaterialRow row = new MaterialRow();
 
 	    MaterialColumn columnLeft = new MaterialColumn();
@@ -122,7 +125,7 @@ public class AppEntryPoint implements EntryPoint {
         buttonRow.add(button1);
         
         MaterialButton button2 = new MaterialButton();
-        button2.setText("FOO");
+        button2.setText("FUBAR");
         button2.setBackgroundColor(Color.WHITE);
         button2.setTextColor(Color.RED_DARKEN_4);
         buttonRow.add(button2);

@@ -12,6 +12,7 @@
     <!--<inherits name="org.gwtbootstrap3.GwtBootstrap3"/>
     <inherits name="org.gwtbootstrap3.extras.typeahead.Typeahead"/>  -->
 
+    <!-- <super-source path="jre" /> -->
     <source path="client" />
     <source path="shared" />
     <entry-point class='com.gwidgets.client.AppEntryPoint' />
