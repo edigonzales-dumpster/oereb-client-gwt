@@ -32,7 +32,6 @@ public class GWTCacheControlFilter implements Filter {
             httpResponse.setHeader("Pragma", "no-cache");
             httpResponse.setHeader("Cache-control", "no-cache, no-store, must-revalidate");
         }
-
         chain.doFilter(request, response);
     }
 

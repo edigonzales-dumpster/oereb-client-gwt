@@ -52,7 +52,7 @@ public class UserOracle extends MaterialSuggestionOracle {
         try {
             // Verhindert, dass ein älterer Request an den Browser
             // geschickt wird, wenn bereits ein neuerer Request
-            // geschicht wurde.
+            // geschickt wurde.
             if (request != null) {
                 request.cancel();
                 //GWT.log("previous request canceled");

@@ -22,7 +22,6 @@ import com.google.gwt.user.client.ui.SuggestBox;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
-import com.gwidgets.client.User.Position;
 import com.gwidgets.shared.FieldVerifier;
 import com.gwidgets.shared.GreetingResponse;
 import com.gwidgets.shared.GreetingService;
@@ -78,10 +77,6 @@ public class AppEntryPoint implements EntryPoint {
     private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
 
 	public void onModuleLoad() {
-	    VersionType versionType = new VersionType();
-	    versionType.setVersion("fubar");
-	    GWT.log(versionType.getVersion());
-	    
 	    MaterialRow row = new MaterialRow();
 
 	    MaterialColumn columnLeft = new MaterialColumn();
@@ -105,11 +100,7 @@ public class AppEntryPoint implements EntryPoint {
         autocomplete.setPlaceholder("Suche");
         autocomplete.setAutoSuggestLimit(5);
         // FIXME: remove text on select 
-        
-        autocomplete.addSelectionHandler(event -> {
-//           GWT.log("EGRID selected: " + autocomplete.); 
-        });
-        
+       
         autocomplete.addValueChangeHandler(event -> {
             GWT.log(autocomplete.getItemBox().getText());
             MaterialToast.fireToast(autocomplete.getItemBox().getText());
