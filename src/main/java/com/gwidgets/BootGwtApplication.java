@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.DispatcherServlet;
 
+import com.gwidgets.server.ExtractServiceImpl;
 import com.gwidgets.server.GreetingServiceImpl;
 
 @ServletComponentScan
@@ -28,6 +29,14 @@ public class BootGwtApplication {
 	    bean.setLoadOnStartup(1);
 	    return bean;
 	}
+	
+    @Bean
+    public ServletRegistrationBean extractServletBean() {
+        ServletRegistrationBean bean = new ServletRegistrationBean(new ExtractServiceImpl(), "/module1/extract");
+        bean.setLoadOnStartup(1);
+        return bean;
+    }
+	
 
 //    @Bean
 //    public DispatcherServlet dispatcherServlet() {
