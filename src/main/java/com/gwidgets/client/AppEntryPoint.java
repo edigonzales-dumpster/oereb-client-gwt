@@ -1,70 +1,32 @@
 package com.gwidgets.client;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.JsonUtils;
-import com.google.gwt.event.logical.shared.CloseEvent;
-import com.google.gwt.event.logical.shared.CloseHandler;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
-import com.google.gwt.http.client.RequestCallback;
-import com.google.gwt.http.client.RequestException;
-import com.google.gwt.http.client.Response;
-import com.google.gwt.json.client.JSONArray;
-import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
+
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
-import com.google.gwt.user.client.ui.SuggestBox;
-import com.google.gwt.user.client.ui.TextBox;
-import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
-import com.gwidgets.shared.FieldVerifier;
-import com.gwidgets.shared.GreetingResponse;
-import com.gwidgets.shared.GreetingService;
-import com.gwidgets.shared.GreetingServiceAsync;
-import com.google.gwt.dom.client.Style.Float;
-import com.google.gwt.dom.client.Style.Visibility;
+
+import com.gwidgets.shared.ExtractResponse;
+import com.gwidgets.shared.ExtractService;
+import com.gwidgets.shared.ExtractServiceAsync;
+
 
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
-import gwt.material.design.addins.client.autocomplete.base.MaterialSuggestionOracle;
 import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
-import gwt.material.design.addins.client.combobox.MaterialComboBox;
-import gwt.material.design.client.base.SearchObject;
 import gwt.material.design.client.constants.Color;
-import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialColumn;
-import gwt.material.design.client.ui.MaterialLink;
-import gwt.material.design.client.ui.MaterialNavBar;
-import gwt.material.design.client.ui.MaterialNavBrand;
+import gwt.material.design.client.ui.MaterialLoader;
+import gwt.material.design.client.ui.MaterialPreLoader;
 import gwt.material.design.client.ui.MaterialRow;
-import gwt.material.design.client.ui.MaterialSearch;
+import gwt.material.design.client.ui.MaterialSpinner;
 import gwt.material.design.client.ui.MaterialToast;
-
-//import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
-//import gwt.material.design.addins.client.autocomplete.base.MaterialSuggestionOracle;
-//import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
-//import gwt.material.design.addins.client.combobox.MaterialComboBox;
-//import gwt.material.design.client.base.SearchObject;
-//import gwt.material.design.client.constants.Color;
-//import gwt.material.design.client.constants.IconType;
-//import gwt.material.design.client.events.HandlerRegistry;
-//import gwt.material.design.client.ui.MaterialButton;
-//import gwt.material.design.client.ui.MaterialColumn;
-//import gwt.material.design.client.ui.MaterialDropDown;
-//import gwt.material.design.client.ui.MaterialLink;
-//import gwt.material.design.client.ui.MaterialNavBar;
-//import gwt.material.design.client.ui.MaterialNavBrand;
-//import gwt.material.design.client.ui.MaterialPanel;
-//import gwt.material.design.client.ui.MaterialRow;
-//import gwt.material.design.client.ui.html.Div;
-
-
-
 
 public class AppEntryPoint implements EntryPoint {
 
@@ -72,7 +34,9 @@ public class AppEntryPoint implements EntryPoint {
             + "attempting to contact the server. Please check your network "
             + "connection and try again.";
     
-    private final GreetingServiceAsync greetingService = GWT.create(GreetingService.class);
+//    private final GreetingServiceAsync greetingService = GWT.create(GreetingService.class);
+    
+    private final ExtractServiceAsync extractService = GWT.create(ExtractService.class);
     
     private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
 
@@ -134,9 +98,55 @@ public class AppEntryPoint implements EntryPoint {
 ////        columnLeft.add(div2);
 //
 //        
+        
+        button2.addClickHandler(event -> {
+            GWT.log("push the button");
+        });
+        
+        
         RootPanel.get().add(row);
 
         
+        class ExtractHandler implements ClickHandler, KeyUpHandler {
+             public void onClick(ClickEvent event) {
+                 sendEgridToServer();
+                 MaterialLoader.loading(true);
+             }
+             
+             public void onKeyUp(KeyUpEvent event) {
+                 if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+                     sendEgridToServer();
+                 }
+             }
+             
+//             CH158782774974
+//             CH944982786913
+//             CH938278494529
+
+             private void sendEgridToServer() {
+                 extractService.extractServer("CH158782774974", 
+                         new AsyncCallback<ExtractResponse>() {
+                            @Override
+                            public void onFailure(Throwable caught) {
+                                MaterialLoader.loading(false);
+                                GWT.log("error: " + caught.getMessage());
+                                MaterialToast.fireToast(caught.getMessage());
+                            }
+
+                            @Override
+                            public void onSuccess(ExtractResponse result) {
+                                MaterialLoader.loading(false);
+                                GWT.log(result.getEgrid());
+                                GWT.log(result.getExtract().getExtractIdentifier());
+                             
+                            }
+                 });
+             }
+        }
+        
+      ExtractHandler handler = new ExtractHandler();
+      button2.addClickHandler(handler);
+
 
      
 /*
