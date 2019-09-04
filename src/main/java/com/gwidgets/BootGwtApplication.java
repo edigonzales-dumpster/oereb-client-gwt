@@ -12,6 +12,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 import com.gwidgets.server.ExtractServiceImpl;
 import com.gwidgets.server.GreetingServiceImpl;
+import com.gwidgets.server.SettingsServiceImpl;
 
 @ServletComponentScan
 @SpringBootApplication
@@ -36,6 +37,13 @@ public class BootGwtApplication {
         bean.setLoadOnStartup(1);
         return bean;
     }
+    
+    @Bean
+    public ServletRegistrationBean settingsServletBean() {
+        ServletRegistrationBean bean = new ServletRegistrationBean(new SettingsServiceImpl(), "/module1/settings");
+        bean.setLoadOnStartup(1);
+        return bean;
+    }    
 	
 
 //    @Bean

@@ -17,7 +17,9 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.gwidgets.shared.ExtractResponse;
 import com.gwidgets.shared.ExtractService;
 import com.gwidgets.shared.ExtractServiceAsync;
-
+import com.gwidgets.shared.SettingsResponse;
+import com.gwidgets.shared.SettingsService;
+import com.gwidgets.shared.SettingsServiceAsync;
 
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
@@ -63,19 +65,34 @@ import ol.tilegrid.WmtsTileGrid;
 import ol.tilegrid.WmtsTileGridOptions;
 import proj4.Proj4;
 
-public class AppEntryPoint implements EntryPoint {
-
-    private static final String SERVER_ERROR = "An error occurred while "
-            + "attempting to contact the server. Please check your network "
-            + "connection and try again.";
-    
-//    private final GreetingServiceAsync greetingService = GWT.create(GreetingService.class);
-    
+public class AppEntryPoint implements EntryPoint {    
     private final ExtractServiceAsync extractService = GWT.create(ExtractService.class);
+    private final SettingsServiceAsync settingsService = GWT.create(SettingsService.class);
     
+    private String SEARCH_SERVICE_URL;
     private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
 
 	public void onModuleLoad() {
+	    // Get the needed settings from the server with an async call.
+        settingsService.settingsServer(new AsyncCallback<SettingsResponse>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                GWT.log("error: " + caught.getMessage());
+                MaterialToast.fireToast(caught.getMessage());
+            }
+
+            @Override
+            public void onSuccess(SettingsResponse result) {
+                SEARCH_SERVICE_URL = result.getSettings().get("SEARCH_SERVICE_URL"); 
+                init();
+            }
+        });
+	}
+	
+	private void init() {
+        GWT.log(SEARCH_SERVICE_URL);
+
+	    
 	    MaterialRow row = new MaterialRow();
 
 	    MaterialColumn columnLeft = new MaterialColumn();
@@ -109,8 +126,6 @@ public class AppEntryPoint implements EntryPoint {
         card.add(cardTitle);
         columnLeft.add(card);
 
-        
-        
         
         UserOracle userOracle = new UserOracle();
 
@@ -219,7 +234,7 @@ public class AppEntryPoint implements EntryPoint {
       
       
       // create a projection       
-      Proj4.defs("EPSG:2056", "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
+      //Proj4.defs("EPSG:2056", "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
 
       
       
