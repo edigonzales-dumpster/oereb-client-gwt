@@ -21,6 +21,9 @@ import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
 import gwt.material.design.client.constants.Color;
 import gwt.material.design.client.ui.MaterialButton;
+import gwt.material.design.client.ui.MaterialCard;
+import gwt.material.design.client.ui.MaterialCardContent;
+import gwt.material.design.client.ui.MaterialCardTitle;
 import gwt.material.design.client.ui.MaterialColumn;
 import gwt.material.design.client.ui.MaterialLoader;
 import gwt.material.design.client.ui.MaterialPreLoader;
@@ -56,6 +59,22 @@ public class AppEntryPoint implements EntryPoint {
 	    row.add(columnLeft);
         row.add(columnRight);
        
+        
+        MaterialCard card = new MaterialCard();
+        card.setTitle("gaga");
+        card.setBackgroundColor(Color.BROWN_LIGHTEN_2);
+        card.setHeight("200px");
+        card.getElement().getStyle().setProperty("transition", "height 2s");
+        
+        
+        MaterialCardTitle cardTitle = new MaterialCardTitle();
+        cardTitle.setText("Fubar");
+        card.add(cardTitle);
+        columnLeft.add(card);
+
+        
+        
+        
         UserOracle userOracle = new UserOracle();
 
         MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
@@ -69,6 +88,12 @@ public class AppEntryPoint implements EntryPoint {
             GWT.log(autocomplete.getItemBox().getText());
             MaterialToast.fireToast(autocomplete.getItemBox().getText());
         });
+        
+        MaterialCardContent cardContent = new MaterialCardContent();
+        cardContent.add(autocomplete);
+        card.add(cardContent);
+
+        
         
         
         MaterialRow buttonRow = new MaterialRow();
@@ -92,12 +117,15 @@ public class AppEntryPoint implements EntryPoint {
 ////        Div div2 = new Div();
 ////        div2.add(button2);
 //
-        columnLeft.add(autocomplete);
+        //columnLeft.add(autocomplete);
         columnLeft.add(buttonRow);
 ////        columnLeft.add(div1);
 ////        columnLeft.add(div2);
 //
 //        
+        
+        
+//        card.add(autocomplete);
         
         button2.addClickHandler(event -> {
             GWT.log("push the button");
@@ -139,6 +167,9 @@ public class AppEntryPoint implements EntryPoint {
                                 GWT.log(result.getEgrid());
                                 GWT.log(result.getExtract().getExtractIdentifier());
                              
+                                card.setHeight("400px");
+
+                                
                             }
                  });
              }
