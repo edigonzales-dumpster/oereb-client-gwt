@@ -9,10 +9,9 @@
     <inherits name="gwt.material.design.GwtMaterialDesignBasic"/>
     <inherits name="gwt.material.design.themes.ThemeRed"/>
     
-    <!--<inherits name="org.gwtbootstrap3.GwtBootstrap3"/>
-    <inherits name="org.gwtbootstrap3.extras.typeahead.Typeahead"/>  -->
+    <inherits name='ol.GwtOL'/>
+    <inherits name="proj4.GwtProj4"/>
 
-    <!-- <super-source path="jre" /> -->
     <source path="client" />
     <source path="shared" />
     <entry-point class='com.gwidgets.client.AppEntryPoint' />
