@@ -34,8 +34,8 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractService {
     Logger logger = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
-    @Value("${app.webServiceUrl}")
-    private String webServiceUrl;
+    @Value("${app.oerebWebServiceUrl}")
+    private String oerebWebServiceUrl;
     
     @Autowired
     Jaxb2Marshaller marshaller;
@@ -50,12 +50,12 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
     @Override
     public ExtractResponse extractServer(String egrid) throws IllegalArgumentException, IOException {
         logger.info(egrid);
-        logger.info(webServiceUrl.toString());
+        logger.info(oerebWebServiceUrl.toString());
 
         // TODO: handle empty file / no extract returned
         File xmlFile = Files.createTempFile("data_extract_", ".xml").toFile();
         
-        URL url = new URL(webServiceUrl + egrid);
+        URL url = new URL(oerebWebServiceUrl + egrid);
         ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
         try (FileOutputStream xmlOutputStream = new FileOutputStream(xmlFile)) {
             xmlOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
