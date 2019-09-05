@@ -188,6 +188,7 @@ public class AppEntryPoint implements EntryPoint {
         card1.getElement().getStyle().setProperty("top", "10px");
         card1.getElement().getStyle().setProperty("left", "10px");
         card1.getElement().getStyle().setProperty("width", "300px");
+        card1.getElement().getStyle().setProperty("height", "600px");
         
         MaterialCardTitle cardTitle1 = new MaterialCardTitle();
         cardTitle1.setText("Fubar");
@@ -208,9 +209,10 @@ public class AppEntryPoint implements EntryPoint {
         card1.getElement().getStyle().setProperty("overflow", "scroll");
         
         Div fadeoutDiv = new Div();
-        fadeoutDiv.getElement().getStyle().setProperty("position", "relative");
-        fadeoutDiv.getElement().getStyle().setProperty("bottom", "4em");
-        fadeoutDiv.getElement().getStyle().setProperty("height", "4em");
+        fadeoutDiv.getElement().getStyle().setProperty("position", "sticky");
+        fadeoutDiv.getElement().getStyle().setProperty("bottom", "0");
+        fadeoutDiv.getElement().getStyle().setProperty("width", "100%");
+        fadeoutDiv.getElement().getStyle().setProperty("padding", "30px 0");
         fadeoutDiv.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%)");
         card1.add(fadeoutDiv);
         
@@ -292,7 +294,6 @@ public class AppEntryPoint implements EntryPoint {
         wmtsLayerOptions.setSource(wmtsSource);
 
         Tile wmtsLayer = new Tile(wmtsLayerOptions);
-//        wmtsLayer.setOpacity(0.7);
         wmtsLayer.setOpacity(1.0);
 
         // create a view
