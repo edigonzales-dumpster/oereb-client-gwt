@@ -29,6 +29,7 @@ import gwt.material.design.client.ui.MaterialCard;
 import gwt.material.design.client.ui.MaterialCardContent;
 import gwt.material.design.client.ui.MaterialCardTitle;
 import gwt.material.design.client.ui.MaterialColumn;
+import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialLoader;
 import gwt.material.design.client.ui.MaterialPreLoader;
 import gwt.material.design.client.ui.MaterialRow;
@@ -174,7 +175,51 @@ public class AppEntryPoint implements EntryPoint {
             GWT.log("push the button");
         });
 
-        RootPanel.get().add(row);
+//        RootPanel.get().add(row);
+        
+        mapDiv.getElement().getStyle().setProperty("height", "100%");
+
+        MaterialCard card1 = new MaterialCard();
+        card1.setTitle("gaga");
+        card1.setBackgroundColor(Color.BROWN_LIGHTEN_2);
+        card1.setHeight("200px");
+        card1.getElement().getStyle().setProperty("transition", "height 1s");
+        card1.getElement().getStyle().setProperty("position", "absolute");
+        card1.getElement().getStyle().setProperty("top", "10px");
+        card1.getElement().getStyle().setProperty("left", "10px");
+        card1.getElement().getStyle().setProperty("width", "300px");
+        
+        MaterialCardTitle cardTitle1 = new MaterialCardTitle();
+        cardTitle1.setText("Fubar");
+        card1.add(cardTitle1);
+
+        MaterialCardContent cardContent1 = new MaterialCardContent();
+        MaterialLabel label = new MaterialLabel();
+        label.setText("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.   \n" + 
+                "\n" + 
+                "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.   \n" + 
+                "\n" + 
+                "Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.   \n" + 
+                "\n" + 
+                "Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer");
+        cardContent1.add(label);
+        card1.add(cardContent1);
+        
+        card1.getElement().getStyle().setProperty("overflow", "scroll");
+        
+        Div fadeoutDiv = new Div();
+        fadeoutDiv.getElement().getStyle().setProperty("position", "relative");
+        fadeoutDiv.getElement().getStyle().setProperty("bottom", "4em");
+        fadeoutDiv.getElement().getStyle().setProperty("height", "4em");
+        fadeoutDiv.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%)");
+        card1.add(fadeoutDiv);
+        
+        
+        
+        RootPanel.get().add(mapDiv);
+        RootPanel.get().add(card1);
+
+        
 
         class ExtractHandler implements ClickHandler, KeyUpHandler {
             public void onClick(ClickEvent event) {
@@ -253,7 +298,7 @@ public class AppEntryPoint implements EntryPoint {
         // create a view
         ViewOptions viewOptions = OLFactory.createOptions();
         viewOptions.setProjection(projection);
-        viewOptions.setResolutions(new double[] { 4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5, 1.0, 0.5, 0.25, 0.1 });
+        viewOptions.setResolutions(new double[] {4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5, 1.0, 0.5, 0.25, 0.1 });
         View view = new View(viewOptions);
 
         Coordinate centerCoordinate = new Coordinate(2616491, 1240287);
@@ -495,34 +540,11 @@ public class AppEntryPoint implements EntryPoint {
 
     }
 
-//    private TileGrid createWmtsTileGrid(Projection projection) {
-//
-//        WmtsTileGridOptions wmtsTileGridOptions = OLFactory.createOptions();
-//
-//        double[] resolutions = new double[14];
-//        String[] matrixIds = new String[14];
-//
-//        double width = projection.getExtent().getWidth();
-//        double matrixWidth = width / 256;
-//
-//        for (int i = 0; i < 14; i++) {
-//            resolutions[i] = matrixWidth / Math.pow(2, i);
-//            matrixIds[i] = String.valueOf(i);
-//        }
-//
-//        Coordinate tileGridOrigin = projection.getExtent().getTopLeft();
-//        wmtsTileGridOptions.setOrigin(tileGridOrigin);
-//        wmtsTileGridOptions.setResolutions(resolutions);
-//        wmtsTileGridOptions.setMatrixIds(matrixIds);
-//
-//        return new WmtsTileGrid(wmtsTileGridOptions);
-//    }
-
     private TileGrid createWmtsTileGrid(Projection projection) {
         WmtsTileGridOptions wmtsTileGridOptions = OLFactory.createOptions();
 
-        double resolutions[] = new double[] { 4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5,
-                1.0, 0.5, 0.25, 0.1 };
+        double resolutions[] = new double[] {4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5,
+                1.0, 0.5, 0.25, 0.1};
         String[] matrixIds = new String[resolutions.length];
 
         for (int z = 0; z < resolutions.length; ++z) {
