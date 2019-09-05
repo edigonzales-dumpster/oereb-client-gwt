@@ -37,6 +37,7 @@ import gwt.material.design.client.ui.MaterialToast;
 import gwt.material.design.client.ui.html.Div;
 import ol.Collection;
 import ol.Coordinate;
+import ol.Extent;
 import ol.Map;
 import ol.MapOptions;
 import ol.OLFactory;
@@ -65,15 +66,15 @@ import ol.tilegrid.WmtsTileGrid;
 import ol.tilegrid.WmtsTileGridOptions;
 import proj4.Proj4;
 
-public class AppEntryPoint implements EntryPoint {    
+public class AppEntryPoint implements EntryPoint {
     private final ExtractServiceAsync extractService = GWT.create(ExtractService.class);
     private final SettingsServiceAsync settingsService = GWT.create(SettingsService.class);
-    
+
     private String SEARCH_SERVICE_URL;
     private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
 
-	public void onModuleLoad() {
-	    // Get the needed settings from the server with an async call.
+    public void onModuleLoad() {
+        // Get the needed settings from the server with an async call.
         settingsService.settingsServer(new AsyncCallback<SettingsResponse>() {
             @Override
             public void onFailure(Throwable caught) {
@@ -83,85 +84,76 @@ public class AppEntryPoint implements EntryPoint {
 
             @Override
             public void onSuccess(SettingsResponse result) {
-                SEARCH_SERVICE_URL = result.getSettings().get("SEARCH_SERVICE_URL"); 
+                SEARCH_SERVICE_URL = result.getSettings().get("SEARCH_SERVICE_URL");
                 init();
             }
         });
-	}
-	
-	private void init() {
+    }
+
+    private void init() {
         GWT.log(SEARCH_SERVICE_URL);
 
-	    
-	    MaterialRow row = new MaterialRow();
+        MaterialRow row = new MaterialRow();
 
-	    MaterialColumn columnLeft = new MaterialColumn();
-	    columnLeft.setGrid("s4");
-	    columnLeft.setBackgroundColor(Color.WHITE);
-	    columnLeft.add(new Label("Controls belong here."));
+        MaterialColumn columnLeft = new MaterialColumn();
+        columnLeft.setGrid("s4");
+        columnLeft.setBackgroundColor(Color.WHITE);
+        columnLeft.add(new Label("Controls belong here."));
 
-	    MaterialColumn columnRight = new MaterialColumn();
-	    columnRight.setGrid("s8");
-	    columnRight.setBackgroundColor(Color.LIGHT_GREEN);
-	    columnRight.add(new Label("Map belongs here."));
-	    
-	    Div mapDiv = new Div();
-	    mapDiv.setId("mymap");
-	    columnRight.add(mapDiv);
-	    
-   
-	    row.add(columnLeft);
+        MaterialColumn columnRight = new MaterialColumn();
+        columnRight.setGrid("s8");
+        columnRight.setBackgroundColor(Color.LIGHT_GREEN);
+        columnRight.add(new Label("Map belongs here."));
+
+        Div mapDiv = new Div();
+        mapDiv.setId("mymap");
+        columnRight.add(mapDiv);
+
+        row.add(columnLeft);
         row.add(columnRight);
-       
-        
+
         MaterialCard card = new MaterialCard();
         card.setTitle("gaga");
         card.setBackgroundColor(Color.BROWN_LIGHTEN_2);
         card.setHeight("200px");
         card.getElement().getStyle().setProperty("transition", "height 1s");
-        
-        
+
         MaterialCardTitle cardTitle = new MaterialCardTitle();
         cardTitle.setText("Fubar");
         card.add(cardTitle);
         columnLeft.add(card);
 
-        
         UserOracle userOracle = new UserOracle();
 
         MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
-        
+
         autocomplete.setType(AutocompleteType.TEXT);
         autocomplete.setPlaceholder("Suche");
         autocomplete.setAutoSuggestLimit(5);
-        // FIXME: remove text on select 
-       
+        // FIXME: remove text on select
+
         autocomplete.addValueChangeHandler(event -> {
             GWT.log(autocomplete.getItemBox().getText());
             MaterialToast.fireToast(autocomplete.getItemBox().getText());
         });
-        
+
         MaterialCardContent cardContent = new MaterialCardContent();
         cardContent.add(autocomplete);
         card.add(cardContent);
 
-        
-        
-        
         MaterialRow buttonRow = new MaterialRow();
-        
+
         MaterialButton button1 = new MaterialButton();
         button1.setText("PDF");
-        //button1.setMargin(5.0);
+        // button1.setMargin(5.0);
         button1.setMarginRight(5.0);
         buttonRow.add(button1);
-        
+
         MaterialButton button2 = new MaterialButton();
         button2.setText("FUBAR");
         button2.setBackgroundColor(Color.WHITE);
         button2.setTextColor(Color.RED_DARKEN_4);
         buttonRow.add(button2);
-        
 
 ////        Div div1 = new Div();
 ////        div1.add(button1);
@@ -169,144 +161,124 @@ public class AppEntryPoint implements EntryPoint {
 ////        Div div2 = new Div();
 ////        div2.add(button2);
 //
-        //columnLeft.add(autocomplete);
+        // columnLeft.add(autocomplete);
         columnLeft.add(buttonRow);
 ////        columnLeft.add(div1);
 ////        columnLeft.add(div2);
 //
 //        
-        
-        
+
 //        card.add(autocomplete);
-        
+
         button2.addClickHandler(event -> {
             GWT.log("push the button");
         });
-        
-        
+
         RootPanel.get().add(row);
 
-        
         class ExtractHandler implements ClickHandler, KeyUpHandler {
-             public void onClick(ClickEvent event) {
-                 sendEgridToServer();
-                 MaterialLoader.loading(true);
-             }
-             
-             public void onKeyUp(KeyUpEvent event) {
-                 if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-                     sendEgridToServer();
-                 }
-             }
-             
+            public void onClick(ClickEvent event) {
+                sendEgridToServer();
+                MaterialLoader.loading(true);
+            }
+
+            public void onKeyUp(KeyUpEvent event) {
+                if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+                    sendEgridToServer();
+                }
+            }
+
 //             CH158782774974
 //             CH944982786913
 //             CH938278494529
 
-             private void sendEgridToServer() {
-                 extractService.extractServer("CH158782774974", 
-                         new AsyncCallback<ExtractResponse>() {
-                            @Override
-                            public void onFailure(Throwable caught) {
-                                MaterialLoader.loading(false);
-                                GWT.log("error: " + caught.getMessage());
-                                MaterialToast.fireToast(caught.getMessage());
-                            }
+            private void sendEgridToServer() {
+                extractService.extractServer("CH158782774974", new AsyncCallback<ExtractResponse>() {
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        MaterialLoader.loading(false);
+                        GWT.log("error: " + caught.getMessage());
+                        MaterialToast.fireToast(caught.getMessage());
+                    }
 
-                            @Override
-                            public void onSuccess(ExtractResponse result) {
-                                MaterialLoader.loading(false);
-                                GWT.log(result.getEgrid());
-                                GWT.log(result.getExtract().getExtractIdentifier());
-                             
-                                card.setHeight("400px");
+                    @Override
+                    public void onSuccess(ExtractResponse result) {
+                        MaterialLoader.loading(false);
+                        GWT.log(result.getEgrid());
+                        GWT.log(result.getExtract().getExtractIdentifier());
 
-                                
-                            }
-                 });
-             }
+                        card.setHeight("400px");
+
+                    }
+                });
+            }
         }
-        
-      ExtractHandler handler = new ExtractHandler();
-      button2.addClickHandler(handler);
 
-      // Openlayers
-      
-      
-      // create a projection       
-      //Proj4.defs("EPSG:2056", "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
+        ExtractHandler handler = new ExtractHandler();
+        button2.addClickHandler(handler);
 
-      
-      
-      // TODO 2056 und extent.
-      Projection projection = Projection.get("EPSG:3857");
+        // Openlayers
 
-      // create a OSM-layer
-      XyzOptions osmSourceOptions = OLFactory.createOptions();
+        // create a projection
+        Proj4.defs("EPSG:2056", "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
 
-      Osm osmSource = new Osm(osmSourceOptions);
-      LayerOptions osmLayerOptions = OLFactory.createOptions();
-      osmLayerOptions.setSource(osmSource);
+        ProjectionOptions projectionOptions = OLFactory.createOptions();
+        projectionOptions.setCode("EPSG:2056");
+        projectionOptions.setUnits("m");
+        projectionOptions.setExtent(new Extent(2420000, 1030000, 2900000, 1350000));
 
-      Tile osmLayer = new Tile(osmLayerOptions);
+        Projection projection = new Projection(projectionOptions);
 
-      WmtsOptions wmtsOptions = OLFactory.createOptions();
-      wmtsOptions.setUrl("https://services.arcgisonline.com/arcgis/rest/services/Demographics/USA_Population_Density/MapServer/WMTS/");
-      wmtsOptions.setLayer("0");
-      wmtsOptions.setFormat("image/png");
-      wmtsOptions.setMatrixSet("EPSG:3857");
-      wmtsOptions.setStyle("default");
-      wmtsOptions.setProjection(projection);
-      wmtsOptions.setWrapX(true);
-      wmtsOptions.setTileGrid(this.createWmtsTileGrid(projection));
+        WmtsOptions wmtsOptions = OLFactory.createOptions();
+        wmtsOptions.setUrl(
+                "https://geo.so.ch/api/wmts/1.0.0/{Layer}/default/2056/{TileMatrix}/{TileRow}/{TileCol}");
+        wmtsOptions.setLayer("ch.so.agi.hintergrundkarte_sw");
+        wmtsOptions.setRequestEncoding("REST");
+        wmtsOptions.setFormat("image/png");
+        wmtsOptions.setMatrixSet("EPSG:2056");
+        wmtsOptions.setStyle("default");
+        wmtsOptions.setProjection(projection);
+        wmtsOptions.setWrapX(true);
+        wmtsOptions.setTileGrid(this.createWmtsTileGrid(projection));
 
-      // create attribution
-      wmtsOptions.setAttributions("Tiles &copy; <a href=\"http://services.arcgisonline.com/arcgis/rest/services/Demographics/USA_Population_Density/MapServer/\">ArcGIS</a>");
+        Wmts wmtsSource = new Wmts(wmtsOptions);
 
-      Wmts wmtsSource = new Wmts(wmtsOptions);
+        LayerOptions wmtsLayerOptions = OLFactory.createOptions();
+        wmtsLayerOptions.setSource(wmtsSource);
 
-      LayerOptions wmtsLayerOptions = OLFactory.createOptions();
-      wmtsLayerOptions.setSource(wmtsSource);
+        Tile wmtsLayer = new Tile(wmtsLayerOptions);
+//        wmtsLayer.setOpacity(0.7);
+        wmtsLayer.setOpacity(1.0);
 
-      Tile wmtsLayer = new Tile(wmtsLayerOptions);
-      wmtsLayer.setOpacity(0.7);
+        // create a view
+        ViewOptions viewOptions = OLFactory.createOptions();
+        viewOptions.setProjection(projection);
+        viewOptions.setResolutions(new double[] { 4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5, 1.0, 0.5, 0.25, 0.1 });
+        View view = new View(viewOptions);
 
-      // create a view
-      ViewOptions viewOptions = OLFactory.createOptions();
-      viewOptions.setProjection(projection);
-      View view = new View(viewOptions);
+        Coordinate centerCoordinate = new Coordinate(2616491, 1240287);
 
-      Coordinate centerCoordinate = new Coordinate(-11158582, 4813697);
+        view.setCenter(centerCoordinate);
+        view.setZoom(6);
 
-      view.setCenter(centerCoordinate);
-      view.setZoom(4);
+        // create the map
+        MapOptions mapOptions = OLFactory.createOptions();
+        mapOptions.setTarget(mapDiv.getId());
+        mapOptions.setView(view);
 
-      // create the map
-      MapOptions mapOptions = OLFactory.createOptions();
-      mapOptions.setTarget(mapDiv.getId());
-      mapOptions.setView(view);
+        Map map = new Map(mapOptions);
 
-      Map map = new Map(mapOptions);
+        // add layers
+        map.addLayer(wmtsLayer);
 
-      // add layers
-      map.addLayer(osmLayer);
-      map.addLayer(wmtsLayer);
+        // add some controls
+        map.addControl(new ScaleLine());
 
-      // add some controls
-      map.addControl(new ScaleLine());
+        // add some interactions
+        map.addInteraction(new KeyboardPan());
+        map.addInteraction(new KeyboardZoom());
+        map.addControl(new Rotate());
 
-      // add some interactions
-      map.addInteraction(new KeyboardPan());
-      map.addInteraction(new KeyboardZoom());
-      map.addControl(new Rotate());
-
-      
-      
-      
-      
-      
-      
-      
 //      ImageWmsParams imageWMSParams = OLFactory.createOptions();
 //      imageWMSParams.setLayers("ch.swisstopo.geologie-geotechnik-gk500-gesteinsklassierung,ch.bafu.schutzgebiete-paerke_nationaler_bedeutung");
 //
@@ -350,14 +322,9 @@ public class AppEntryPoint implements EntryPoint {
 //
 //      map.addLayer(wmsLayer);
 
-
-
-     
-
-     
-/*
- * RPC stuff
- * */	    
+        /*
+         * RPC stuff
+         */
 //        final Button sendButton = new Button("Send");
 //        final TextBox nameField = new TextBox();
 //        nameField.setText("GWT User Foo");
@@ -476,11 +443,9 @@ public class AppEntryPoint implements EntryPoint {
 //        MyHandler handler = new MyHandler();
 //        sendButton.addClickHandler(handler);
 //        nameField.addKeyUpHandler(handler);
-	    
-	   
 
-		//RootPanel.get().add(new Label("zakaria. Hallo Welt."));
-		
+        // RootPanel.get().add(new Label("zakaria. Hallo Welt."));
+
 //        MultiWordSuggestOracle oracle = new MultiWordSuggestOracle();
 //        oracle.add("A");
 //        oracle.add("AB");
@@ -504,15 +469,14 @@ public class AppEntryPoint implements EntryPoint {
 //        MySuggestBox suggestionBox = new MySuggestBox();
 
         // set width to 200px.
-        //suggestionBox.setWidth("200");
+        // suggestionBox.setWidth("200");
 
         // Add suggestionbox to the root panel.
 //        VerticalPanel panel = new VerticalPanel();
 //        panel.add(suggestionBox);
 //
 //        RootPanel.get().add(panel);
-		
-	    
+
 //	    List<User> users = new ArrayList<User>();
 //	    users.add(new User("picture", Position.CEO, true, "Ziegler Stefan", "email", "password", "contactNo", "address", "AGI"));
 //	    users.add(new User("picture", Position.CEO, true, "Foo Bar", "email", "password", "contactNo", "address", "AGI"));
@@ -528,49 +492,48 @@ public class AppEntryPoint implements EntryPoint {
 //        panel.add(autoComplete);
 //
 //        RootPanel.get().add(panel);
-        
-		
-	}
+
+    }
+
+//    private TileGrid createWmtsTileGrid(Projection projection) {
+//
+//        WmtsTileGridOptions wmtsTileGridOptions = OLFactory.createOptions();
+//
+//        double[] resolutions = new double[14];
+//        String[] matrixIds = new String[14];
+//
+//        double width = projection.getExtent().getWidth();
+//        double matrixWidth = width / 256;
+//
+//        for (int i = 0; i < 14; i++) {
+//            resolutions[i] = matrixWidth / Math.pow(2, i);
+//            matrixIds[i] = String.valueOf(i);
+//        }
+//
+//        Coordinate tileGridOrigin = projection.getExtent().getTopLeft();
+//        wmtsTileGridOptions.setOrigin(tileGridOrigin);
+//        wmtsTileGridOptions.setResolutions(resolutions);
+//        wmtsTileGridOptions.setMatrixIds(matrixIds);
+//
+//        return new WmtsTileGrid(wmtsTileGridOptions);
+//    }
 
     private TileGrid createWmtsTileGrid(Projection projection) {
-
         WmtsTileGridOptions wmtsTileGridOptions = OLFactory.createOptions();
 
-        double[] resolutions = new double[14];
-        String[] matrixIds = new String[14];
+        double resolutions[] = new double[] { 4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5,
+                1.0, 0.5, 0.25, 0.1 };
+        String[] matrixIds = new String[resolutions.length];
 
-        double width = projection.getExtent().getWidth();
-        double matrixWidth = width / 256;
-
-        for (int i = 0; i < 14; i++) {
-            resolutions[i] = matrixWidth / Math.pow(2, i);
-            matrixIds[i] = String.valueOf(i);
+        for (int z = 0; z < resolutions.length; ++z) {
+            matrixIds[z] = String.valueOf(z);
         }
 
         Coordinate tileGridOrigin = projection.getExtent().getTopLeft();
         wmtsTileGridOptions.setOrigin(tileGridOrigin);
         wmtsTileGridOptions.setResolutions(resolutions);
         wmtsTileGridOptions.setMatrixIds(matrixIds);
-
-        return new WmtsTileGrid(wmtsTileGridOptions);
-
-    }
-    
-    private TileGrid getWmtsTileGrid(Projection projection) {
-        WmtsTileGridOptions wmtsTileGridOptions = OLFactory.createOptions();
-
-        double resolutions[] = new double[] {4000.0,2000.0,1000.0,500.0,250.0,100.0,50.0,20.0,10.0,5.0,2.5,1.0,0.5,0.25,0.1};
-        String[] matrixIds = new String[resolutions.length];
         
-        for (int z = 0; z < resolutions.length; ++z) {
-            matrixIds[z] = String.valueOf(z);
-          }
-        
-        Coordinate tileGridOrigin = projection.getExtent().getTopLeft();
-        wmtsTileGridOptions.setOrigin(tileGridOrigin);
-        wmtsTileGridOptions.setResolutions(resolutions);
-        wmtsTileGridOptions.setMatrixIds(matrixIds);
-
         return new WmtsTileGrid(wmtsTileGridOptions);
     }
 }
