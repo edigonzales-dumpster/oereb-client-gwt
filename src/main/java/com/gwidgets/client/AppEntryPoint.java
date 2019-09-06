@@ -206,7 +206,7 @@ public class AppEntryPoint implements EntryPoint {
         cardContent1.add(label);
         card1.add(cardContent1);
         
-        card1.getElement().getStyle().setProperty("overflow", "scroll");
+        card1.getElement().getStyle().setProperty("overflowY", "scroll");
         
         Div fadeoutDiv = new Div();
         fadeoutDiv.getElement().getStyle().setProperty("position", "sticky");
