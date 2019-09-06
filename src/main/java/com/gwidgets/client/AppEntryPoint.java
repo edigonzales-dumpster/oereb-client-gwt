@@ -1,5 +1,6 @@
 package com.gwidgets.client;
 
+import java.util.HashMap;
 import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -72,6 +73,7 @@ public class AppEntryPoint implements EntryPoint {
     private final SettingsServiceAsync settingsService = GWT.create(SettingsService.class);
 
     private String SEARCH_SERVICE_URL;
+    private HashMap<String,String> WMS_LAYER_MAPPINGS;
     private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
 
     public void onModuleLoad() {
@@ -93,26 +95,12 @@ public class AppEntryPoint implements EntryPoint {
 
     private void init() {
         GWT.log(SEARCH_SERVICE_URL);
-
-        MaterialRow row = new MaterialRow();
-
-        MaterialColumn columnLeft = new MaterialColumn();
-        columnLeft.setGrid("s4");
-        columnLeft.setBackgroundColor(Color.WHITE);
-        columnLeft.add(new Label("Controls belong here."));
-
-        MaterialColumn columnRight = new MaterialColumn();
-        columnRight.setGrid("s8");
-        columnRight.setBackgroundColor(Color.LIGHT_GREEN);
-        columnRight.add(new Label("Map belongs here."));
-
+        
+        // div for ol3 map
         Div mapDiv = new Div();
-        mapDiv.setId("mymap");
-        columnRight.add(mapDiv);
+        mapDiv.setId("map");
 
-        row.add(columnLeft);
-        row.add(columnRight);
-
+        // material card for the controls
         MaterialCard card = new MaterialCard();
         card.setTitle("gaga");
         card.setBackgroundColor(Color.BROWN_LIGHTEN_2);
@@ -122,7 +110,7 @@ public class AppEntryPoint implements EntryPoint {
         MaterialCardTitle cardTitle = new MaterialCardTitle();
         cardTitle.setText("Fubar");
         card.add(cardTitle);
-        columnLeft.add(card);
+//        columnLeft.add(card);
 
         UserOracle userOracle = new UserOracle();
 
@@ -163,7 +151,7 @@ public class AppEntryPoint implements EntryPoint {
 ////        div2.add(button2);
 //
         // columnLeft.add(autocomplete);
-        columnLeft.add(buttonRow);
+//        columnLeft.add(buttonRow);
 ////        columnLeft.add(div1);
 ////        columnLeft.add(div2);
 //
@@ -182,13 +170,13 @@ public class AppEntryPoint implements EntryPoint {
         MaterialCard card1 = new MaterialCard();
         card1.setTitle("gaga");
         card1.setBackgroundColor(Color.BROWN_LIGHTEN_2);
-        card1.setHeight("200px");
+//        card1.setHeight("200px");
         card1.getElement().getStyle().setProperty("transition", "height 1s");
         card1.getElement().getStyle().setProperty("position", "absolute");
         card1.getElement().getStyle().setProperty("top", "10px");
         card1.getElement().getStyle().setProperty("left", "10px");
-        card1.getElement().getStyle().setProperty("width", "300px");
-        card1.getElement().getStyle().setProperty("height", "600px");
+        card1.getElement().getStyle().setProperty("width", "500px");
+        card1.getElement().getStyle().setProperty("height", "300px");
         
         MaterialCardTitle cardTitle1 = new MaterialCardTitle();
         cardTitle1.setText("Fubar");
@@ -206,7 +194,8 @@ public class AppEntryPoint implements EntryPoint {
         cardContent1.add(label);
         card1.add(cardContent1);
         
-        card1.getElement().getStyle().setProperty("overflow", "auto");
+        card1.getElement().getStyle().setProperty("overflowY", "scroll");
+
         
 //        Div fadeoutDiv = new Div();
 //        fadeoutDiv.getElement().getStyle().setProperty("position", "sticky");
@@ -311,19 +300,14 @@ public class AppEntryPoint implements EntryPoint {
         MapOptions mapOptions = OLFactory.createOptions();
         mapOptions.setTarget(mapDiv.getId());
         mapOptions.setView(view);
-
+        mapOptions.setControls(new Collection<Control>());
+        
         Map map = new Map(mapOptions);
 
         // add layers
         map.addLayer(wmtsLayer);
 
-        // add some controls
-        map.addControl(new ScaleLine());
 
-        // add some interactions
-        map.addInteraction(new KeyboardPan());
-        map.addInteraction(new KeyboardZoom());
-        map.addControl(new Rotate());
 
 //      ImageWmsParams imageWMSParams = OLFactory.createOptions();
 //      imageWMSParams.setLayers("ch.swisstopo.geologie-geotechnik-gk500-gesteinsklassierung,ch.bafu.schutzgebiete-paerke_nationaler_bedeutung");
