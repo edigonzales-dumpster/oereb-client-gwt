@@ -206,15 +206,15 @@ public class AppEntryPoint implements EntryPoint {
         cardContent1.add(label);
         card1.add(cardContent1);
         
-        card1.getElement().getStyle().setProperty("overflowY", "scroll");
+        card1.getElement().getStyle().setProperty("overflow", "auto");
         
-        Div fadeoutDiv = new Div();
-        fadeoutDiv.getElement().getStyle().setProperty("position", "sticky");
-        fadeoutDiv.getElement().getStyle().setProperty("bottom", "0");
-        fadeoutDiv.getElement().getStyle().setProperty("width", "100%");
-        fadeoutDiv.getElement().getStyle().setProperty("padding", "30px 0");
-        fadeoutDiv.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%)");
-        card1.add(fadeoutDiv);
+//        Div fadeoutDiv = new Div();
+//        fadeoutDiv.getElement().getStyle().setProperty("position", "sticky");
+//        fadeoutDiv.getElement().getStyle().setProperty("bottom", "0");
+//        fadeoutDiv.getElement().getStyle().setProperty("width", "100%");
+//        fadeoutDiv.getElement().getStyle().setProperty("padding", "30px 0");
+//        fadeoutDiv.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%)");
+//        card1.add(fadeoutDiv);
         
         
         
