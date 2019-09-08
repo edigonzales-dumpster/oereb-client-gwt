@@ -21,6 +21,19 @@
     <gwtVersion>2.8.2</gwtVersion>
     <serverPort>8080</serverPort>
   </properties>
+ 
+ <repositories>
+	<repository>
+	   <id>sonatype-snapshots-repo</id>
+	   <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+	   <snapshots>
+	      <enabled>true</enabled>
+	      <updatePolicy>always</updatePolicy>
+	      <checksumPolicy>fail</checksumPolicy>
+	   </snapshots>
+	</repository>
+</repositories> 
+  
   <dependencies>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -71,6 +84,31 @@
       <artifactId>gwt-ol3</artifactId>
       <version>7.2.0</version>
     </dependency>
+    <!-- 
+    <dependency>
+      <groupId>com.google.elemental2</groupId>
+      <artifactId>elemental2-core</artifactId>
+      <version>1.0.0-RC1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.elemental2</groupId>
+      <artifactId>elemental2-dom</artifactId>
+      <version>1.0.0-RC1</version>
+    </dependency>
+    -->
+
+<dependency>
+  <groupId>org.dominokit</groupId>
+  <artifactId>domino-ui</artifactId>
+  <version>1.0-SNAPSHOT</version>
+</dependency>
+<dependency>
+  <groupId>org.dominokit</groupId>
+  <artifactId>domino-ui</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <classifier>sources</classifier>
+</dependency>
+
     
     <dependency>
       <groupId>javax.xml.bind</groupId>
