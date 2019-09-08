@@ -24,7 +24,10 @@ import com.gwidgets.shared.SettingsServiceAsync;
 
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
+import gwt.material.design.client.constants.ButtonSize;
+import gwt.material.design.client.constants.ButtonType;
 import gwt.material.design.client.constants.Color;
+import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialCard;
 import gwt.material.design.client.ui.MaterialCardContent;
@@ -76,6 +79,8 @@ public class AppEntryPoint implements EntryPoint {
     private HashMap<String,String> WMS_LAYER_MAPPINGS;
     private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
 
+    private Map map;
+    
     public void onModuleLoad() {
         // Get the needed settings from the server with an async call.
         settingsService.settingsServer(new AsyncCallback<SettingsResponse>() {
@@ -99,25 +104,83 @@ public class AppEntryPoint implements EntryPoint {
         // div for ol3 map
         Div mapDiv = new Div();
         mapDiv.setId("map");
+        mapDiv.getElement().getStyle().setProperty("height", "100%");
+        
+        // Dummy button for testing with a hardcode egrid.
+        MaterialButton dummyButton = new MaterialButton();
+        dummyButton.setType(ButtonType.FLOATING);
+        dummyButton.setSize(ButtonSize.LARGE);
+        dummyButton.setIconType(IconType.SENTIMENT_VERY_DISSATISFIED);
+        dummyButton.getElement().getStyle().setProperty("position", "absolute");
+        dummyButton.getElement().getStyle().setProperty("top", "40px");
+        dummyButton.getElement().getStyle().setProperty("right", "40px");
+        
 
-        // material card for the controls
-        MaterialCard card = new MaterialCard();
-        card.setTitle("gaga");
-        card.setBackgroundColor(Color.BROWN_LIGHTEN_2);
-        card.setHeight("200px");
-        card.getElement().getStyle().setProperty("transition", "height 1s");
 
-        MaterialCardTitle cardTitle = new MaterialCardTitle();
-        cardTitle.setText("Fubar");
-        card.add(cardTitle);
-//        columnLeft.add(card);
+        
+        // A material card for the controls.
+        MaterialCard controlsCard = new MaterialCard();
+        controlsCard.setBackgroundColor(Color.GREY_LIGHTEN_5);
+        controlsCard.getElement().getStyle().setProperty("transition", "height 0.5s");
+        controlsCard.getElement().getStyle().setProperty("position", "absolute");
+        controlsCard.getElement().getStyle().setProperty("marginTop", "15px");
+        controlsCard.getElement().getStyle().setProperty("marginLeft", "15px");
+        controlsCard.getElement().getStyle().setProperty("top", "0px");
+        controlsCard.getElement().getStyle().setProperty("left", "0px");
+        controlsCard.getElement().getStyle().setProperty("width", "500px");
+        controlsCard.getElement().getStyle().setProperty("height", "200px");
+        controlsCard.getElement().getStyle().setProperty("overflowY", "auto");
 
+        MaterialCardContent controlsCardContent = new MaterialCardContent();
+        controlsCardContent.getElement().getStyle().setProperty("padding", "15px");
+
+        MaterialRow logoRow = new MaterialRow();
+        
+        com.google.gwt.user.client.ui.Image plrImage = new com.google.gwt.user.client.ui.Image();
+        plrImage.setUrl("https://geoview.bl.ch/main/oereb/logos/logo_oereb_small.png");
+        plrImage.setWidth("200px");
+        
+        MaterialColumn plrLogoColumn =  new MaterialColumn();
+        plrLogoColumn.setGrid("s6");
+        plrLogoColumn.getElement().getStyle().setProperty("margin", "0px");
+        plrLogoColumn.getElement().getStyle().setProperty("padding", "0px");
+        plrLogoColumn.add(plrImage);
+        
+        com.google.gwt.user.client.ui.Image cantonImage = new com.google.gwt.user.client.ui.Image();
+        cantonImage.setUrl("https://so.ch/typo3conf/ext/sfptemplate/Resources/Public/Images/Logo.png");
+        cantonImage.setWidth("200px");
+
+        MaterialColumn cantonLogoColumn =  new MaterialColumn();
+        cantonLogoColumn.setGrid("s6");
+        cantonLogoColumn.getElement().getStyle().setProperty("margin", "0px");
+        cantonLogoColumn.getElement().getStyle().setProperty("padding", "0px");
+        cantonLogoColumn.getElement().getStyle().setProperty("textAlign", "right");
+        cantonLogoColumn.add(cantonImage);
+
+        logoRow.add(plrLogoColumn);
+        logoRow.add(cantonLogoColumn);
+        controlsCardContent.add(logoRow);
+        
+//        MaterialLabel label = new MaterialLabel();
+//        label.setText("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.   \n" + 
+//                "\n" + 
+//                "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.   \n" + 
+//                "\n" + 
+//                "Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.   \n" + 
+//                "\n" + 
+//                "Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer");
+//        controlsCardContent.add(label);
+        
+        
+        MaterialRow searchRow = new MaterialRow();
+        
+        // TODO: rename
         UserOracle userOracle = new UserOracle();
 
         MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
-
         autocomplete.setType(AutocompleteType.TEXT);
         autocomplete.setPlaceholder("Suche");
+//        autocomplete.setTextColor(Color.RED_DARKEN_4);
         autocomplete.setAutoSuggestLimit(5);
         // FIXME: remove text on select
 
@@ -126,75 +189,11 @@ public class AppEntryPoint implements EntryPoint {
             MaterialToast.fireToast(autocomplete.getItemBox().getText());
         });
 
-        MaterialCardContent cardContent = new MaterialCardContent();
-        cardContent.add(autocomplete);
-        card.add(cardContent);
-
-        MaterialRow buttonRow = new MaterialRow();
-
-        MaterialButton button1 = new MaterialButton();
-        button1.setText("PDF");
-        // button1.setMargin(5.0);
-        button1.setMarginRight(5.0);
-        buttonRow.add(button1);
-
-        MaterialButton button2 = new MaterialButton();
-        button2.setText("FUBAR");
-        button2.setBackgroundColor(Color.WHITE);
-        button2.setTextColor(Color.RED_DARKEN_4);
-        buttonRow.add(button2);
-
-////        Div div1 = new Div();
-////        div1.add(button1);
-////        
-////        Div div2 = new Div();
-////        div2.add(button2);
-//
-        // columnLeft.add(autocomplete);
-//        columnLeft.add(buttonRow);
-////        columnLeft.add(div1);
-////        columnLeft.add(div2);
-//
-//        
-
-//        card.add(autocomplete);
-
-        button2.addClickHandler(event -> {
-            GWT.log("push the button");
-        });
-
-//        RootPanel.get().add(row);
+        searchRow.add(autocomplete);
+        controlsCardContent.add(searchRow);
+      
+        controlsCard.add(controlsCardContent);
         
-        mapDiv.getElement().getStyle().setProperty("height", "100%");
-
-        MaterialCard card1 = new MaterialCard();
-        card1.setTitle("gaga");
-        card1.setBackgroundColor(Color.BROWN_LIGHTEN_2);
-//        card1.setHeight("200px");
-        card1.getElement().getStyle().setProperty("transition", "height 1s");
-        card1.getElement().getStyle().setProperty("position", "absolute");
-        card1.getElement().getStyle().setProperty("top", "10px");
-        card1.getElement().getStyle().setProperty("left", "10px");
-        card1.getElement().getStyle().setProperty("width", "500px");
-        card1.getElement().getStyle().setProperty("height", "300px");
-        
-        MaterialCardTitle cardTitle1 = new MaterialCardTitle();
-        cardTitle1.setText("Fubar");
-        card1.add(cardTitle1);
-
-        MaterialCardContent cardContent1 = new MaterialCardContent();
-        MaterialLabel label = new MaterialLabel();
-        label.setText("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.   \n" + 
-                "\n" + 
-                "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.   \n" + 
-                "\n" + 
-                "Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.   \n" + 
-                "\n" + 
-                "Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer");
-        cardContent1.add(label);
-        card1.add(cardContent1);
-        
-        card1.getElement().getStyle().setProperty("overflowY", "scroll");
 
         
 //        Div fadeoutDiv = new Div();
@@ -205,109 +204,21 @@ public class AppEntryPoint implements EntryPoint {
 //        fadeoutDiv.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%)");
 //        card1.add(fadeoutDiv);
         
-        
-        
+        // Add all the widgets to the body.
+        RootPanel.get().add(dummyButton);
         RootPanel.get().add(mapDiv);
-        RootPanel.get().add(card1);
+        RootPanel.get().add(controlsCard);
 
+        // Add click event to the dummy button.
+        dummyButton.addClickHandler(event -> {
+            GWT.log("push the button");
+            
+            MaterialLoader.loading(true);
+            sendEgridToServer();
+        });
         
-
-        class ExtractHandler implements ClickHandler, KeyUpHandler {
-            public void onClick(ClickEvent event) {
-                sendEgridToServer();
-                MaterialLoader.loading(true);
-            }
-
-            public void onKeyUp(KeyUpEvent event) {
-                if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-                    sendEgridToServer();
-                }
-            }
-
-//             CH158782774974
-//             CH944982786913
-//             CH938278494529
-
-            private void sendEgridToServer() {
-                extractService.extractServer("CH158782774974", new AsyncCallback<ExtractResponse>() {
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        MaterialLoader.loading(false);
-                        GWT.log("error: " + caught.getMessage());
-                        MaterialToast.fireToast(caught.getMessage());
-                    }
-
-                    @Override
-                    public void onSuccess(ExtractResponse result) {
-                        MaterialLoader.loading(false);
-                        GWT.log(result.getEgrid());
-                        GWT.log(result.getExtract().getExtractIdentifier());
-
-                        card.setHeight("400px");
-
-                    }
-                });
-            }
-        }
-
-        ExtractHandler handler = new ExtractHandler();
-        button2.addClickHandler(handler);
-
-        // Openlayers
-
-        // create a projection
-        Proj4.defs("EPSG:2056", "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
-
-        ProjectionOptions projectionOptions = OLFactory.createOptions();
-        projectionOptions.setCode("EPSG:2056");
-        projectionOptions.setUnits("m");
-        projectionOptions.setExtent(new Extent(2420000, 1030000, 2900000, 1350000));
-
-        Projection projection = new Projection(projectionOptions);
-
-        WmtsOptions wmtsOptions = OLFactory.createOptions();
-        wmtsOptions.setUrl(
-                "https://geo.so.ch/api/wmts/1.0.0/{Layer}/default/2056/{TileMatrix}/{TileRow}/{TileCol}");
-        wmtsOptions.setLayer("ch.so.agi.hintergrundkarte_sw");
-        wmtsOptions.setRequestEncoding("REST");
-        wmtsOptions.setFormat("image/png");
-        wmtsOptions.setMatrixSet("EPSG:2056");
-        wmtsOptions.setStyle("default");
-        wmtsOptions.setProjection(projection);
-        wmtsOptions.setWrapX(true);
-        wmtsOptions.setTileGrid(this.createWmtsTileGrid(projection));
-
-        Wmts wmtsSource = new Wmts(wmtsOptions);
-
-        LayerOptions wmtsLayerOptions = OLFactory.createOptions();
-        wmtsLayerOptions.setSource(wmtsSource);
-
-        Tile wmtsLayer = new Tile(wmtsLayerOptions);
-        wmtsLayer.setOpacity(1.0);
-
-        // create a view
-        ViewOptions viewOptions = OLFactory.createOptions();
-        viewOptions.setProjection(projection);
-        viewOptions.setResolutions(new double[] {4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5, 1.0, 0.5, 0.25, 0.1 });
-        View view = new View(viewOptions);
-
-        Coordinate centerCoordinate = new Coordinate(2616491, 1240287);
-
-        view.setCenter(centerCoordinate);
-        view.setZoom(6);
-
-        // create the map
-        MapOptions mapOptions = OLFactory.createOptions();
-        mapOptions.setTarget(mapDiv.getId());
-        mapOptions.setView(view);
-        mapOptions.setControls(new Collection<Control>());
-        
-        Map map = new Map(mapOptions);
-
-        // add layers
-        map.addLayer(wmtsLayer);
-
-
+        // Initialize openlayers map.
+        initMap(mapDiv.getId());
 
 //      ImageWmsParams imageWMSParams = OLFactory.createOptions();
 //      imageWMSParams.setLayers("ch.swisstopo.geologie-geotechnik-gk500-gesteinsklassierung,ch.bafu.schutzgebiete-paerke_nationaler_bedeutung");
@@ -351,178 +262,86 @@ public class AppEntryPoint implements EntryPoint {
 //      Map map = new Map(mapOptions);
 //
 //      map.addLayer(wmsLayer);
+    }
+    
+//  CH158782774974
+//  CH944982786913
+//  CH938278494529
+    private void sendEgridToServer() {
+        extractService.extractServer("CH158782774974", new AsyncCallback<ExtractResponse>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                MaterialLoader.loading(false);
+                GWT.log("error: " + caught.getMessage());
+                MaterialToast.fireToast(caught.getMessage());
+            }
 
-        /*
-         * RPC stuff
-         */
-//        final Button sendButton = new Button("Send");
-//        final TextBox nameField = new TextBox();
-//        nameField.setText("GWT User Foo");
-//        final Label errorLabel = new Label();
-//        
-//        GWT.log("Hallo Stefan.");
-//
-//        // We can add style names to widgets
-//        sendButton.addStyleName("sendButton");
-//
-//        // Add the nameField and sendButton to the RootPanel
-//        // Use RootPanel.get() to get the entire body element
-//        RootPanel.get("nameFieldContainer").add(nameField);
-//        RootPanel.get("sendButtonContainer").add(sendButton);
-//        RootPanel.get("errorLabelContainer").add(errorLabel);
-//
-//        // Focus the cursor on the name field when the app loads
-//        nameField.setFocus(true);
-//        nameField.selectAll();
-//
-//        // Create the popup dialog box
-//        final DialogBox dialogBox = new DialogBox();
-//        dialogBox.setText("Remote Procedure Call");
-//        dialogBox.setAnimationEnabled(true);
-//        final Button closeButton = new Button("Close");
-//        // We can set the id of a widget by accessing its Element
-//        closeButton.getElement().setId("closeButton");
-//        final Label textToServerLabel = new Label();
-//        final HTML serverResponseLabel = new HTML();
-//        VerticalPanel dialogVPanel = new VerticalPanel();
-//        dialogVPanel.addStyleName("dialogVPanel");
-//        dialogVPanel.add(new HTML("<b>Sending name to the server:</b>"));
-//        dialogVPanel.add(textToServerLabel);
-//        dialogVPanel.add(new HTML("<br><b>Server replies:</b>"));
-//        dialogVPanel.add(serverResponseLabel);
-//        dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
-//        dialogVPanel.add(closeButton);
-//        dialogBox.setWidget(dialogVPanel);
-//
-//        // Add a handler to close the DialogBox
-//        closeButton.addClickHandler(new ClickHandler() {
-//            public void onClick(ClickEvent event) {
-//                dialogBox.hide();
-//                sendButton.setEnabled(true);
-//                sendButton.setFocus(true);
-//            }
-//        });
-//
-//        // Create a handler for the sendButton and nameField
-//        class MyHandler implements ClickHandler, KeyUpHandler {
-//            /**
-//             * Fired when the user clicks on the sendButton.
-//             */
-//            public void onClick(ClickEvent event) {
-//                sendNameToServer();
-//            }
-//
-//            /**
-//             * Fired when the user types in the nameField.
-//             */
-//            public void onKeyUp(KeyUpEvent event) {
-//                if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-//                    sendNameToServer();
-//                }
-//            }
-//
-//            /**
-//             * Send the name from the nameField to the server and wait for a response.
-//             */
-//            private void sendNameToServer() {
-//                // First, we validate the input.
-//                errorLabel.setText("");
-//                String textToServer = nameField.getText();
-//                if (!FieldVerifier.isValidName(textToServer)) {
-//                    errorLabel.setText("Please enter at least four characters");
-//                    return;
-//                }
-//
-//                // Then, we send the input to the server.
-//                sendButton.setEnabled(false);
-//                textToServerLabel.setText(textToServer);
-//                serverResponseLabel.setText("");
-//                                
-//                greetingService.greetServer(textToServer,
-//                        new AsyncCallback<GreetingResponse>() {
-//                            public void onFailure(Throwable caught) {
-//                                // Show the RPC error message to the user
-//                                dialogBox
-//                                        .setText("Remote Procedure Call - Failure");
-//                                serverResponseLabel
-//                                        .addStyleName("serverResponseLabelError");
-//                                serverResponseLabel.setHTML(SERVER_ERROR);
-//                                dialogBox.center();
-//                                closeButton.setFocus(true);
-//                            }
-//
-//                            public void onSuccess(GreetingResponse result) {
-//                                dialogBox.setText("Remote Procedure Call");
-//                                serverResponseLabel
-//                                        .removeStyleName("serverResponseLabelError");
-//                                serverResponseLabel.setHTML(new SafeHtmlBuilder()
-//                                        .appendEscaped(result.getGreeting())
-//                                        .appendHtmlConstant("<br><br>I am running ")
-//                                        .appendEscaped(result.getServerInfo())
-//                                        .appendHtmlConstant(".<br><br>It looks like you are using:<br>")
-//                                        .appendEscaped(result.getUserAgent())
-//                                        .toSafeHtml());
-//                                dialogBox.center();
-//                                closeButton.setFocus(true);
-//                            }
-//                        });
-//            }
-//        }
-//
-//        // Add a handler to send the name to the server
-//        MyHandler handler = new MyHandler();
-//        sendButton.addClickHandler(handler);
-//        nameField.addKeyUpHandler(handler);
+            @Override
+            public void onSuccess(ExtractResponse result) {
+                MaterialLoader.loading(false);
+                GWT.log(result.getEgrid());
+                GWT.log(result.getExtract().getExtractIdentifier());
+                GWT.log(result.getExtract().getReferenceWMS().getBaseUrl());
 
-        // RootPanel.get().add(new Label("zakaria. Hallo Welt."));
+                // TODO
+//                controlsCard.setHeight("400px");
 
-//        MultiWordSuggestOracle oracle = new MultiWordSuggestOracle();
-//        oracle.add("A");
-//        oracle.add("AB");
-//        oracle.add("ABC");
-//        oracle.add("ABCD");
-//        oracle.add("B");
-//        oracle.add("BC");
-//        oracle.add("BCD");
-//        oracle.add("BCDE");
-//        oracle.add("C");
-//        oracle.add("CD");
-//        oracle.add("CDE");
-//        oracle.add("CDEF");
-//        oracle.add("D");
-//        oracle.add("DE");
-//        oracle.add("DEF");
-//        oracle.add("DEFGH");
+            }
+        });
+    }
+    
+    private void initMap(String id) {
+        // create a projection
+        Proj4.defs("EPSG:2056", "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
 
-        // create the suggestion box and pass it the data created above
-//        SuggestBox suggestionBox = new SuggestBox(oracle);
-//        MySuggestBox suggestionBox = new MySuggestBox();
+        ProjectionOptions projectionOptions = OLFactory.createOptions();
+        projectionOptions.setCode("EPSG:2056");
+        projectionOptions.setUnits("m");
+        projectionOptions.setExtent(new Extent(2420000, 1030000, 2900000, 1350000));
 
-        // set width to 200px.
-        // suggestionBox.setWidth("200");
+        Projection projection = new Projection(projectionOptions);
 
-        // Add suggestionbox to the root panel.
-//        VerticalPanel panel = new VerticalPanel();
-//        panel.add(suggestionBox);
-//
-//        RootPanel.get().add(panel);
+        WmtsOptions wmtsOptions = OLFactory.createOptions();
+        wmtsOptions.setUrl(
+                "https://geo.so.ch/api/wmts/1.0.0/{Layer}/default/2056/{TileMatrix}/{TileRow}/{TileCol}");
+        wmtsOptions.setLayer("ch.so.agi.hintergrundkarte_sw");
+        wmtsOptions.setRequestEncoding("REST");
+        wmtsOptions.setFormat("image/png");
+        wmtsOptions.setMatrixSet("EPSG:2056");
+        wmtsOptions.setStyle("default");
+        wmtsOptions.setProjection(projection);
+        wmtsOptions.setWrapX(true);
+        wmtsOptions.setTileGrid(this.createWmtsTileGrid(projection));
 
-//	    List<User> users = new ArrayList<User>();
-//	    users.add(new User("picture", Position.CEO, true, "Ziegler Stefan", "email", "password", "contactNo", "address", "AGI"));
-//	    users.add(new User("picture", Position.CEO, true, "Foo Bar", "email", "password", "contactNo", "address", "AGI"));
-//	    
-//	    UserOracle userOracle = new UserOracle();
-//	    userOracle.addContacts(users);
-//		
-//        MaterialAutoComplete autoComplete = new MaterialAutoComplete(userOracle); 
-//        //autoComplete.setLabel("Suche");
-//        autoComplete.setPlaceholder("Suche");
-//
-//        VerticalPanel panel = new VerticalPanel();
-//        panel.add(autoComplete);
-//
-//        RootPanel.get().add(panel);
+        Wmts wmtsSource = new Wmts(wmtsOptions);
 
+        LayerOptions wmtsLayerOptions = OLFactory.createOptions();
+        wmtsLayerOptions.setSource(wmtsSource);
+
+        Tile wmtsLayer = new Tile(wmtsLayerOptions);
+        wmtsLayer.setOpacity(1.0);
+
+        // create a view
+        ViewOptions viewOptions = OLFactory.createOptions();
+        viewOptions.setProjection(projection);
+        viewOptions.setResolutions(new double[] {4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5, 1.0, 0.5, 0.25, 0.1 });
+        View view = new View(viewOptions);
+
+        Coordinate centerCoordinate = new Coordinate(2616491, 1240287);
+
+        view.setCenter(centerCoordinate);
+        view.setZoom(6);
+
+        // create the map
+        MapOptions mapOptions = OLFactory.createOptions();
+        mapOptions.setTarget(id);
+        mapOptions.setView(view);
+        mapOptions.setControls(new Collection<Control>());
+        
+        map = new Map(mapOptions);
+
+        // add layers
+        map.addLayer(wmtsLayer);
     }
 
     private TileGrid createWmtsTileGrid(Projection projection) {

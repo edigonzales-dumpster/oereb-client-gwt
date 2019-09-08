@@ -7,6 +7,8 @@ public class ExtractResponse implements IsSerializable {
     private Extract extract;
     
     private String egrid;
+    
+    private String testWmsUrl;
 
     public String getEgrid() {
         return egrid;
@@ -22,5 +24,13 @@ public class ExtractResponse implements IsSerializable {
 
     public void setExtract(Extract extract) {
         this.extract = extract;
+    }
+
+    public String getTestWmsUrl() {
+        return testWmsUrl;
+    }
+
+    public void setTestWmsUrl(String testWmsUrl) {
+        this.testWmsUrl = testWmsUrl;
     }
 }

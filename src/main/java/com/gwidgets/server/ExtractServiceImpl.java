@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
@@ -16,8 +18,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.gwidgets.shared.ExtractResponse;
 import com.gwidgets.shared.ExtractService;
 import com.gwidgets.shared.models.Extract;
+import com.gwidgets.shared.models.ReferenceWMS;
 
 import ch.ehi.oereb.schemas.oereb._1_0.extract.GetExtractByIdResponse;
+import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RestrictionOnLandownershipType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.ThemeType;
 
 import org.slf4j.Logger;
@@ -66,16 +70,33 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         GetExtractByIdResponse obj = (GetExtractByIdResponse) marshaller.unmarshal(xmlSource);
 
         List<ThemeType> concernedThemes = obj.getValue().getExtract().getValue().getConcernedTheme();
-
+        
+        String wmsUrl = "";
+        ReferenceWMS referenceWMS = new ReferenceWMS();
+        List<RestrictionOnLandownershipType> restrictions = obj.getValue().getExtract().getValue().getRealEstate().getRestrictionOnLandownership();
+        for (RestrictionOnLandownershipType restriction : restrictions) {
+//            logger.info(restriction.getMap().getReferenceWMS());
+            
+            if (restriction.getTheme().getCode().contains("LandUsePlans")) {
+                wmsUrl = URLDecoder.decode(restriction.getMap().getReferenceWMS(), StandardCharsets.UTF_8.name());
+                logger.info(wmsUrl);
+                
+                referenceWMS.setBaseUrl("https://geoview.bl.ch/main/oereb/mapservproxy?");
+                referenceWMS.setLayers("LandUsePlans");
+                referenceWMS.setImageFormat("image%2Fpng");
+            }
+        }
+        
+        
+        
+        
         Extract extract = new Extract();
         extract.setExtractIdentifier(obj.getValue().getExtract().getValue().getExtractIdentifier());
-        
-        
-        
-        
+        extract.setReferenceWMS(referenceWMS);
+       
         ExtractResponse response = new ExtractResponse();
         response.setEgrid("lilalaunebär");
-        response.setExtract(extract);;
+        response.setExtract(extract);
         
         
         return response;
