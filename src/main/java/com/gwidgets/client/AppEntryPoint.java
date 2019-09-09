@@ -46,6 +46,7 @@ import ol.Extent;
 import ol.Map;
 import ol.MapOptions;
 import ol.OLFactory;
+import ol.Overlay;
 import ol.View;
 import ol.ViewOptions;
 import ol.control.Control;
@@ -54,6 +55,7 @@ import ol.control.ScaleLine;
 import ol.control.Zoom;
 import ol.interaction.KeyboardPan;
 import ol.interaction.KeyboardZoom;
+import ol.layer.Base;
 import ol.layer.Image;
 import ol.layer.LayerOptions;
 import ol.layer.Tile;
@@ -282,7 +284,41 @@ public class AppEntryPoint implements EntryPoint {
                 GWT.log(result.getEgrid());
                 GWT.log(result.getExtract().getExtractIdentifier());
                 GWT.log(result.getExtract().getReferenceWMS().getBaseUrl());
+                GWT.log(result.getExtract().getReferenceWMS().getLayers());
 
+                
+              ImageWmsParams imageWMSParams = OLFactory.createOptions();
+              imageWMSParams.setLayers(result.getExtract().getReferenceWMS().getLayers());
+        
+              ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
+              imageWMSOptions.setUrl(result.getExtract().getReferenceWMS().getBaseUrl());
+              imageWMSOptions.setParams(imageWMSParams);
+              imageWMSOptions.setRatio(1.5f);
+        
+              ImageWms imageWMSSource = new ImageWms(imageWMSOptions);
+        
+              LayerOptions layerOptions = OLFactory.createOptions();
+              layerOptions.setSource(imageWMSSource);
+              
+              Image wmsLayer = new Image(layerOptions);
+              wmsLayer.set("id", result.getExtract().getReferenceWMS().getLayers());
+              
+              
+//            map.addOverlay(overlay);
+              map.addLayer(wmsLayer);
+
+              Collection<Base> layers = map.getLayers();
+              for (int i=0; i<layers.getLength(); i++) {
+                  Base item = layers.item(i);
+                  GWT.log(item.toString());
+                  //GWT.log(item.get("id").toString());
+                  try {
+                      GWT.log(item.get("id").toString());
+                  } catch (Exception e) {}
+
+              }
+              
+              
                 // TODO
 //                controlsCard.setHeight("400px");
 
@@ -320,6 +356,7 @@ public class AppEntryPoint implements EntryPoint {
 
         Tile wmtsLayer = new Tile(wmtsLayerOptions);
         wmtsLayer.setOpacity(1.0);
+        wmtsLayer.set("id", "ch.so.agi.hintergrundkarte_sw");
 
         // create a view
         ViewOptions viewOptions = OLFactory.createOptions();
@@ -361,5 +398,9 @@ public class AppEntryPoint implements EntryPoint {
         wmtsTileGridOptions.setMatrixIds(matrixIds);
         
         return new WmtsTileGrid(wmtsTileGridOptions);
+    }
+    
+    private Base getLayerById(String id) {
+        return null;
     }
 }

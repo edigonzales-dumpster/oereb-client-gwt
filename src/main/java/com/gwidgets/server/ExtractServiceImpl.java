@@ -20,6 +20,17 @@ import com.gwidgets.shared.ExtractService;
 import com.gwidgets.shared.models.Extract;
 import com.gwidgets.shared.models.ReferenceWMS;
 
+import ch.ehi.oereb.schemas.gml._3_2.Coordinates;
+import ch.ehi.oereb.schemas.gml._3_2.LinearRing;
+import ch.ehi.oereb.schemas.gml._3_2.LinearRingTypeType;
+import ch.ehi.oereb.schemas.gml._3_2.MultiSurface;
+import ch.ehi.oereb.schemas.gml._3_2.MultiSurfaceProperty;
+import ch.ehi.oereb.schemas.gml._3_2.MultiSurfacePropertyTypeType;
+import ch.ehi.oereb.schemas.gml._3_2.MultiSurfaceTypeType;
+import ch.ehi.oereb.schemas.gml._3_2.PolygonTypeType;
+import ch.ehi.oereb.schemas.gml._3_2.Pos;
+import ch.ehi.oereb.schemas.gml._3_2.PosList;
+import ch.ehi.oereb.schemas.gml._3_2.SurfaceMember;
 import ch.ehi.oereb.schemas.oereb._1_0.extract.GetExtractByIdResponse;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RestrictionOnLandownershipType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.ThemeType;
@@ -87,6 +98,38 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             }
         }
         
+        MultiSurfacePropertyTypeType multiSurfacePropertyTypeType = obj.getValue().getExtract().getValue().getRealEstate().getLimit();
+        MultiSurfaceTypeType multiSurfaceTypeType = multiSurfacePropertyTypeType.getMultiSurface().getValue();
+        logger.info(String.valueOf(multiSurfaceTypeType.getSurfaceMember().size()));
+        
+        
+        MultiSurface multiSurface = obj.getValue().getExtract().getValue().getRealEstate().getLimit().getMultiSurface();
+        
+//        logger.info(multiSurface.getValue().get.toString());
+        
+        for (int i=0; i<multiSurface.getValue().getSurfaceMember().size(); i++) {
+            logger.info(multiSurface.getValue().getSurfaceMember().get(i).toString());
+            SurfaceMember surfaceMember = multiSurface.getValue().getSurfaceMember().get(i);
+            surfaceMember.getValue().getAbstractSurface();
+            logger.info(surfaceMember.getValue().getAbstractSurface().getValue().toString());
+            
+            PolygonTypeType polygon=(PolygonTypeType) surfaceMember.getValue().getAbstractSurface().getValue();
+            
+            logger.info(polygon.getExterior().getValue().getAbstractRing().toString());
+           
+            // TODO interior
+            
+            LinearRing linearRing = (LinearRing) polygon.getExterior().getValue().getAbstractRing();
+//            logger.info(linearRing.getValue().getCoordinates().toString());
+            
+            Coordinates coords = linearRing.getValue().getCoordinates();
+            PosList posList = linearRing.getValue().getPosList();
+            LinearRingTypeType linearRingTypeType = linearRing.getValue();
+            logger.info(linearRingTypeType.getPosOrPointPropertyOrPointRep().get(0).toString());            
+//            logger.info(linearRing.getName().toString());
+            Pos pos = (Pos) linearRingTypeType.getPosOrPointPropertyOrPointRep().get(0);
+            logger.info(pos.getValue().getValue().get(0).toString());
+        }
         
         
         
