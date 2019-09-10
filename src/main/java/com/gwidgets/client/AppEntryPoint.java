@@ -88,6 +88,11 @@ public class AppEntryPoint implements EntryPoint {
     private final ExtractServiceAsync extractService = GWT.create(ExtractService.class);
     private final SettingsServiceAsync settingsService = GWT.create(SettingsService.class);
 
+    private String ID_ATTR_NAME = "id";
+    private String BACKGROUND_LAYER_ID = "ch.so.agi.hintergrundkarte_sw";
+    private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer"; 
+    private String REAL_ESTATE_VECTOR_FEATURE_ID = "real_estate_fid"; 
+    
     private String SEARCH_SERVICE_URL;
     private HashMap<String,String> WMS_LAYER_MAPPINGS;
     private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
@@ -127,9 +132,6 @@ public class AppEntryPoint implements EntryPoint {
         dummyButton.getElement().getStyle().setProperty("position", "absolute");
         dummyButton.getElement().getStyle().setProperty("top", "40px");
         dummyButton.getElement().getStyle().setProperty("right", "40px");
-        
-
-
         
         // A material card for the controls.
         MaterialCard controlsCard = new MaterialCard();
@@ -230,7 +232,7 @@ public class AppEntryPoint implements EntryPoint {
             sendEgridToServer();
         });
         
-        // Initialize openlayers map.
+        // Initialize openlayers map with background wmts layer.
         initMap(mapDiv.getId());
 
 //      ImageWmsParams imageWMSParams = OLFactory.createOptions();
@@ -298,31 +300,28 @@ public class AppEntryPoint implements EntryPoint {
                 GWT.log(result.getExtract().getReferenceWMS().getLayers());
                 GWT.log(result.getExtract().getGeometry());
                 
-                FeatureOptions featureOptions = OLFactory.createOptions();
-                Geometry realEstateGeometry = new Wkt().readGeometry(result.getExtract().getGeometry());
-                featureOptions.setGeometry(realEstateGeometry);
+                // remove all oereb layers
+                removeOerebLayers();
                 
-                Feature feature = new Feature(featureOptions);
-                feature.setId("f1");
-
-                Style style = new Style();
-                Stroke stroke = new Stroke();
-                stroke.setWidth(5);
-//                stroke.setColor(new Color(230,0,0,0.6));
-                style.setStroke(stroke);
-                feature.setStyle(style);
+                // FIXME do i need this anymore?
+                ol.layer.Vector vlayer = (ol.layer.Vector) getLayerById(REAL_ESTATE_VECTOR_LAYER_ID);
+                if (vlayer != null) {
+                    map.removeLayer(vlayer);
+                }
+                       
+                // set new extent and center according the real estate
+                Geometry geometry = new Wkt().readGeometry(result.getExtract().getGeometry());
+                Extent extent = geometry.getExtent();
                 
-                Collection<Feature> lstFeatures = new Collection<Feature>();
-                lstFeatures.push(feature);
+                View view = map.getView();
+                double resolution = view.getResolutionForExtent(extent);                
+                view.setZoom(Math.floor(view.getZoomForResolution(resolution)));
                 
-                VectorOptions vectorSourceOptions = OLFactory.createOptions();
-                vectorSourceOptions.setFeatures(lstFeatures);
-                Vector vectorSource = new Vector(vectorSourceOptions);
-
-                VectorLayerOptions vectorLayerOptions = OLFactory.createOptions();
-                vectorLayerOptions.setSource(vectorSource);
-                ol.layer.Vector vectorLayer = new ol.layer.Vector(vectorLayerOptions);
-                vectorLayer.set("id", "real_estate");
+                double x = extent.getLowerLeftX() + extent.getWidth() / 2;
+                double y = extent.getLowerLeftY() + extent.getHeight() / 2;
+                
+                view.setCenter(new Coordinate(x, y));
+                
 
                 
                 ImageWmsParams imageWMSParams = OLFactory.createOptions();
@@ -344,7 +343,8 @@ public class AppEntryPoint implements EntryPoint {
 //              map.addOverlay(overlay);
                 map.addLayer(wmsLayer);
                 
-                map.addLayer(vectorLayer);
+                map.addLayer(vlayer);
+                
 
                 Collection<Base> layers = map.getLayers();
                 for (int i = 0; i < layers.getLength(); i++) {
@@ -363,6 +363,54 @@ public class AppEntryPoint implements EntryPoint {
 
             }
         });
+    }
+    
+    /*
+     * Removes all layers except the background layer.
+     */
+    private void removeOerebLayers() {
+        Collection<Base> layers = map.getLayers();
+        for (int i = 0; i < layers.getLength(); i++) {
+            Base item = layers.item(i);
+            try {
+                String layerId = item.get(ID_ATTR_NAME);
+                if (item.get(ID_ATTR_NAME).toString().equalsIgnoreCase(BACKGROUND_LAYER_ID)) {
+                    GWT.log("do not delete layer");
+                    continue;
+                }
+                map.removeLayer(item);
+            } catch (Exception e) {}
+        }
+    }
+    
+    private ol.layer.Vector createRealEstateVectorLayer(String geometry) {
+        FeatureOptions featureOptions = OLFactory.createOptions();
+        Geometry realEstateGeometry = new Wkt().readGeometry(geometry);
+        featureOptions.setGeometry(realEstateGeometry);
+        
+        Feature feature = new Feature(featureOptions);
+        feature.setId(REAL_ESTATE_VECTOR_FEATURE_ID);
+
+        Style style = new Style();
+        Stroke stroke = new Stroke();
+        stroke.setWidth(6);
+        stroke.setColor(new ol.color.Color(230,0,0,0.6));
+        style.setStroke(stroke);
+        feature.setStyle(style);
+        
+        Collection<Feature> lstFeatures = new Collection<Feature>();
+        lstFeatures.push(feature);
+        
+        VectorOptions vectorSourceOptions = OLFactory.createOptions();
+        vectorSourceOptions.setFeatures(lstFeatures);
+        Vector vectorSource = new Vector(vectorSourceOptions);
+
+        VectorLayerOptions vectorLayerOptions = OLFactory.createOptions();
+        vectorLayerOptions.setSource(vectorSource);
+        ol.layer.Vector vectorLayer = new ol.layer.Vector(vectorLayerOptions);
+        vectorLayer.set(ID_ATTR_NAME, REAL_ESTATE_VECTOR_LAYER_ID);
+
+        return vectorLayer;
     }
     
     private void initMap(String id) {
@@ -395,7 +443,7 @@ public class AppEntryPoint implements EntryPoint {
 
         Tile wmtsLayer = new Tile(wmtsLayerOptions);
         wmtsLayer.setOpacity(1.0);
-        wmtsLayer.set("id", "ch.so.agi.hintergrundkarte_sw");
+        wmtsLayer.set(ID_ATTR_NAME, BACKGROUND_LAYER_ID);
 
         // create a view
         ViewOptions viewOptions = OLFactory.createOptions();
@@ -440,6 +488,19 @@ public class AppEntryPoint implements EntryPoint {
     }
     
     private Base getLayerById(String id) {
+        Collection<Base> layers = map.getLayers();
+        for (int i = 0; i < layers.getLength(); i++) {
+            Base item = layers.item(i);
+
+            try {
+                String layerId = item.get(ID_ATTR_NAME);
+                if (item.get(ID_ATTR_NAME).toString().equalsIgnoreCase(id)) {
+                    GWT.log("FOUND");
+                    return item;
+                }
+            } catch (Exception e) {}
+
+        }
         return null;
     }
 }

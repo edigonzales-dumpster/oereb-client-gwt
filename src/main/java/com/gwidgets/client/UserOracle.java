@@ -20,6 +20,20 @@ import com.google.gwt.user.client.ui.SuggestOracle;
 
 import gwt.material.design.addins.client.autocomplete.base.MaterialSuggestionOracle;
 
+//https://geo.so.ch/api/search/v2/?searchtext=CH111&filter=ch.so.agi.av.grundstuecke.rechtskraeftig&limit=10
+//https://geo.so.ch/api/search/v2/?searchtext=rötistrasse+4+solo&filter=ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge&limit=20
+
+
+//https://geo.so.ch/api/data/v1/ch.so.agi.av.grundstuecke.rechtskraeftig/?bbox=2624049.91,1236536.43,2624082.627,1236575.8
+//https://geo.so.ch/api/data/v1/ch.so.agi.av.grundstuecke.rechtskraeftig/?bbox=2624049.91,1236536.43,2624049.91,1236536.43
+
+/*
+ * 1. search_service
+ * 2a. falls grundstück -> data_service Grundstücke mit id-Filter
+ * 2b. falls adresse -> data_service Adressen mit id-Filter -> bbox der Adressen -> data_service Grundstücke mit bbox-Filter 
+ */
+
+
 public class UserOracle extends MaterialSuggestionOracle {
     
     com.google.gwt.http.client.Request request;
