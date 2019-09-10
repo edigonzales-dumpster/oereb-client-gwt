@@ -35,6 +35,8 @@ import ch.ehi.oereb.schemas.oereb._1_0.extract.GetExtractByIdResponse;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RestrictionOnLandownershipType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.ThemeType;
 
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.io.WKTWriter;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,43 +101,13 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         }
         
         MultiSurfacePropertyTypeType multiSurfacePropertyTypeType = obj.getValue().getExtract().getValue().getRealEstate().getLimit();
-        MultiSurfaceTypeType multiSurfaceTypeType = multiSurfacePropertyTypeType.getMultiSurface().getValue();
-        logger.info(String.valueOf(multiSurfaceTypeType.getSurfaceMember().size()));
-        
-        
-        MultiSurface multiSurface = obj.getValue().getExtract().getValue().getRealEstate().getLimit().getMultiSurface();
-        
-//        logger.info(multiSurface.getValue().get.toString());
-        
-        for (int i=0; i<multiSurface.getValue().getSurfaceMember().size(); i++) {
-            logger.info(multiSurface.getValue().getSurfaceMember().get(i).toString());
-            SurfaceMember surfaceMember = multiSurface.getValue().getSurfaceMember().get(i);
-            surfaceMember.getValue().getAbstractSurface();
-            logger.info(surfaceMember.getValue().getAbstractSurface().getValue().toString());
-            
-            PolygonTypeType polygon=(PolygonTypeType) surfaceMember.getValue().getAbstractSurface().getValue();
-            
-            logger.info(polygon.getExterior().getValue().getAbstractRing().toString());
-           
-            // TODO interior
-            
-            LinearRing linearRing = (LinearRing) polygon.getExterior().getValue().getAbstractRing();
-//            logger.info(linearRing.getValue().getCoordinates().toString());
-            
-            Coordinates coords = linearRing.getValue().getCoordinates();
-            PosList posList = linearRing.getValue().getPosList();
-            LinearRingTypeType linearRingTypeType = linearRing.getValue();
-            logger.info(linearRingTypeType.getPosOrPointPropertyOrPointRep().get(0).toString());            
-//            logger.info(linearRing.getName().toString());
-            Pos pos = (Pos) linearRingTypeType.getPosOrPointPropertyOrPointRep().get(0);
-            logger.info(pos.getValue().getValue().get(0).toString());
-        }
-        
-        
+        MultiPolygon realEstatePolygon = new Gml32ToJts().convertMultiSurface(multiSurfacePropertyTypeType);
+        logger.info(realEstatePolygon.toText());
         
         Extract extract = new Extract();
         extract.setExtractIdentifier(obj.getValue().getExtract().getValue().getExtractIdentifier());
         extract.setReferenceWMS(referenceWMS);
+        extract.setGeometry(new WKTWriter(3).write(realEstatePolygon));
        
         ExtractResponse response = new ExtractResponse();
         response.setEgrid("lilalaunebär");

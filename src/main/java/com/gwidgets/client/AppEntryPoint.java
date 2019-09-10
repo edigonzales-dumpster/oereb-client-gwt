@@ -1,5 +1,6 @@
 package com.gwidgets.client;
 
+
 import java.util.HashMap;
 import java.util.List;
 
@@ -43,6 +44,8 @@ import gwt.material.design.client.ui.html.Div;
 import ol.Collection;
 import ol.Coordinate;
 import ol.Extent;
+import ol.Feature;
+import ol.FeatureOptions;
 import ol.Map;
 import ol.MapOptions;
 import ol.OLFactory;
@@ -53,21 +56,29 @@ import ol.control.Control;
 import ol.control.Rotate;
 import ol.control.ScaleLine;
 import ol.control.Zoom;
+import ol.format.Wkt;
+import ol.geom.Geometry;
 import ol.interaction.KeyboardPan;
 import ol.interaction.KeyboardZoom;
 import ol.layer.Base;
 import ol.layer.Image;
 import ol.layer.LayerOptions;
 import ol.layer.Tile;
+import ol.layer.VectorLayerOptions;
 import ol.proj.Projection;
 import ol.proj.ProjectionOptions;
 import ol.source.ImageWms;
 import ol.source.ImageWmsOptions;
 import ol.source.ImageWmsParams;
 import ol.source.Osm;
+import ol.source.Vector;
+import ol.source.VectorOptions;
 import ol.source.Wmts;
 import ol.source.WmtsOptions;
 import ol.source.XyzOptions;
+import ol.style.Stroke;
+import ol.style.Style;
+import ol.color.*;
 import ol.tilegrid.TileGrid;
 import ol.tilegrid.WmtsTileGrid;
 import ol.tilegrid.WmtsTileGridOptions;
@@ -285,39 +296,67 @@ public class AppEntryPoint implements EntryPoint {
                 GWT.log(result.getExtract().getExtractIdentifier());
                 GWT.log(result.getExtract().getReferenceWMS().getBaseUrl());
                 GWT.log(result.getExtract().getReferenceWMS().getLayers());
+                GWT.log(result.getExtract().getGeometry());
+                
+                FeatureOptions featureOptions = OLFactory.createOptions();
+                Geometry realEstateGeometry = new Wkt().readGeometry(result.getExtract().getGeometry());
+                featureOptions.setGeometry(realEstateGeometry);
+                
+                Feature feature = new Feature(featureOptions);
+                feature.setId("f1");
+
+                Style style = new Style();
+                Stroke stroke = new Stroke();
+                stroke.setWidth(5);
+//                stroke.setColor(new Color(230,0,0,0.6));
+                style.setStroke(stroke);
+                feature.setStyle(style);
+                
+                Collection<Feature> lstFeatures = new Collection<Feature>();
+                lstFeatures.push(feature);
+                
+                VectorOptions vectorSourceOptions = OLFactory.createOptions();
+                vectorSourceOptions.setFeatures(lstFeatures);
+                Vector vectorSource = new Vector(vectorSourceOptions);
+
+                VectorLayerOptions vectorLayerOptions = OLFactory.createOptions();
+                vectorLayerOptions.setSource(vectorSource);
+                ol.layer.Vector vectorLayer = new ol.layer.Vector(vectorLayerOptions);
+                vectorLayer.set("id", "real_estate");
 
                 
-              ImageWmsParams imageWMSParams = OLFactory.createOptions();
-              imageWMSParams.setLayers(result.getExtract().getReferenceWMS().getLayers());
-        
-              ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
-              imageWMSOptions.setUrl(result.getExtract().getReferenceWMS().getBaseUrl());
-              imageWMSOptions.setParams(imageWMSParams);
-              imageWMSOptions.setRatio(1.5f);
-        
-              ImageWms imageWMSSource = new ImageWms(imageWMSOptions);
-        
-              LayerOptions layerOptions = OLFactory.createOptions();
-              layerOptions.setSource(imageWMSSource);
-              
-              Image wmsLayer = new Image(layerOptions);
-              wmsLayer.set("id", result.getExtract().getReferenceWMS().getLayers());
-              
-              
-//            map.addOverlay(overlay);
-              map.addLayer(wmsLayer);
+                ImageWmsParams imageWMSParams = OLFactory.createOptions();
+                imageWMSParams.setLayers(result.getExtract().getReferenceWMS().getLayers());
 
-              Collection<Base> layers = map.getLayers();
-              for (int i=0; i<layers.getLength(); i++) {
-                  Base item = layers.item(i);
-                  GWT.log(item.toString());
-                  //GWT.log(item.get("id").toString());
-                  try {
-                      GWT.log(item.get("id").toString());
-                  } catch (Exception e) {}
+                ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
+                imageWMSOptions.setUrl(result.getExtract().getReferenceWMS().getBaseUrl());
+                imageWMSOptions.setParams(imageWMSParams);
+                imageWMSOptions.setRatio(1.5f);
 
-              }
+                ImageWms imageWMSSource = new ImageWms(imageWMSOptions);
+
+                LayerOptions layerOptions = OLFactory.createOptions();
+                layerOptions.setSource(imageWMSSource);
+
+                Image wmsLayer = new Image(layerOptions);
+                wmsLayer.set("id", result.getExtract().getReferenceWMS().getLayers());              
               
+//              map.addOverlay(overlay);
+                map.addLayer(wmsLayer);
+                
+                map.addLayer(vectorLayer);
+
+                Collection<Base> layers = map.getLayers();
+                for (int i = 0; i < layers.getLength(); i++) {
+                    Base item = layers.item(i);
+                    GWT.log(item.toString());
+                    // GWT.log(item.get("id").toString());
+                    try {
+                        GWT.log(item.get("id").toString());
+                    } catch (Exception e) {
+                    }
+
+                }              
               
                 // TODO
 //                controlsCard.setHeight("400px");

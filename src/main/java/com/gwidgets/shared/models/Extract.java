@@ -6,6 +6,8 @@ public class Extract implements IsSerializable {
     String extractIdentifier;
     
     ReferenceWMS referenceWMS;
+    
+    String geometry;
 
     public String getExtractIdentifier() {
         return extractIdentifier;
@@ -21,5 +23,13 @@ public class Extract implements IsSerializable {
 
     public void setReferenceWMS(ReferenceWMS referenceWMS) {
         this.referenceWMS = referenceWMS;
+    }
+
+    public String getGeometry() {
+        return geometry;
+    }
+
+    public void setGeometry(String geometry) {
+        this.geometry = geometry;
     }
 }
