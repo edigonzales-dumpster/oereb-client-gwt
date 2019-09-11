@@ -1,21 +1,27 @@
 package com.gwidgets.client;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
-
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
-
+import com.google.gwt.user.client.ui.SuggestOracle;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.gwidgets.shared.ExtractResponse;
 import com.gwidgets.shared.ExtractService;
 import com.gwidgets.shared.ExtractServiceAsync;
@@ -93,8 +99,13 @@ public class AppEntryPoint implements EntryPoint {
     private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer"; 
     private String REAL_ESTATE_VECTOR_FEATURE_ID = "real_estate_fid"; 
     
+    private String REAL_ESTATE_DATAPRODUCT_ID = "ch.so.agi.av.grundstuecke.rechtskraeftig";
+    private String ADDRESS_DATAPRODUCT_ID = "ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge";
+    
     private String SEARCH_SERVICE_URL;
+    private String DATA_SERVICE_URL;
     private HashMap<String,String> WMS_LAYER_MAPPINGS;
+    
     private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
 
     private Map map;
@@ -111,6 +122,7 @@ public class AppEntryPoint implements EntryPoint {
             @Override
             public void onSuccess(SettingsResponse result) {
                 SEARCH_SERVICE_URL = result.getSettings().get("SEARCH_SERVICE_URL");
+                DATA_SERVICE_URL = result.getSettings().get("DATA_SERVICE_URL");
                 init();
             }
         });
@@ -186,23 +198,142 @@ public class AppEntryPoint implements EntryPoint {
 //                "Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer");
 //        controlsCardContent.add(label);
         
-        
+        //.input-field label
         MaterialRow searchRow = new MaterialRow();
         
-        // TODO: rename
-        UserOracle userOracle = new UserOracle();
+        SearchOracle searchOracle = new SearchOracle(SEARCH_SERVICE_URL);
 
-        MaterialAutoComplete autocomplete = new MaterialAutoComplete(userOracle);
-        autocomplete.setType(AutocompleteType.TEXT);
+        MaterialAutoComplete autocomplete = new MaterialAutoComplete(searchOracle);
+        // It's not possible to get the object with type=text
+        // you only the the text then. But we definitely
+        // need the object.
+        // The chip can be made invisible with CSS. But the size
+        // must be also set to zero.
+//        autocomplete.setType(AutocompleteType.TEXT);
         autocomplete.setPlaceholder("Suche");
-//        autocomplete.setTextColor(Color.RED_DARKEN_4);
         autocomplete.setAutoSuggestLimit(5);
-        // FIXME: remove text on select
+        autocomplete.setLimit(1);
+        
+        autocomplete.addValueChangeHandler(event -> {            
+            // We only allow one result in the autocomplete widget.
+            List<? extends SuggestOracle.Suggestion> values = autocomplete.getValue();            
+            SearchSuggestion searchSuggestion = (SearchSuggestion) values.get(0);
+            SearchResult searchResult = searchSuggestion.getSearchResult();
+            
+            String dataproductId = searchResult.getDataproductId();
+            String featureId = searchResult.getFeatureId();
+            String idFieldName = searchResult.getIdFieldName();
+            
+            // Remove the chip from the text field. Even if it is not
+            // visible.
+            autocomplete.reset();
 
-        autocomplete.addValueChangeHandler(event -> {
-            GWT.log(autocomplete.getItemBox().getText());
-            MaterialToast.fireToast(autocomplete.getItemBox().getText());
+            // We need to find out the egrid. This is done by using the data service extensively.
+            if (dataproductId.equalsIgnoreCase(REAL_ESTATE_DATAPRODUCT_ID)) {
+                RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, DATA_SERVICE_URL + dataproductId + "/?filter=[[\""+idFieldName+"\",\"=\","+featureId+"]]");
+                builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                try { 
+                    builder.sendRequest("", new RequestCallback() {
+                        @Override
+                        public void onResponseReceived(com.google.gwt.http.client.Request request, com.google.gwt.http.client.Response response) {    
+                            int statusCode = response.getStatusCode();
+                            if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
+                                String responseBody = response.getText();                                
+                                JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
+                                String egrid = getEgridFromRealEstateFeature(responseObj);
+                                
+                                GWT.log("get extract for: " + egrid);
+
+                                // make rpc request.
+                                
+                                return;
+                            
+                            
+                            } else {
+                                GWT.log("error from request");
+                                GWT.log(String.valueOf(statusCode));
+                                GWT.log(response.getStatusText());
+                            }
+                        }
+
+                        @Override
+                        public void onError(com.google.gwt.http.client.Request request, Throwable exception) {
+                            GWT.log("error actually sending the request, never got sent");
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }   
+            } else {
+                RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, DATA_SERVICE_URL + dataproductId + "/?filter=[[\""+idFieldName+"\",\"=\","+featureId+"]]");
+                builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                try { 
+                    builder.sendRequest("", new RequestCallback() {
+                        @Override
+                        public void onResponseReceived(com.google.gwt.http.client.Request request, com.google.gwt.http.client.Response response) {    
+                            int statusCode = response.getStatusCode();
+                            if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
+                                String responseBody = response.getText();                                
+                                JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
+                                String bbox = getBboxFromPointFeature(responseObj);
+                                
+                                // Get the real estate with a bbox request to get the egrid.
+                                RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, DATA_SERVICE_URL + REAL_ESTATE_DATAPRODUCT_ID + "/?bbox=" + bbox);
+                                builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+                                
+                                try { 
+                                    builder.sendRequest("", new RequestCallback() {
+                                        @Override
+                                        public void onResponseReceived(com.google.gwt.http.client.Request request, com.google.gwt.http.client.Response response) {    
+                                            int statusCode = response.getStatusCode();
+                                            if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
+                                                String responseBody = response.getText();    
+                                                JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
+                                                String egrid = getEgridFromRealEstateFeature(responseObj);
+                                                
+                                                GWT.log("get extract for: " + egrid);
+
+                                                // make rpc request.
+                                                
+                                                return;
+                                                                                        
+                                            } else {
+                                                GWT.log("error from request");
+                                                GWT.log(String.valueOf(statusCode));
+                                                GWT.log(response.getStatusText());
+                                            }
+                                        }
+    
+                                        @Override
+                                        public void onError(com.google.gwt.http.client.Request request, Throwable exception) {
+                                            GWT.log("error actually sending the request, never got sent");
+                                        }
+                                    });
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }   
+                            } else {
+                                GWT.log("error from request");
+                                GWT.log(String.valueOf(statusCode));
+                                GWT.log(response.getStatusText());
+                            }
+                        }
+
+                        @Override
+                        public void onError(com.google.gwt.http.client.Request request, Throwable exception) {
+                            GWT.log("error actually sending the request, never got sent");
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }   
+            }
+            
+            
         });
+        
 
         searchRow.add(autocomplete);
         controlsCardContent.add(searchRow);
@@ -278,6 +409,37 @@ public class AppEntryPoint implements EntryPoint {
 //
 //      map.addLayer(wmsLayer);
     }
+    
+    private String getEgridFromRealEstateFeature(JSONObject obj) {
+        JSONObject rootObj = obj.isObject();
+        JSONArray resultsArray = rootObj.get("features").isArray();
+        
+        if (resultsArray.size() == 0) {
+            return null;
+        }
+        
+        // There can be only one result.
+        JSONObject properties = resultsArray.get(0).isObject().get("properties").isObject();
+        String egrid = properties.get("egrid").toString().trim().replaceAll("^.|.$", "");
+        
+        return egrid;
+    }
+    
+    private String getBboxFromPointFeature(JSONObject obj) {
+        JSONObject rootObj = obj.isObject();
+        JSONArray resultsArray = rootObj.get("features").isArray();
+
+        if (resultsArray.size() == 0) {
+            return null;
+        }
+        
+        JSONObject geometry = resultsArray.get(0).isObject().get("geometry").isObject();
+        JSONArray coordinates = geometry.get("coordinates").isArray();
+        String bbox = coordinates.get(0) + "," + coordinates.get(1) + "," + coordinates.get(0) + "," + coordinates.get(1);
+        
+        return bbox;
+    }
+    
     
 //  CH158782774974
 //  CH944982786913

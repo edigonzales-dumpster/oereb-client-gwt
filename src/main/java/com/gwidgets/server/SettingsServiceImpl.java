@@ -16,6 +16,10 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
 
     @Value("${app.searchServiceUrl}")
     private String searchServiceUrl;
+    
+    @Value("${app.dataServiceUrl}")
+    private String dataServiceUrl;
+
 
     @Override
     public void init() throws ServletException {
@@ -28,6 +32,7 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
         HashMap<String,String> settings = new HashMap<String,String>();
         
         settings.put("SEARCH_SERVICE_URL", searchServiceUrl);
+        settings.put("DATA_SERVICE_URL", dataServiceUrl);
         
         SettingsResponse response = new SettingsResponse();
         response.setSettings(settings);
