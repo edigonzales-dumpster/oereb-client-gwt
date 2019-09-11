@@ -9,6 +9,8 @@ public class ReferenceWMS implements IsSerializable {
     
     private String imageFormat;
     
+    private double layerOpacity;
+    
     public String getBaseUrl() {
         return baseUrl;
     }
@@ -31,5 +33,13 @@ public class ReferenceWMS implements IsSerializable {
 
     public void setImageFormat(String imageFormat) {
         this.imageFormat = imageFormat;
+    }
+
+    public double getLayerOpacity() {
+        return layerOpacity;
+    }
+
+    public void setLayerOpacity(double layerOpacity) {
+        this.layerOpacity = layerOpacity;
     }
 }

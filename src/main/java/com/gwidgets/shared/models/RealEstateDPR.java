@@ -19,9 +19,9 @@ public class RealEstateDPR implements IsSerializable {
     
     private String subunitOfLandRegister;
     
-    private String fosnNr;
+    private int fosnNr;
     
-    private double LandRegistryArea;
+    private int landRegistryArea;
     
     // Wkt representation
     private String limit;
@@ -88,20 +88,20 @@ public class RealEstateDPR implements IsSerializable {
         this.subunitOfLandRegister = subunitOfLandRegister;
     }
 
-    public String getFosnNr() {
+    public int getFosnNr() {
         return fosnNr;
     }
 
-    public void setFosnNr(String fosnNr) {
+    public void setFosnNr(int fosnNr) {
         this.fosnNr = fosnNr;
     }
 
-    public double getLandRegistryArea() {
-        return LandRegistryArea;
+    public int getLandRegistryArea() {
+        return landRegistryArea;
     }
 
-    public void setLandRegistryArea(double landRegistryArea) {
-        LandRegistryArea = landRegistryArea;
+    public void setLandRegistryArea(int landRegistryArea) {
+        landRegistryArea = landRegistryArea;
     }
 
     public String getLimit() {

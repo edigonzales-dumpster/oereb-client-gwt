@@ -6,9 +6,9 @@ import com.gwidgets.shared.models.Extract;
 public class ExtractResponse implements IsSerializable {
     private Extract extract;
     
-    private String egrid;
+    private String egrid; // delete
     
-    private String testWmsUrl;
+    private String testWmsUrl; // delete
 
     public String getEgrid() {
         return egrid;
