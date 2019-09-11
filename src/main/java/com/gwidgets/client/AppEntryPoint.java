@@ -308,7 +308,8 @@ public class AppEntryPoint implements EntryPoint {
                 if (vlayer != null) {
                     map.removeLayer(vlayer);
                 }
-                       
+                vlayer = createRealEstateVectorLayer(result.getExtract().getGeometry());
+
                 // set new extent and center according the real estate
                 Geometry geometry = new Wkt().readGeometry(result.getExtract().getGeometry());
                 Extent extent = geometry.getExtent();
@@ -321,8 +322,6 @@ public class AppEntryPoint implements EntryPoint {
                 double y = extent.getLowerLeftY() + extent.getHeight() / 2;
                 
                 view.setCenter(new Coordinate(x, y));
-                
-
                 
                 ImageWmsParams imageWMSParams = OLFactory.createOptions();
                 imageWMSParams.setLayers(result.getExtract().getReferenceWMS().getLayers());
@@ -342,10 +341,9 @@ public class AppEntryPoint implements EntryPoint {
               
 //              map.addOverlay(overlay);
                 map.addLayer(wmsLayer);
-                
+
                 map.addLayer(vlayer);
                 
-
                 Collection<Base> layers = map.getLayers();
                 for (int i = 0; i < layers.getLength(); i++) {
                     Base item = layers.item(i);
