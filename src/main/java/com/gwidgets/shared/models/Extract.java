@@ -3,11 +3,13 @@ package com.gwidgets.shared.models;
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class Extract implements IsSerializable {
-    String extractIdentifier;
+    String extractIdentifier; 
     
-    ReferenceWMS referenceWMS;
+    RealEstateDPR realEstate;
     
-    String geometry;
+    ReferenceWMS referenceWMS; // delete
+    
+    String geometry; // delete
 
     public String getExtractIdentifier() {
         return extractIdentifier;

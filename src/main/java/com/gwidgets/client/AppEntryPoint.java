@@ -17,6 +17,7 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -130,6 +131,18 @@ public class AppEntryPoint implements EntryPoint {
 
     private void init() {
         GWT.log(SEARCH_SERVICE_URL);
+        
+        String egridRequestValue = Window.Location.getParameter("egrid");
+        GWT.log(egridRequestValue);
+        
+//        GWT.log(Window.Location.getHost());
+//        GWT.log(Window.Location.getHostName());
+//        GWT.log(Window.Location.getPath());
+//        GWT.log(Window.Location.getQueryString());
+//        GWT.log(Window.Location.getProtocol());
+//        GWT.log(Window.Location.getHash());
+//        GWT.log(Window.Location.getHref());
+        
         
         // div for ol3 map
         Div mapDiv = new Div();
