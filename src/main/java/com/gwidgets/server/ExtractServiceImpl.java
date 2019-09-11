@@ -72,46 +72,46 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         // TODO: handle empty file / no extract returned
         File xmlFile = Files.createTempFile("data_extract_", ".xml").toFile();
         
-        URL url = new URL(oerebWebServiceUrl + egrid);
-        ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
-        try (FileOutputStream xmlOutputStream = new FileOutputStream(xmlFile)) {
-            xmlOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
-        }
-        logger.info("File downloaded: " + xmlFile.getAbsolutePath());
-
-        StreamSource xmlSource = new StreamSource(xmlFile);
-        GetExtractByIdResponse obj = (GetExtractByIdResponse) marshaller.unmarshal(xmlSource);
-
-        List<ThemeType> concernedThemes = obj.getValue().getExtract().getValue().getConcernedTheme();
+//        URL url = new URL(oerebWebServiceUrl + egrid);
+//        ReadableByteChannel readableByteChannel = Channels.newChannel(url.openStream());
+//        try (FileOutputStream xmlOutputStream = new FileOutputStream(xmlFile)) {
+//            xmlOutputStream.getChannel().transferFrom(readableByteChannel, 0, Long.MAX_VALUE);
+//        }
+//        logger.info("File downloaded: " + xmlFile.getAbsolutePath());
+//
+//        StreamSource xmlSource = new StreamSource(xmlFile);
+//        GetExtractByIdResponse obj = (GetExtractByIdResponse) marshaller.unmarshal(xmlSource);
+//
+//        List<ThemeType> concernedThemes = obj.getValue().getExtract().getValue().getConcernedTheme();
+//        
+//        String wmsUrl = "";
+//        ReferenceWMS referenceWMS = new ReferenceWMS();
+//        List<RestrictionOnLandownershipType> restrictions = obj.getValue().getExtract().getValue().getRealEstate().getRestrictionOnLandownership();
+//        for (RestrictionOnLandownershipType restriction : restrictions) {
+////            logger.info(restriction.getMap().getReferenceWMS());
+//            
+//            if (restriction.getTheme().getCode().contains("LandUsePlans")) {
+//                wmsUrl = URLDecoder.decode(restriction.getMap().getReferenceWMS(), StandardCharsets.UTF_8.name());
+//                logger.info(wmsUrl);
+//                
+//                referenceWMS.setBaseUrl("https://geoview.bl.ch/main/oereb/mapservproxy?");
+//                referenceWMS.setLayers("LandUsePlans");
+//                referenceWMS.setImageFormat("image%2Fpng");
+//            }
+//        }
+//        
+//        MultiSurfacePropertyTypeType multiSurfacePropertyTypeType = obj.getValue().getExtract().getValue().getRealEstate().getLimit();
+//        MultiPolygon realEstatePolygon = new Gml32ToJts().convertMultiSurface(multiSurfacePropertyTypeType);
+//        logger.info(realEstatePolygon.toText());
         
-        String wmsUrl = "";
-        ReferenceWMS referenceWMS = new ReferenceWMS();
-        List<RestrictionOnLandownershipType> restrictions = obj.getValue().getExtract().getValue().getRealEstate().getRestrictionOnLandownership();
-        for (RestrictionOnLandownershipType restriction : restrictions) {
-//            logger.info(restriction.getMap().getReferenceWMS());
-            
-            if (restriction.getTheme().getCode().contains("LandUsePlans")) {
-                wmsUrl = URLDecoder.decode(restriction.getMap().getReferenceWMS(), StandardCharsets.UTF_8.name());
-                logger.info(wmsUrl);
-                
-                referenceWMS.setBaseUrl("https://geoview.bl.ch/main/oereb/mapservproxy?");
-                referenceWMS.setLayers("LandUsePlans");
-                referenceWMS.setImageFormat("image%2Fpng");
-            }
-        }
-        
-        MultiSurfacePropertyTypeType multiSurfacePropertyTypeType = obj.getValue().getExtract().getValue().getRealEstate().getLimit();
-        MultiPolygon realEstatePolygon = new Gml32ToJts().convertMultiSurface(multiSurfacePropertyTypeType);
-        logger.info(realEstatePolygon.toText());
-        
-        Extract extract = new Extract();
-        extract.setExtractIdentifier(obj.getValue().getExtract().getValue().getExtractIdentifier());
-        extract.setReferenceWMS(referenceWMS);
-        extract.setGeometry(new WKTWriter(3).write(realEstatePolygon));
+//        Extract extract = new Extract();
+//        extract.setExtractIdentifier(obj.getValue().getExtract().getValue().getExtractIdentifier());
+//        extract.setReferenceWMS(referenceWMS);
+//        extract.setGeometry(new WKTWriter(3).write(realEstatePolygon));
        
         ExtractResponse response = new ExtractResponse();
         response.setEgrid("lilalaunebär");
-        response.setExtract(extract);
+//        response.setExtract(extract);
         
         
         return response;

@@ -457,8 +457,10 @@ public class AppEntryPoint implements EntryPoint {
 //  CH158782774974
 //  CH944982786913
 //  CH938278494529
+    
+// CH533287066291 (SO)
     private void sendEgridToServer() {
-        extractService.extractServer("CH158782774974", new AsyncCallback<ExtractResponse>() {
+        extractService.extractServer("CH533287066291", new AsyncCallback<ExtractResponse>() {
             @Override
             public void onFailure(Throwable caught) {
                 MaterialLoader.loading(false);
@@ -470,66 +472,66 @@ public class AppEntryPoint implements EntryPoint {
             public void onSuccess(ExtractResponse result) {
                 MaterialLoader.loading(false);
                 GWT.log(result.getEgrid());
-                GWT.log(result.getExtract().getExtractIdentifier());
-                GWT.log(result.getExtract().getReferenceWMS().getBaseUrl());
-                GWT.log(result.getExtract().getReferenceWMS().getLayers());
-                GWT.log(result.getExtract().getGeometry());
+//                GWT.log(result.getExtract().getExtractIdentifier());
+//                GWT.log(result.getExtract().getReferenceWMS().getBaseUrl());
+//                GWT.log(result.getExtract().getReferenceWMS().getLayers());
+//                GWT.log(result.getExtract().getGeometry());
                 
                 // remove all oereb layers
-                removeOerebLayers();
-                
-                // FIXME do i need this anymore?
-                ol.layer.Vector vlayer = (ol.layer.Vector) getLayerById(REAL_ESTATE_VECTOR_LAYER_ID);
-                if (vlayer != null) {
-                    map.removeLayer(vlayer);
-                }
-                vlayer = createRealEstateVectorLayer(result.getExtract().getGeometry());
-
-                // set new extent and center according the real estate
-                Geometry geometry = new Wkt().readGeometry(result.getExtract().getGeometry());
-                Extent extent = geometry.getExtent();
-                
-                View view = map.getView();
-                double resolution = view.getResolutionForExtent(extent);                
-                view.setZoom(Math.floor(view.getZoomForResolution(resolution)));
-                
-                double x = extent.getLowerLeftX() + extent.getWidth() / 2;
-                double y = extent.getLowerLeftY() + extent.getHeight() / 2;
-                
-                view.setCenter(new Coordinate(x, y));
-                
-                ImageWmsParams imageWMSParams = OLFactory.createOptions();
-                imageWMSParams.setLayers(result.getExtract().getReferenceWMS().getLayers());
-
-                ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
-                imageWMSOptions.setUrl(result.getExtract().getReferenceWMS().getBaseUrl());
-                imageWMSOptions.setParams(imageWMSParams);
-                imageWMSOptions.setRatio(1.5f);
-
-                ImageWms imageWMSSource = new ImageWms(imageWMSOptions);
-
-                LayerOptions layerOptions = OLFactory.createOptions();
-                layerOptions.setSource(imageWMSSource);
-
-                Image wmsLayer = new Image(layerOptions);
-                wmsLayer.set("id", result.getExtract().getReferenceWMS().getLayers());              
-              
-//              map.addOverlay(overlay);
-                map.addLayer(wmsLayer);
-
-                map.addLayer(vlayer);
-                
-                Collection<Base> layers = map.getLayers();
-                for (int i = 0; i < layers.getLength(); i++) {
-                    Base item = layers.item(i);
-                    GWT.log(item.toString());
-                    // GWT.log(item.get("id").toString());
-                    try {
-                        GWT.log(item.get("id").toString());
-                    } catch (Exception e) {
-                    }
-
-                }              
+//                removeOerebLayers();
+//                
+//                // FIXME do i need this anymore?
+//                ol.layer.Vector vlayer = (ol.layer.Vector) getLayerById(REAL_ESTATE_VECTOR_LAYER_ID);
+//                if (vlayer != null) {
+//                    map.removeLayer(vlayer);
+//                }
+//                vlayer = createRealEstateVectorLayer(result.getExtract().getGeometry());
+//
+//                // set new extent and center according the real estate
+//                Geometry geometry = new Wkt().readGeometry(result.getExtract().getGeometry());
+//                Extent extent = geometry.getExtent();
+//                
+//                View view = map.getView();
+//                double resolution = view.getResolutionForExtent(extent);                
+//                view.setZoom(Math.floor(view.getZoomForResolution(resolution)));
+//                
+//                double x = extent.getLowerLeftX() + extent.getWidth() / 2;
+//                double y = extent.getLowerLeftY() + extent.getHeight() / 2;
+//                
+//                view.setCenter(new Coordinate(x, y));
+//                
+//                ImageWmsParams imageWMSParams = OLFactory.createOptions();
+//                imageWMSParams.setLayers(result.getExtract().getReferenceWMS().getLayers());
+//
+//                ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
+//                imageWMSOptions.setUrl(result.getExtract().getReferenceWMS().getBaseUrl());
+//                imageWMSOptions.setParams(imageWMSParams);
+//                imageWMSOptions.setRatio(1.5f);
+//
+//                ImageWms imageWMSSource = new ImageWms(imageWMSOptions);
+//
+//                LayerOptions layerOptions = OLFactory.createOptions();
+//                layerOptions.setSource(imageWMSSource);
+//
+//                Image wmsLayer = new Image(layerOptions);
+//                wmsLayer.set("id", result.getExtract().getReferenceWMS().getLayers());              
+//              
+////              map.addOverlay(overlay);
+//                map.addLayer(wmsLayer);
+//
+//                map.addLayer(vlayer);
+//                
+//                Collection<Base> layers = map.getLayers();
+//                for (int i = 0; i < layers.getLength(); i++) {
+//                    Base item = layers.item(i);
+//                    GWT.log(item.toString());
+//                    // GWT.log(item.get("id").toString());
+//                    try {
+//                        GWT.log(item.get("id").toString());
+//                    } catch (Exception e) {
+//                    }
+//
+//                }              
               
                 // TODO
 //                controlsCard.setHeight("400px");
@@ -566,7 +568,7 @@ public class AppEntryPoint implements EntryPoint {
 
         Style style = new Style();
         Stroke stroke = new Stroke();
-        stroke.setWidth(6);
+        stroke.setWidth(7);
         stroke.setColor(new ol.color.Color(230,0,0,0.6));
         style.setStroke(stroke);
         feature.setStyle(style);
