@@ -5,7 +5,7 @@ import java.util.List;
 public class ConcernedTheme extends AbstractTheme {
     private ReferenceWMS referenceWMS;
     
-    private List<Object> restrictions; // Restriction: Aussage, Symbol, Anteil, Anteil in %
+    private List<Restriction> restrictions; 
     
     private String legendAtWeb;
     

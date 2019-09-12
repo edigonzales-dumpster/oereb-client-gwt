@@ -4,6 +4,8 @@ public abstract class AbstractTheme {
     private String code;
     
     private String name;
+    
+    private String subtheme;
 
     public String getCode() {
         return code;
@@ -19,5 +21,13 @@ public abstract class AbstractTheme {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getSubtheme() {
+        return subtheme;
+    }
+
+    public void setSubtheme(String subtheme) {
+        this.subtheme = subtheme;
     }
 }

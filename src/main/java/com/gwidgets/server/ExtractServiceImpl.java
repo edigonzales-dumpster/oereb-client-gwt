@@ -14,6 +14,9 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.collectingAndThen;
 
@@ -141,7 +144,22 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         xmlRealEstate.getRestrictionOnLandownership().stream().forEach(restriction -> {
             logger.info(restriction.getTheme().getText().getText());
             logger.info(restriction.getTheme().getCode());
+            logger.info(restriction.getSubTheme());
+            logger.info("****");
         });
+        
+        Map<String, List<RestrictionOnLandownershipType>> groupedXmlRestrictions = xmlRealEstate.getRestrictionOnLandownership().stream()
+            .collect(Collectors.groupingBy(r -> r.getTheme().getText().getText()));
+        
+        for (Map.Entry<String, List<RestrictionOnLandownershipType>> entry : groupedXmlRestrictions.entrySet()) {
+            System.out.println(entry.getKey() + "/" + entry.getValue());
+            
+            logger.info(entry.getKey());
+            
+            logger.info("*********");
+
+        }
+        
         
 //        String wmsUrl = "";
 //        ReferenceWMS referenceWMS = new ReferenceWMS();
