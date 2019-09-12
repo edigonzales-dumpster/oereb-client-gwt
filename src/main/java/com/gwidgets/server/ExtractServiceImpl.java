@@ -84,7 +84,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         File xmlFile = Files.createTempFile("data_extract_", ".xml").toFile();
         
 //        URL url = new URL(oerebWebServiceUrl + egrid);
-        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH533287066291.xml");
+//        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH533287066291.xml");
+        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH368132060914.xml");
         logger.info(url.toString());
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -100,7 +101,6 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         
         StreamSource xmlSource = new StreamSource(xmlFile);
         GetExtractByIdResponse obj = (GetExtractByIdResponse) marshaller.unmarshal(xmlSource);
-
         ExtractType xmlExtract = obj.getValue().getExtract().getValue();
         
         extract.setExtractIdentifier(xmlExtract.getExtractIdentifier());
@@ -123,9 +123,6 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     return notConcernedTheme; 
                 })
                 .collect(collectingAndThen(toList(), LinkedList<NotConcernedTheme>::new));
-
-//        logger.info(themesWithoutData.toString());
-//        logger.info(notConcernedThemes.toString());
 
         RealEstateDPRType xmlRealEstate = xmlExtract.getRealEstate();
 
