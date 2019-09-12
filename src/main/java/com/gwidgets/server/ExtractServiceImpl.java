@@ -133,7 +133,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         realEstate.setEgrid(xmlRealEstate.getEGRID());
         realEstate.setFosnNr(xmlRealEstate.getFosNr());
         realEstate.setMunicipality(xmlRealEstate.getMunicipality());
-        realEstate.setCanton("SO");
+        realEstate.setCanton(xmlRealEstate.getCanton().value());
         realEstate.setNumber(xmlRealEstate.getNumber());
         realEstate.setSubunitOfLandRegister(xmlRealEstate.getSubunitOfLandRegister());
         realEstate.setLandRegistryArea(xmlRealEstate.getLandRegistryArea());
