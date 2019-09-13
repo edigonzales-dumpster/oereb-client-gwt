@@ -12,9 +12,13 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -26,10 +30,13 @@ import javax.xml.transform.stream.StreamSource;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.gwidgets.shared.ExtractResponse;
 import com.gwidgets.shared.ExtractService;
+import com.gwidgets.shared.models.ConcernedTheme;
+import com.gwidgets.shared.models.Document;
 import com.gwidgets.shared.models.Extract;
 import com.gwidgets.shared.models.NotConcernedTheme;
 import com.gwidgets.shared.models.RealEstateDPR;
 import com.gwidgets.shared.models.ReferenceWMS;
+import com.gwidgets.shared.models.Restriction;
 import com.gwidgets.shared.models.ThemeWithoutData;
 
 import ch.ehi.oereb.schemas.gml._3_2.Coordinates;
@@ -44,6 +51,8 @@ import ch.ehi.oereb.schemas.gml._3_2.Pos;
 import ch.ehi.oereb.schemas.gml._3_2.PosList;
 import ch.ehi.oereb.schemas.gml._3_2.SurfaceMember;
 import ch.ehi.oereb.schemas.oereb._1_0.extract.GetExtractByIdResponse;
+import ch.ehi.oereb.schemas.oereb._1_0.extractdata.DocumentBaseType;
+import ch.ehi.oereb.schemas.oereb._1_0.extractdata.DocumentType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.ExtractType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RealEstateDPRType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RestrictionOnLandownershipType;
@@ -56,7 +65,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * The server side implementation of the RPC service.
@@ -100,12 +112,12 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
 
         logger.info("File downloaded: " + xmlFile.getAbsolutePath());
 
-        Extract extract = new Extract();
         
         StreamSource xmlSource = new StreamSource(xmlFile);
         GetExtractByIdResponse obj = (GetExtractByIdResponse) marshaller.unmarshal(xmlSource);
         ExtractType xmlExtract = obj.getValue().getExtract().getValue();
         
+        Extract extract = new Extract();
         extract.setExtractIdentifier(xmlExtract.getExtractIdentifier());
 
         // FIXME: sorting?!
@@ -148,36 +160,153 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
 //            logger.info("****");
         });
         
+        // Create a map with all restrictions grouped by theme text.
         Map<String, List<RestrictionOnLandownershipType>> groupedXmlRestrictions = xmlRealEstate.getRestrictionOnLandownership().stream()
             .collect(Collectors.groupingBy(r -> r.getTheme().getText().getText()));
         
+        // We create one ConcernedTheme object per theme with all restrictions belonging to the same theme
+        // since this is the way we present the restriction in the GUI.
+        LinkedList<ConcernedTheme> concernedThemesList = new LinkedList<ConcernedTheme>();
         for (Map.Entry<String, List<RestrictionOnLandownershipType>> entry : groupedXmlRestrictions.entrySet()) {
-//            System.out.println(entry.getKey() + "/" + entry.getValue());
             logger.info("*********************************************");
             logger.info("ConcernedTheme: " + entry.getKey());
-            logger.info("*********************************************");
-
+            logger.info("---------------------------------------------");
             
             List<RestrictionOnLandownershipType> xmlRestrictions = entry.getValue();
             
+            // Create a map with one simplified restriction for each type code.
+            // We cannot use groupingBy because this will return a list of
+            // restriction per type code.
+            // Afterwards will add more information to the restriction.
+            Map<String, Restriction> restrictionsMap = xmlRestrictions.stream()
+                    .filter(distinctByKey(RestrictionOnLandownershipType::getTypeCode)).map(r -> {
+                        Restriction restriction = new Restriction();
+                        restriction.setInformation(r.getInformation().getLocalisedText().get(0).getText());
+                        restriction.setTypeCode(r.getTypeCode());
+                        restriction.setSymbol(r.getSymbol());
+                        return restriction;
+                    }).collect(Collectors.toMap(Restriction::getTypeCode, Function.identity()));
             
-            // alle arten: symbol, summe (einfach beide geometrietypen)...siehe model
-            // mit .map()
-            Map<String, List<RestrictionOnLandownershipType>> xmlRestrictionsGroupedByTypeCode = xmlRestrictions.stream()
-                .collect(Collectors.groupingBy(r -> r.getTypeCode()));
+            logger.info(restrictionsMap.toString());
             
-            logger.info(xmlRestrictionsGroupedByTypeCode.toString());
+            // Calculate sum of the shares for each type code.
+            Map<String, Integer> sumAreaShare = xmlRestrictions.stream()
+                    .filter(r -> r.getAreaShare() != null)
+                    .collect(Collectors.groupingBy(r -> r.getTypeCode(), Collectors.summingInt(r -> r.getAreaShare())));
             
+            Map<String, Integer> sumLengthShare = xmlRestrictions.stream()
+                    .filter(r -> r.getLengthShare() != null)
+                    .collect(Collectors.groupingBy(r -> r.getTypeCode(), Collectors.summingInt(r -> r.getLengthShare())));
             
-//            for (RestrictionOnLandownershipType xmlRestriction : xmlRestrictions) {
-//                logger.info(String.valueOf(xmlRestriction.getAreaShare()));
-//                logger.info(String.valueOf(xmlRestriction.getLengthShare()));
-//                logger.info(String.valueOf(xmlRestriction.getTypeCode()));
-//                logger.info("---------");
-//            }
-            
+            Map<String, Integer> sumNrOfPoints = xmlRestrictions.stream()
+                    .filter(r -> r.getNrOfPoints() != null)
+                    .collect(Collectors.groupingBy(r -> r.getTypeCode(), Collectors.summingInt(r -> r.getNrOfPoints())));
 
+            logger.info("sumAreaShare: " + sumAreaShare.toString());
+            logger.info("sumLengthShare: " + sumLengthShare.toString());
+            logger.info("sumNrOfPoints: " + sumNrOfPoints.toString());
+            
+            // Assign the sum to the simplified restriction.
+            // And add the restriction to the final restrictons list.
+            List<Restriction> restrictionsList = new ArrayList<Restriction>();
+            for (Map.Entry<String, Restriction> restrictionEntry : restrictionsMap.entrySet()) {
+                String typeCode = restrictionEntry.getKey();
+                // I think this helps to find out which one to print in the client.
+                // Only one of the shares is not null.
+                if (sumAreaShare.get(typeCode) != null) {
+                    restrictionEntry.getValue().setAreaShare(sumAreaShare.get(typeCode));
+                    logger.info(String.valueOf(restrictionEntry.getValue().getAreaShare()));
+                }
+                if (sumLengthShare.get(typeCode) != null) {
+                    restrictionEntry.getValue().setLengthShare(sumLengthShare.get(typeCode));
+                    logger.info(String.valueOf(restrictionEntry.getValue().getLengthShare()));
+                }
+                if (sumNrOfPoints.get(typeCode) != null) {
+                    restrictionEntry.getValue().setNrOfPoints(sumNrOfPoints.get(typeCode));
+                    logger.info(String.valueOf(restrictionEntry.getValue().getNrOfPoints()));
+                }
+                restrictionsList.add(restrictionEntry.getValue());
+            }
+            
+            // Get legal provisions and laws.
+            List<Document> legalProvisionsList = new ArrayList<Document>();
+            List<Document> lawsList = new ArrayList<Document>();
+            
+            for (RestrictionOnLandownershipType xmlRestriction : xmlRestrictions) {
+                List<DocumentBaseType> xmlLegalProvisions = xmlRestriction.getLegalProvisions();
+                for (DocumentBaseType xmlDocumentBase : xmlLegalProvisions) {
+                    DocumentType xmlLegalProvision =  (DocumentType) xmlDocumentBase;
+                    Document legalProvision = new Document();
+                    legalProvision.setTitle(xmlLegalProvision.getTitle().getLocalisedText().get(0).getText());
+                    legalProvision.setAbbreviation(xmlLegalProvision.getAbbreviation().getLocalisedText().get(0).getText());
+                    legalProvision.setTextAtWeb(xmlLegalProvision.getTextAtWeb().getLocalisedText().get(0).getText());
+                    legalProvisionsList.add(legalProvision);
+                    
+                    List<DocumentType> xmlLaws = xmlLegalProvision.getReference();
+                    for (DocumentType xmlLaw : xmlLaws) {
+                        Document law = new Document();
+                        law.setTitle(xmlLaw.getTitle().getLocalisedText().get(0).getText());
+                        law.setAbbreviation(xmlLaw.getAbbreviation().getLocalisedText().get(0).getText());
+                        law.setTextAtWeb(xmlLaw.getTextAtWeb().getLocalisedText().get(0).getText());
+                        lawsList.add(law);
+                    }
+                }
+            }
+
+            // Because restrictions can have the same legal provision and laws,
+            // we need to distinct them.
+            List<Document> distinctLegalProvisionsList = legalProvisionsList.stream()
+                    .filter(distinctByKey(Document::getTextAtWeb)).collect(Collectors.toList());
+
+            List<Document> distinctLawsList = lawsList.stream().filter(distinctByKey(Document::getTextAtWeb)).collect(Collectors.toList());
+
+            // WMS
+            double layerOpacity = xmlRestrictions.get(0).getMap().getLayerOpacity();
+            String wmsUrl = xmlRestrictions.get(0).getMap().getReferenceWMS();
+
+            UriComponents uriComponents = UriComponentsBuilder.fromUriString(wmsUrl).build();
+            String schema = uriComponents.getScheme();
+            String host = uriComponents.getHost();
+            String path = uriComponents.getPath();
+            String layers = uriComponents.getQueryParams().getFirst("LAYERS");
+            String imageFormat = uriComponents.getQueryParams().getFirst("FORMAT");
+            
+            StringBuilder baseUrlBuilder = new StringBuilder();
+            baseUrlBuilder.append(schema).append("://").append(host);
+            if (uriComponents.getPort() != -1) {
+                baseUrlBuilder.append(String.valueOf(uriComponents.getPort()));
+            }
+            baseUrlBuilder.append(path);
+            String baseUrl = baseUrlBuilder.toString();
+ 
+            ReferenceWMS referenceWMS = new ReferenceWMS();
+            referenceWMS.setBaseUrl(baseUrl);
+            referenceWMS.setLayerOpacity(layerOpacity);
+            referenceWMS.setImageFormat(imageFormat);
+            
+            // LegendAtWeb
+            String legendAtWeb = xmlRestrictions.get(0).getMap().getLegendAtWeb().getValue();
+                        
+            // Finally we create the concerned theme with all
+            // the information.
+            ConcernedTheme concernedTheme =  new ConcernedTheme();
+            concernedTheme.setRestrictions(restrictionsList);
+            concernedTheme.setLegalProvisions(distinctLegalProvisionsList);
+            concernedTheme.setLaws(distinctLawsList);
+            concernedTheme.setReferenceWMS(referenceWMS);
+            concernedTheme.setReferenceWMS(referenceWMS);
+            concernedTheme.setLegendAtWeb(legendAtWeb);
+            concernedTheme.setCode(xmlRestrictions.get(0).getTheme().getCode());
+            concernedTheme.setName(xmlRestrictions.get(0).getTheme().getText().getText());
+            
+            concernedThemesList.add(concernedTheme);
         }
+        
+        logger.info(String.valueOf(concernedThemesList.size()));
+        
+        realEstate.setConcernedThemes(concernedThemesList);
+        extract.setRealEstate(realEstate);
+        
         
         
 //        String wmsUrl = "";
@@ -212,5 +341,9 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         
         return response;
     }
-
+    
+    private static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
+        Map<Object, Boolean> map = new ConcurrentHashMap<>();
+        return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+    }
 }

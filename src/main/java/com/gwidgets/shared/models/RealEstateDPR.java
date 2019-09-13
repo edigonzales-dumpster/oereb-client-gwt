@@ -101,7 +101,7 @@ public class RealEstateDPR implements IsSerializable {
     }
 
     public void setLandRegistryArea(int landRegistryArea) {
-        landRegistryArea = landRegistryArea;
+        this.landRegistryArea = landRegistryArea;
     }
 
     public String getLimit() {

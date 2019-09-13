@@ -223,7 +223,7 @@ public class AppEntryPoint implements EntryPoint {
         // The chip can be made invisible with CSS. But the size
         // must be also set to zero.
 //        autocomplete.setType(AutocompleteType.TEXT);
-        autocomplete.setPlaceholder("Suche");
+        autocomplete.setPlaceholder("Suche: Grundstücke und Adressen");
         autocomplete.setAutoSuggestLimit(5);
         autocomplete.setLimit(1);
         

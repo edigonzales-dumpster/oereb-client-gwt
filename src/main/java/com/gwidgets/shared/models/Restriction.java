@@ -3,7 +3,7 @@ package com.gwidgets.shared.models;
 public class Restriction {
     private String information;
     
-    private String symbol;
+    private byte[] symbol;
     
     private String typeCode;
     
@@ -23,11 +23,11 @@ public class Restriction {
         this.information = information;
     }
 
-    public String getSymbol() {
+    public byte[] getSymbol() {
         return symbol;
     }
 
-    public void setSymbol(String symbol) {
+    public void setSymbol(byte[] symbol) {
         this.symbol = symbol;
     }
 

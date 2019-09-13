@@ -6,7 +6,7 @@ public class Extract implements IsSerializable {
     String extractIdentifier; 
     
     RealEstateDPR realEstate;
-    
+        
     ReferenceWMS referenceWMS; // delete
     
     String geometry; // delete
@@ -17,6 +17,14 @@ public class Extract implements IsSerializable {
 
     public void setExtractIdentifier(String extractIdentifier) {
         this.extractIdentifier = extractIdentifier;
+    }
+
+    public RealEstateDPR getRealEstate() {
+        return realEstate;
+    }
+
+    public void setRealEstate(RealEstateDPR realEstate) {
+        this.realEstate = realEstate;
     }
 
     public ReferenceWMS getReferenceWMS() {
