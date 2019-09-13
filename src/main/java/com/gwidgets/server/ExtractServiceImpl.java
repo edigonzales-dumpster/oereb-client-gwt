@@ -142,21 +142,40 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         realEstate.setNotConcernedThemes(notConcernedThemes);
         
         xmlRealEstate.getRestrictionOnLandownership().stream().forEach(restriction -> {
-            logger.info(restriction.getTheme().getText().getText());
-            logger.info(restriction.getTheme().getCode());
-            logger.info(restriction.getSubTheme());
-            logger.info("****");
+//            logger.info(restriction.getTheme().getText().getText());
+//            logger.info(restriction.getTheme().getCode());
+//            logger.info(restriction.getSubTheme());
+//            logger.info("****");
         });
         
         Map<String, List<RestrictionOnLandownershipType>> groupedXmlRestrictions = xmlRealEstate.getRestrictionOnLandownership().stream()
             .collect(Collectors.groupingBy(r -> r.getTheme().getText().getText()));
         
         for (Map.Entry<String, List<RestrictionOnLandownershipType>> entry : groupedXmlRestrictions.entrySet()) {
-            System.out.println(entry.getKey() + "/" + entry.getValue());
+//            System.out.println(entry.getKey() + "/" + entry.getValue());
+            logger.info("*********************************************");
+            logger.info("ConcernedTheme: " + entry.getKey());
+            logger.info("*********************************************");
+
             
-            logger.info(entry.getKey());
+            List<RestrictionOnLandownershipType> xmlRestrictions = entry.getValue();
             
-            logger.info("*********");
+            
+            // alle arten: symbol, summe (einfach beide geometrietypen)...siehe model
+            // mit .map()
+            Map<String, List<RestrictionOnLandownershipType>> xmlRestrictionsGroupedByTypeCode = xmlRestrictions.stream()
+                .collect(Collectors.groupingBy(r -> r.getTypeCode()));
+            
+            logger.info(xmlRestrictionsGroupedByTypeCode.toString());
+            
+            
+//            for (RestrictionOnLandownershipType xmlRestriction : xmlRestrictions) {
+//                logger.info(String.valueOf(xmlRestriction.getAreaShare()));
+//                logger.info(String.valueOf(xmlRestriction.getLengthShare()));
+//                logger.info(String.valueOf(xmlRestriction.getTypeCode()));
+//                logger.info("---------");
+//            }
+            
 
         }
         
