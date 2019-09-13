@@ -253,7 +253,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                 }
             }
 
-            // Because restrictions can have the same legal provision and laws,
+            // Because restrictions can share the same legal provision and laws,
             // we need to distinct them.
             List<Document> distinctLegalProvisionsList = legalProvisionsList.stream()
                     .filter(distinctByKey(Document::getTextAtWeb)).collect(Collectors.toList());
@@ -268,8 +268,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             String schema = uriComponents.getScheme();
             String host = uriComponents.getHost();
             String path = uriComponents.getPath();
-            String layers = uriComponents.getQueryParams().getFirst("LAYERS");
-            String imageFormat = uriComponents.getQueryParams().getFirst("FORMAT");
+            String layers = uriComponents.getQueryParams().getFirst("LAYERS"); // FIXME case insensitivity
+            String imageFormat = uriComponents.getQueryParams().getFirst("FORMAT"); // FIXME case insensitivity
             
             StringBuilder baseUrlBuilder = new StringBuilder();
             baseUrlBuilder.append(schema).append("://").append(host);
@@ -281,6 +281,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
  
             ReferenceWMS referenceWMS = new ReferenceWMS();
             referenceWMS.setBaseUrl(baseUrl);
+            referenceWMS.setLayers(layers);
             referenceWMS.setLayerOpacity(layerOpacity);
             referenceWMS.setImageFormat(imageFormat);
             
@@ -301,39 +302,10 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             
             concernedThemesList.add(concernedTheme);
         }
-        
-        logger.info(String.valueOf(concernedThemesList.size()));
-        
+                
         realEstate.setConcernedThemes(concernedThemesList);
         extract.setRealEstate(realEstate);
-        
-        
-        
-//        String wmsUrl = "";
-//        ReferenceWMS referenceWMS = new ReferenceWMS();
-//        List<RestrictionOnLandownershipType> restrictions = obj.getValue().getExtract().getValue().getRealEstate().getRestrictionOnLandownership();
-//        for (RestrictionOnLandownershipType restriction : restrictions) {
-////            logger.info(restriction.getMap().getReferenceWMS());
-//            
-//            if (restriction.getTheme().getCode().contains("LandUsePlans")) {
-//                wmsUrl = URLDecoder.decode(restriction.getMap().getReferenceWMS(), StandardCharsets.UTF_8.name());
-//                logger.info(wmsUrl);
-//                
-//                referenceWMS.setBaseUrl("https://geoview.bl.ch/main/oereb/mapservproxy?");
-//                referenceWMS.setLayers("LandUsePlans");
-//                referenceWMS.setImageFormat("image%2Fpng");
-//            }
-//        }
-//        
-//        MultiSurfacePropertyTypeType multiSurfacePropertyTypeType = obj.getValue().getExtract().getValue().getRealEstate().getLimit();
-//        MultiPolygon realEstatePolygon = new Gml32ToJts().convertMultiSurface(multiSurfacePropertyTypeType);
-//        logger.info(realEstatePolygon.toText());
-        
-//        Extract extract = new Extract();
-//        extract.setExtractIdentifier(obj.getValue().getExtract().getValue().getExtractIdentifier());
-//        extract.setReferenceWMS(referenceWMS);
-//        extract.setGeometry(new WKTWriter(3).write(realEstatePolygon));
-       
+               
         ExtractResponse response = new ExtractResponse();
         response.setEgrid("lilalaunebär");
 //        response.setExtract(extract);
