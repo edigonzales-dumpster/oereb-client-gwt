@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.collectingAndThen;
@@ -30,6 +32,7 @@ import javax.xml.transform.stream.StreamSource;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.gwidgets.shared.ExtractResponse;
 import com.gwidgets.shared.ExtractService;
+import com.gwidgets.shared.models.AbstractTheme;
 import com.gwidgets.shared.models.ConcernedTheme;
 import com.gwidgets.shared.models.Document;
 import com.gwidgets.shared.models.Extract;
@@ -82,7 +85,31 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
     
     @Autowired
     Jaxb2Marshaller marshaller;
-
+    
+    private List<String> themesOrderingList = Stream.of(
+            "LandUsePlans",
+            "ch.SO.NutzungsplanungGrundnutzung", 
+            "ch.SO.NutzungsplanungUeberlagernd", 
+            "ch.SO.NutzungsplanungSondernutzungsplaene", 
+            "ch.SO.Baulinien",
+            "MotorwaysProjectPlaningZones",
+            "MotorwaysBuildingLines",
+            "RailwaysProjectPlanningZones",
+            "RailwaysBuildingLines",
+            "AirportsProjectPlanningZones",
+            "AirportsBuildingLines",
+            "AirportsSecurityZonePlans",
+            "ContaminatedSites",
+            "ContaminatedMilitarySites",
+            "ContaminatedCivilAviationSites",
+            "ContaminatedPublicTransportSites",
+            "GroundwaterProtectionZones",
+            "GroundwaterProtectionSites",
+            "NoiseSensitivityLevels",
+            "ForestPerimeters",
+            "ForestDistanceLines")
+            .collect(Collectors.toList());
+    
     // see: https://stackoverflow.com/questions/51874785/gwt-spring-boot-autowired-is-not-working
     @Override
     public void init() throws ServletException {
@@ -120,7 +147,6 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         Extract extract = new Extract();
         extract.setExtractIdentifier(xmlExtract.getExtractIdentifier());
 
-        // FIXME: sorting?!
         LinkedList<ThemeWithoutData> themesWithoutData = xmlExtract.getThemeWithoutData().stream()
                 .map(theme -> { 
                     ThemeWithoutData themeWithoutData = new ThemeWithoutData();
@@ -129,7 +155,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     return themeWithoutData; 
                 })
                 .collect(collectingAndThen(toList(), LinkedList<ThemeWithoutData>::new));
-
+        themesWithoutData.sort(compare);
+        
         LinkedList<NotConcernedTheme> notConcernedThemes = xmlExtract.getNotConcernedTheme().stream()
                 .map(theme -> { 
                     NotConcernedTheme notConcernedTheme = new NotConcernedTheme();
@@ -138,7 +165,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     return notConcernedTheme; 
                 })
                 .collect(collectingAndThen(toList(), LinkedList<NotConcernedTheme>::new));
-
+        notConcernedThemes.sort(compare);
+        
         RealEstateDPRType xmlRealEstate = xmlExtract.getRealEstate();
 
         RealEstateDPR realEstate = new RealEstateDPR();
@@ -152,14 +180,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         realEstate.setLimit(new Gml32ToJts().convertMultiSurface(xmlRealEstate.getLimit()).toText());
         realEstate.setThemesWithoutData(themesWithoutData);
         realEstate.setNotConcernedThemes(notConcernedThemes);
-        
-        xmlRealEstate.getRestrictionOnLandownership().stream().forEach(restriction -> {
-//            logger.info(restriction.getTheme().getText().getText());
-//            logger.info(restriction.getTheme().getCode());
-//            logger.info(restriction.getSubTheme());
-//            logger.info("****");
-        });
-        
+                
         // Create a map with all restrictions grouped by theme text.
         Map<String, List<RestrictionOnLandownershipType>> groupedXmlRestrictions = xmlRealEstate.getRestrictionOnLandownership().stream()
             .collect(Collectors.groupingBy(r -> r.getTheme().getText().getText()));
@@ -302,6 +323,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             
             concernedThemesList.add(concernedTheme);
         }
+        
+        concernedThemesList.sort(compare);
                 
         realEstate.setConcernedThemes(concernedThemesList);
         extract.setRealEstate(realEstate);
@@ -314,6 +337,14 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         return response;
     }
     
+    // TODO: test if it works with AbstractTheme!
+    // But themesOrderingList contains already new codes.
+    Comparator<AbstractTheme> compare = new Comparator<AbstractTheme>() {
+        public int compare(AbstractTheme t1, AbstractTheme t2) {
+            return themesOrderingList.indexOf(t1.getCode()) - themesOrderingList.indexOf(t2.getCode());
+        }
+   };
+
     private static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
         Map<Object, Boolean> map = new ConcurrentHashMap<>();
         return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
