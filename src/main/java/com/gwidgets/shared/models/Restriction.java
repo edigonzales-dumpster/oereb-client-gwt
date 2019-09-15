@@ -1,6 +1,8 @@
 package com.gwidgets.shared.models;
 
-public class Restriction {
+import com.google.gwt.user.client.rpc.IsSerializable;
+
+public class Restriction implements IsSerializable {
     private String information;
     
     private byte[] symbol;

@@ -1,15 +1,11 @@
 package com.gwidgets.server;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -42,33 +38,17 @@ import com.gwidgets.shared.models.ReferenceWMS;
 import com.gwidgets.shared.models.Restriction;
 import com.gwidgets.shared.models.ThemeWithoutData;
 
-import ch.ehi.oereb.schemas.gml._3_2.Coordinates;
-import ch.ehi.oereb.schemas.gml._3_2.LinearRing;
-import ch.ehi.oereb.schemas.gml._3_2.LinearRingTypeType;
-import ch.ehi.oereb.schemas.gml._3_2.MultiSurface;
-import ch.ehi.oereb.schemas.gml._3_2.MultiSurfaceProperty;
-import ch.ehi.oereb.schemas.gml._3_2.MultiSurfacePropertyTypeType;
-import ch.ehi.oereb.schemas.gml._3_2.MultiSurfaceTypeType;
-import ch.ehi.oereb.schemas.gml._3_2.PolygonTypeType;
-import ch.ehi.oereb.schemas.gml._3_2.Pos;
-import ch.ehi.oereb.schemas.gml._3_2.PosList;
-import ch.ehi.oereb.schemas.gml._3_2.SurfaceMember;
 import ch.ehi.oereb.schemas.oereb._1_0.extract.GetExtractByIdResponse;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.DocumentBaseType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.DocumentType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.ExtractType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RealEstateDPRType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RestrictionOnLandownershipType;
-import ch.ehi.oereb.schemas.oereb._1_0.extractdata.ThemeType;
 
-import org.locationtech.jts.geom.MultiPolygon;
-import org.locationtech.jts.io.WKTWriter;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.stereotype.Service;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -125,7 +105,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         // TODO: handle empty file / no extract returned
         File xmlFile = Files.createTempFile("data_extract_", ".xml").toFile();
         
-//        URL url = new URL(oerebWebServiceUrl + egrid);
+//        URL url = new URL(oerebWebServiceUrl + "/reduced/xml/geometry/" + egrid);
 //        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH533287066291.xml");
         URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH368132060914.xml");
         logger.info(url.toString());
@@ -185,6 +165,15 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         Map<String, List<RestrictionOnLandownershipType>> groupedXmlRestrictions = xmlRealEstate.getRestrictionOnLandownership().stream()
             .collect(Collectors.groupingBy(r -> r.getTheme().getText().getText()));
         
+        logger.info("*********************************************");
+        logger.info("*********************************************");
+        
+//        try {
+//            Thread.sleep(10000);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
+
         // We create one ConcernedTheme object per theme with all restrictions belonging to the same theme
         // since this is the way we present the restriction in the GUI.
         LinkedList<ConcernedTheme> concernedThemesList = new LinkedList<ConcernedTheme>();
@@ -328,9 +317,11 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                 
         realEstate.setConcernedThemes(concernedThemesList);
         extract.setRealEstate(realEstate);
+        extract.setPdfLink(oerebWebServiceUrl + "/reduced/pdf/geometry/" + egrid);
                
         ExtractResponse response = new ExtractResponse();
-        response.setEgrid("lilalaunebär");
+        response.setExtract(extract);
+//        response.setEgrid("lilalaunebär");
 //        response.setExtract(extract);
         
         

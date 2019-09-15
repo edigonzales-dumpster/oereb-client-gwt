@@ -1,6 +1,8 @@
 package com.gwidgets.shared.models;
 
-public abstract class AbstractTheme {    
+import com.google.gwt.user.client.rpc.IsSerializable;
+
+public abstract class AbstractTheme implements IsSerializable {    
     private String code;
     
     private String name;

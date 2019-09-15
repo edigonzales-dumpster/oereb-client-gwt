@@ -1,6 +1,7 @@
 package com.gwidgets.client;
 
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +9,8 @@ import java.util.List;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsonUtils;
+import com.google.gwt.dom.client.DivElement;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
@@ -15,10 +18,12 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
+import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
@@ -29,18 +34,23 @@ import com.gwidgets.shared.ExtractServiceAsync;
 import com.gwidgets.shared.SettingsResponse;
 import com.gwidgets.shared.SettingsService;
 import com.gwidgets.shared.SettingsServiceAsync;
+import com.gwidgets.shared.models.Extract;
+import com.gwidgets.shared.models.RealEstateDPR;
 
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
+import gwt.material.design.addins.client.window.MaterialWindow;
 import gwt.material.design.client.constants.ButtonSize;
 import gwt.material.design.client.constants.ButtonType;
 import gwt.material.design.client.constants.Color;
 import gwt.material.design.client.constants.IconType;
+import gwt.material.design.client.constants.Position;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialCard;
 import gwt.material.design.client.ui.MaterialCardContent;
 import gwt.material.design.client.ui.MaterialCardTitle;
 import gwt.material.design.client.ui.MaterialColumn;
+import gwt.material.design.client.ui.MaterialIcon;
 import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialLoader;
 import gwt.material.design.client.ui.MaterialPreLoader;
@@ -57,6 +67,7 @@ import ol.Map;
 import ol.MapOptions;
 import ol.OLFactory;
 import ol.Overlay;
+import ol.OverlayOptions;
 import ol.View;
 import ol.ViewOptions;
 import ol.control.Control;
@@ -95,6 +106,8 @@ public class AppEntryPoint implements EntryPoint {
     private final ExtractServiceAsync extractService = GWT.create(ExtractService.class);
     private final SettingsServiceAsync settingsService = GWT.create(SettingsService.class);
 
+    private String INIT_CONTROLS_CART_HEIGHT = "200px";
+    
     private String ID_ATTR_NAME = "id";
     private String BACKGROUND_LAYER_ID = "ch.so.agi.hintergrundkarte_sw";
     private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer"; 
@@ -107,10 +120,13 @@ public class AppEntryPoint implements EntryPoint {
     private String DATA_SERVICE_URL;
     private HashMap<String,String> WMS_LAYER_MAPPINGS;
     
-    private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
+    private NumberFormat fmt = NumberFormat.getDecimalFormat();
 
     private Map map;
-    
+    private MaterialCard controlsCard;
+    private MaterialCardContent controlsCardContent;    
+    private Div generalInfoDiv;
+
     public void onModuleLoad() {
         // Get the needed settings from the server with an async call.
         settingsService.settingsServer(new AsyncCallback<SettingsResponse>() {
@@ -159,7 +175,7 @@ public class AppEntryPoint implements EntryPoint {
         dummyButton.getElement().getStyle().setProperty("right", "40px");
         
         // A material card for the controls.
-        MaterialCard controlsCard = new MaterialCard();
+        controlsCard = new MaterialCard();
         controlsCard.setBackgroundColor(Color.GREY_LIGHTEN_5);
         controlsCard.getElement().getStyle().setProperty("transition", "height 0.5s");
         controlsCard.getElement().getStyle().setProperty("position", "absolute");
@@ -168,10 +184,10 @@ public class AppEntryPoint implements EntryPoint {
         controlsCard.getElement().getStyle().setProperty("top", "0px");
         controlsCard.getElement().getStyle().setProperty("left", "0px");
         controlsCard.getElement().getStyle().setProperty("width", "500px");
-        controlsCard.getElement().getStyle().setProperty("height", "200px");
+        controlsCard.getElement().getStyle().setProperty("height", INIT_CONTROLS_CART_HEIGHT);
         controlsCard.getElement().getStyle().setProperty("overflowY", "auto");
 
-        MaterialCardContent controlsCardContent = new MaterialCardContent();
+        controlsCardContent = new MaterialCardContent();
         controlsCardContent.getElement().getStyle().setProperty("padding", "15px");
 
         MaterialRow logoRow = new MaterialRow();
@@ -200,17 +216,7 @@ public class AppEntryPoint implements EntryPoint {
         logoRow.add(plrLogoColumn);
         logoRow.add(cantonLogoColumn);
         controlsCardContent.add(logoRow);
-        
-//        MaterialLabel label = new MaterialLabel();
-//        label.setText("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.   \n" + 
-//                "\n" + 
-//                "Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.   \n" + 
-//                "\n" + 
-//                "Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.   \n" + 
-//                "\n" + 
-//                "Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer");
-//        controlsCardContent.add(label);
-        
+                
         //.input-field label
         MaterialRow searchRow = new MaterialRow();
         
@@ -227,7 +233,8 @@ public class AppEntryPoint implements EntryPoint {
         autocomplete.setAutoSuggestLimit(5);
         autocomplete.setLimit(1);
         
-        autocomplete.addValueChangeHandler(event -> {            
+        // TODO: create seperate handler class?
+        autocomplete.addValueChangeHandler(event -> {
             // We only allow one result in the autocomplete widget.
             List<? extends SuggestOracle.Suggestion> values = autocomplete.getValue();            
             SearchSuggestion searchSuggestion = (SearchSuggestion) values.get(0);
@@ -258,11 +265,9 @@ public class AppEntryPoint implements EntryPoint {
                                 
                                 GWT.log("get extract for: " + egrid);
 
-                                // make rpc request.
+                                // TODO: make rpc request.
                                 
                                 return;
-                            
-                            
                             } else {
                                 GWT.log("error from request");
                                 GWT.log(String.valueOf(statusCode));
@@ -308,10 +313,9 @@ public class AppEntryPoint implements EntryPoint {
                                                 
                                                 GWT.log("get extract for: " + egrid);
 
-                                                // make rpc request.
+                                                // TODO: make rpc request.
                                                 
-                                                return;
-                                                                                        
+                                                return;                                       
                                             } else {
                                                 GWT.log("error from request");
                                                 GWT.log(String.valueOf(statusCode));
@@ -343,14 +347,12 @@ public class AppEntryPoint implements EntryPoint {
                     e.printStackTrace();
                 }   
             }
-            
-            
         });
         
-
         searchRow.add(autocomplete);
         controlsCardContent.add(searchRow);
       
+        
         controlsCard.add(controlsCardContent);
         
 
@@ -373,6 +375,19 @@ public class AppEntryPoint implements EntryPoint {
             GWT.log("push the button");
             
             MaterialLoader.loading(true);
+            
+            // Remove all oereb layers from the map.
+            removeOerebLayers();
+            
+            // Remove general information vom controls card.
+            if (generalInfoDiv != null) {
+                controlsCardContent.remove(generalInfoDiv);
+            }
+            
+            // Reset controls card.
+            controlsCard.setHeight(INIT_CONTROLS_CART_HEIGHT);
+
+            // Send egrid to the server the handles the getExtract request.
             sendEgridToServer();
         });
         
@@ -423,6 +438,7 @@ public class AppEntryPoint implements EntryPoint {
 //      map.addLayer(wmsLayer);
     }
     
+    // TODO: "parseRealEstateFeature" liefert liste mit real estate features.
     private String getEgridFromRealEstateFeature(JSONObject obj) {
         JSONObject rootObj = obj.isObject();
         JSONArray resultsArray = rootObj.get("features").isArray();
@@ -471,35 +487,51 @@ public class AppEntryPoint implements EntryPoint {
             @Override
             public void onSuccess(ExtractResponse result) {
                 MaterialLoader.loading(false);
-                GWT.log(result.getEgrid());
+                                
+                Extract extract = result.getExtract();
+                RealEstateDPR realEstate = extract.getRealEstate();
+                String number = realEstate.getNumber();
+                String municipality = realEstate.getMunicipality();
+                String subunitOfLandRegister = realEstate.getSubunitOfLandRegister();
+                String canton = realEstate.getCanton();
+                String egrid = realEstate.getEgrid();
+                int area = realEstate.getLandRegistryArea();
+                
+                
+                GWT.log(result.getExtract().getExtractIdentifier().toString());
 //                GWT.log(result.getExtract().getExtractIdentifier());
 //                GWT.log(result.getExtract().getReferenceWMS().getBaseUrl());
 //                GWT.log(result.getExtract().getReferenceWMS().getLayers());
 //                GWT.log(result.getExtract().getGeometry());
                 
-                // remove all oereb layers
-//                removeOerebLayers();
-//                
-//                // FIXME do i need this anymore?
+    
+                // Remove all oereb layers from the map.
+                // TODO: They are removed already when requesting the extract
+                // from the server.
+                removeOerebLayers();
+                
+                // FIXME do i need this anymore?
 //                ol.layer.Vector vlayer = (ol.layer.Vector) getLayerById(REAL_ESTATE_VECTOR_LAYER_ID);
 //                if (vlayer != null) {
 //                    map.removeLayer(vlayer);
 //                }
-//                vlayer = createRealEstateVectorLayer(result.getExtract().getGeometry());
-//
-//                // set new extent and center according the real estate
-//                Geometry geometry = new Wkt().readGeometry(result.getExtract().getGeometry());
-//                Extent extent = geometry.getExtent();
-//                
-//                View view = map.getView();
-//                double resolution = view.getResolutionForExtent(extent);                
-//                view.setZoom(Math.floor(view.getZoomForResolution(resolution)));
-//                
-//                double x = extent.getLowerLeftX() + extent.getWidth() / 2;
-//                double y = extent.getLowerLeftY() + extent.getHeight() / 2;
-//                
-//                view.setCenter(new Coordinate(x, y));
-//                
+                
+                // create the vector layer for highlighting the real estate
+                ol.layer.Vector vlayer = createRealEstateVectorLayer(result.getExtract().getRealEstate().getLimit());
+                
+                // set new extent and center according the real estate
+                Geometry geometry = new Wkt().readGeometry(result.getExtract().getRealEstate().getLimit());
+                Extent extent = geometry.getExtent();
+                
+                View view = map.getView();
+                double resolution = view.getResolutionForExtent(extent);                
+                view.setZoom(Math.floor(view.getZoomForResolution(resolution)));
+                
+                double x = extent.getLowerLeftX() + extent.getWidth() / 2;
+                double y = extent.getLowerLeftY() + extent.getHeight() / 2;
+                
+                view.setCenter(new Coordinate(x, y));
+                
 //                ImageWmsParams imageWMSParams = OLFactory.createOptions();
 //                imageWMSParams.setLayers(result.getExtract().getReferenceWMS().getLayers());
 //
@@ -519,7 +551,8 @@ public class AppEntryPoint implements EntryPoint {
 ////              map.addOverlay(overlay);
 //                map.addLayer(wmsLayer);
 //
-//                map.addLayer(vlayer);
+                // add vector layer for hightlighting the real estate
+                map.addLayer(vlayer);
 //                
 //                Collection<Base> layers = map.getLayers();
 //                for (int i = 0; i < layers.getLength(); i++) {
@@ -535,7 +568,124 @@ public class AppEntryPoint implements EntryPoint {
               
                 // TODO
 //                controlsCard.setHeight("400px");
+                
+//                if (generalInfoDiv != null) {
+//                    controlsCardContent.remove(generalInfoDiv);
+//                }
+                
+                controlsCard.setHeight("400px");
+                
 
+                
+                generalInfoDiv = new Div();     
+                
+                MaterialRow buttonRow = new MaterialRow();
+//                buttonRow.setGrid("s12");
+//                buttonRow.getElement().getStyle().setProperty("margin", "0px");
+                
+                MaterialColumn pdfButtonColumn = new MaterialColumn();
+                pdfButtonColumn.setGrid("s6");
+                
+                MaterialButton pdfButton = new MaterialButton();
+                pdfButton.setIconType(IconType.INSERT_DRIVE_FILE);
+                pdfButton.setType(ButtonType.FLOATING);
+                pdfButton.setTooltip("Auszug als PDF anfordern");
+                pdfButton.setTooltipPosition(Position.TOP);
+                pdfButtonColumn.add(pdfButton);
+                buttonRow.add(pdfButtonColumn);
+                
+                pdfButton.addClickHandler(event -> {
+//                    Window.open("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629_layer_ordering.pdf", "_target", "enabled");
+                    Window.open("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629_layer_ordering.pdf", "_blank", null);
+                });
+                
+                MaterialColumn deleteExtractButtonColumn = new MaterialColumn();
+                deleteExtractButtonColumn.setGrid("s6");
+                deleteExtractButtonColumn.getElement().getStyle().setProperty("textAlign", "right");
+
+                MaterialButton deleteExtractButton = new MaterialButton();
+                deleteExtractButton.setIconType(IconType.CLOSE);
+                deleteExtractButton.setType(ButtonType.FLOATING);
+                deleteExtractButton.setTooltip("Auszug schliessen");
+                deleteExtractButton.setTooltipPosition(Position.TOP);
+                deleteExtractButtonColumn.add(deleteExtractButton);
+                buttonRow.add(deleteExtractButtonColumn);
+
+                deleteExtractButton.addClickHandler(event -> {
+                    // TODO: one method call
+                    removeOerebLayers();
+                    if (generalInfoDiv != null) {
+                        controlsCardContent.remove(generalInfoDiv);
+                    }
+                    controlsCard.setHeight(INIT_CONTROLS_CART_HEIGHT);
+                });
+               
+                generalInfoDiv.add(buttonRow);
+                
+                MaterialRow generalInfoRow = new MaterialRow();
+                generalInfoRow.getElement().getStyle().setProperty("marginBottom", "10px");
+
+                MaterialColumn generalInfoTitleColumn =  new MaterialColumn();
+                generalInfoTitleColumn.setGrid("s12");
+                generalInfoTitleColumn.getElement().getStyle().setProperty("margin", "0px");
+                generalInfoTitleColumn.getElement().getStyle().setProperty("padding", "0px");
+                generalInfoTitleColumn.getElement().getStyle().setProperty("fontSize", "16px");
+                generalInfoTitleColumn.getElement().getStyle().setProperty("fontWeight", "700");
+                
+                String lbl = "Grundstück " + number + " in " + municipality;
+                if (!municipality.contains("(")) {
+                    lbl += " (" + canton + ")";
+                }
+                generalInfoTitleColumn.add(new Label(lbl));
+                generalInfoRow.add(generalInfoTitleColumn);
+
+                MaterialRow egridInfoRow = new MaterialRow();
+                egridInfoRow.getElement().getStyle().setProperty("margin", "0px");
+                
+                MaterialColumn egridInfoKeyColumn =  new MaterialColumn();
+                egridInfoKeyColumn.setGrid("s2");
+                egridInfoKeyColumn.getElement().getStyle().setProperty("margin", "0px");
+                egridInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
+                egridInfoKeyColumn.getElement().getStyle().setProperty("fontSize", "14px");
+                egridInfoKeyColumn.getElement().getStyle().setProperty("fontWeight", "700");
+                egridInfoKeyColumn.add(new Label("EGRID:"));
+                egridInfoRow.add(egridInfoKeyColumn);
+                
+                MaterialColumn egridInfoValueColumn =  new MaterialColumn();
+                egridInfoValueColumn.setGrid("s10");
+                egridInfoValueColumn.getElement().getStyle().setProperty("margin", "0px");
+                egridInfoValueColumn.getElement().getStyle().setProperty("padding", "0px");
+                egridInfoValueColumn.getElement().getStyle().setProperty("fontSize", "14px");
+                egridInfoValueColumn.getElement().getStyle().setProperty("fontWeight", "400");
+                egridInfoValueColumn.add(new Label(egrid));
+                egridInfoRow.add(egridInfoValueColumn);
+                
+                MaterialRow areaInfoRow = new MaterialRow();
+                areaInfoRow.getElement().getStyle().setProperty("margin", "0px");
+                
+                MaterialColumn areaInfoKeyColumn =  new MaterialColumn();
+                areaInfoKeyColumn.setGrid("s2");
+                areaInfoKeyColumn.getElement().getStyle().setProperty("margin", "0px");
+                areaInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
+                areaInfoKeyColumn.getElement().getStyle().setProperty("fontSize", "14px");
+                areaInfoKeyColumn.getElement().getStyle().setProperty("fontWeight", "700");
+                areaInfoKeyColumn.add(new Label("Fläche:"));
+                areaInfoRow.add(areaInfoKeyColumn);
+                
+                MaterialColumn areaInfoValueColumn =  new MaterialColumn();
+                areaInfoValueColumn.setGrid("s10");
+                areaInfoValueColumn.getElement().getStyle().setProperty("margin", "0px");
+                areaInfoValueColumn.getElement().getStyle().setProperty("padding", "0px");
+                areaInfoValueColumn.getElement().getStyle().setProperty("fontSize", "14px");
+                areaInfoValueColumn.getElement().getStyle().setProperty("fontWeight", "400");
+                
+                areaInfoValueColumn.add(new HTML(fmt.format(area) + " m<sup>2</sup>"));
+                areaInfoRow.add(areaInfoValueColumn);
+                
+                generalInfoDiv.add(generalInfoRow);
+                generalInfoDiv.add(egridInfoRow);
+                generalInfoDiv.add(areaInfoRow);
+                controlsCardContent.add(generalInfoDiv);
             }
         });
     }
@@ -568,7 +718,7 @@ public class AppEntryPoint implements EntryPoint {
 
         Style style = new Style();
         Stroke stroke = new Stroke();
-        stroke.setWidth(7);
+        stroke.setWidth(8);
         stroke.setColor(new ol.color.Color(230,0,0,0.6));
         style.setStroke(stroke);
         feature.setStyle(style);
@@ -589,7 +739,6 @@ public class AppEntryPoint implements EntryPoint {
     }
     
     private void initMap(String id) {
-        // create a projection
         Proj4.defs("EPSG:2056", "+proj=somerc +lat_0=46.95240555555556 +lon_0=7.439583333333333 +k_0=1 +x_0=2600000 +y_0=1200000 +ellps=bessel +towgs84=674.374,15.056,405.346,0,0,0,0 +units=m +no_defs");
 
         ProjectionOptions projectionOptions = OLFactory.createOptions();
@@ -641,6 +790,80 @@ public class AppEntryPoint implements EntryPoint {
 
         // add layers
         map.addLayer(wmtsLayer);
+        
+        map.addSingleClickListener(event ->  {
+           GWT.log("FUBAR"); 
+           
+           Coordinate coordinate = event.getCoordinate();
+           GWT.log(coordinate.toString());
+           
+           GWT.log(event.getPixel().toString());
+           
+           String bbox = coordinate.getX() + "," + coordinate.getY() + "," + coordinate.getX() + "," + coordinate.getY();
+           
+           RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, DATA_SERVICE_URL + REAL_ESTATE_DATAPRODUCT_ID + "/?bbox=" + bbox);
+           builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+           
+            try {
+                builder.sendRequest("", new RequestCallback() {
+                    @Override
+                    public void onResponseReceived(com.google.gwt.http.client.Request request,
+                            com.google.gwt.http.client.Response response) {
+                        int statusCode = response.getStatusCode();
+                        if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
+                            String responseBody = response.getText();
+                            JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
+                            String egrid = getEgridFromRealEstateFeature(responseObj);
+
+                            MaterialWindow window = new MaterialWindow();
+                            window.setTitle("gaga");
+                            window.setMarginLeft(0);
+                            window.setMarginRight(0);
+                            window.setWidth("300px");
+                            window.setToolbarColor(Color.RED_DARKEN_2);
+                            
+                            MaterialIcon maximizeIcon = window.getIconMaximize();
+                            maximizeIcon.getElement().getStyle().setProperty("visibility", "hidden");
+                            
+                            window.setMaximize(false);
+                            window.setTop(event.getPixel().getY());
+                            window.setLeft(event.getPixel().getX());
+                            window.open();
+                            
+//                            DivElement overlay = Document.get().createDivElement();
+//                            overlay.setClassName("overlay-realestate-list");
+//                            overlay.setInnerText("Created with GWT SDK " + GWT.getVersion());
+//
+//                            OverlayOptions overlayOptions = OLFactory.createOptions();
+//                            overlayOptions.setElement(overlay);
+//                            overlayOptions.setPosition(coordinate);
+//                            overlayOptions.setOffset(OLFactory.createPixel(0, 0));
+//                            map.addOverlay(new Overlay(overlayOptions));
+
+                            
+                            GWT.log("get extract from click for: " + egrid);
+                            
+                            
+
+                            // TODO: make rpc request.
+
+                            return;
+                        } else {
+                            GWT.log("error from request");
+                            GWT.log(String.valueOf(statusCode));
+                            GWT.log(response.getStatusText());
+                        }
+                    }
+
+                    @Override
+                    public void onError(com.google.gwt.http.client.Request request, Throwable exception) {
+                        GWT.log("error actually sending the request, never got sent");
+                    }
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     private TileGrid createWmtsTileGrid(Projection projection) {

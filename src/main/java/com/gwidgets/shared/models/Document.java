@@ -2,7 +2,9 @@ package com.gwidgets.shared.models;
 
 import java.net.URL;
 
-public class Document {
+import com.google.gwt.user.client.rpc.IsSerializable;
+
+public class Document implements IsSerializable {
     private String title;
     
     private String abbreviation;

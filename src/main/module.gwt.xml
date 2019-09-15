@@ -4,6 +4,10 @@
 	
 	<inherits name='com.google.gwt.user.User' />
     <inherits name="com.google.gwt.json.JSON" />
+    <inherits name="com.google.gwt.i18n.I18N"/>
+
+    <extend-property name="locale" values="de_CH"/>
+    <set-property name="locale" value="de_CH" />
 	
     <inherits name='com.google.gwt.user.theme.clean.Clean'/> 
     <inherits name="gwt.material.design.GwtMaterialDesignBasic"/>
@@ -11,7 +15,7 @@
     
     <inherits name='ol.GwtOL'/>
     <inherits name="proj4.GwtProj4"/>
-
+    
     <source path="client" />
     <source path="shared" />
     <entry-point class='com.gwidgets.client.AppEntryPoint' />

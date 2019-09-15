@@ -1,5 +1,7 @@
 package com.gwidgets.shared.models;
 
-public class NotConcernedTheme extends AbstractTheme {
+import com.google.gwt.user.client.rpc.IsSerializable;
+
+public class NotConcernedTheme extends AbstractTheme implements IsSerializable {
 
 }

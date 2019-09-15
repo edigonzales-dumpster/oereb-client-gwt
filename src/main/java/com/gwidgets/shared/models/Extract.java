@@ -6,11 +6,9 @@ public class Extract implements IsSerializable {
     String extractIdentifier; 
     
     RealEstateDPR realEstate;
-        
-    ReferenceWMS referenceWMS; // delete
-    
-    String geometry; // delete
 
+    String pdfLink;
+    
     public String getExtractIdentifier() {
         return extractIdentifier;
     }
@@ -27,19 +25,11 @@ public class Extract implements IsSerializable {
         this.realEstate = realEstate;
     }
 
-    public ReferenceWMS getReferenceWMS() {
-        return referenceWMS;
+    public String getPdfLink() {
+        return pdfLink;
     }
 
-    public void setReferenceWMS(ReferenceWMS referenceWMS) {
-        this.referenceWMS = referenceWMS;
-    }
-
-    public String getGeometry() {
-        return geometry;
-    }
-
-    public void setGeometry(String geometry) {
-        this.geometry = geometry;
+    public void setPdfLink(String pdfLink) {
+        this.pdfLink = pdfLink;
     }
 }

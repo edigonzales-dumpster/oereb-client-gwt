@@ -2,7 +2,9 @@ package com.gwidgets.shared.models;
 
 import java.util.List;
 
-public class ConcernedTheme extends AbstractTheme {
+import com.google.gwt.user.client.rpc.IsSerializable;
+
+public class ConcernedTheme extends AbstractTheme implements IsSerializable {
     private ReferenceWMS referenceWMS;
     
     private List<Restriction> restrictions; 
