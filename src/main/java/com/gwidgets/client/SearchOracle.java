@@ -51,9 +51,7 @@ public class SearchOracle extends MaterialSuggestionOracle {
     @Override
     public void requestSuggestions(SuggestOracle.Request suggestRequest, SuggestOracle.Callback callback) {
         Response resp = new Response();
-
-        String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
-
+        
 //        String searchText = suggestRequest.getQuery().replace("(EGRID)", "");
 //        searchText = searchText.toLowerCase();
         String searchText = suggestRequest.getQuery().trim().toLowerCase();
@@ -113,11 +111,9 @@ public class SearchOracle extends MaterialSuggestionOracle {
                         JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
                         JSONObject rootObj = responseObj.isObject();
                         JSONArray resultsArray = rootObj.get("results").isArray();
-//                        GWT.log("resultsArray: " + resultsArray);
                         
                         for (int i = 0; i < resultsArray.size(); i++) {
                             JSONObject properties = resultsArray.get(i).isObject().get("feature").isObject();
-//                            GWT.log(properties.toString());
                             SearchResult searchResult = new SearchResult();
                             searchResult.setDisplay(properties.get("display").toString().trim().replaceAll("^.|.$", ""));
                             searchResult.setDataproductId(properties.get("dataproduct_id").toString().trim().replaceAll("^.|.$", ""));
