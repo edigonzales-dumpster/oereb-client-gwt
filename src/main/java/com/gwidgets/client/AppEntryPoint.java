@@ -752,12 +752,11 @@ public class AppEntryPoint implements EntryPoint {
             String featureId = searchResult.getFeatureId();
             String idFieldName = searchResult.getIdFieldName();
 
-            // Remove the chip from the text field. Even if it is not
-            // visible.
+            // Remove the chip from the text field. Even if it is not visible.
             autocomplete.reset();
 
-            // We need to find out the egrid. This is done by using the data service
-            // extensively.
+            // We need to find out the egrid from either the real estate or the address. 
+            // This is done by using the data service extensively.
             if (dataproductId.equalsIgnoreCase(REAL_ESTATE_DATAPRODUCT_ID)) {
                 RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, DATA_SERVICE_URL + dataproductId
                         + "/?filter=[[\"" + idFieldName + "\",\"=\"," + featureId + "]]");
@@ -797,6 +796,7 @@ public class AppEntryPoint implements EntryPoint {
                     e.printStackTrace();
                 }
             } else {
+                // Fetch the geometry of the address.
                 RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, DATA_SERVICE_URL + dataproductId
                         + "/?filter=[[\"" + idFieldName + "\",\"=\"," + featureId + "]]");
                 builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -812,7 +812,7 @@ public class AppEntryPoint implements EntryPoint {
                                 JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
                                 String bbox = getBboxFromPointFeature(responseObj);
 
-                                // Get the real estate with a bbox request to get the egrid.
+                                // Get the real estate (egrid) with a bbox (= geometry of address) request.
                                 RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
                                         DATA_SERVICE_URL + REAL_ESTATE_DATAPRODUCT_ID + "/?bbox=" + bbox);
                                 builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
@@ -888,8 +888,7 @@ public class AppEntryPoint implements EntryPoint {
             String bbox = coordinate.getX() + "," + coordinate.getY() + "," + coordinate.getX() + ","
                     + coordinate.getY();
 
-            RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
-                    DATA_SERVICE_URL + REAL_ESTATE_DATAPRODUCT_ID + "/?bbox=" + bbox);
+            RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, DATA_SERVICE_URL + REAL_ESTATE_DATAPRODUCT_ID + "/?bbox=" + bbox);
             builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
 
             try {
