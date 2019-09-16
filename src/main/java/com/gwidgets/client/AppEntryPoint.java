@@ -910,7 +910,7 @@ public class AppEntryPoint implements EntryPoint {
                                 window.setMarginLeft(0);
                                 window.setMarginRight(0);
                                 window.setWidth("300px");
-                                window.setToolbarColor(Color.RED_DARKEN_2);
+                                window.setToolbarColor(Color.RED_LIGHTEN_1); 
 
                                 MaterialIcon maximizeIcon = window.getIconMaximize();
                                 maximizeIcon.getElement().getStyle().setProperty("visibility", "hidden");
