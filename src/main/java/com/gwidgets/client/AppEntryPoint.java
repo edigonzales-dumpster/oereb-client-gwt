@@ -1,6 +1,5 @@
 package com.gwidgets.client;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,9 +12,6 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyUpEvent;
-import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.http.client.RequestBuilder;
@@ -171,7 +167,7 @@ public class AppEntryPoint implements EntryPoint {
         MaterialButton dummyButton = new MaterialButton();
         dummyButton.setType(ButtonType.FLOATING);
         dummyButton.setSize(ButtonSize.LARGE);
-        dummyButton.setIconType(IconType.SENTIMENT_VERY_DISSATISFIED);
+        dummyButton.setIconType(IconType.HELP_OUTLINE);
         dummyButton.getElement().getStyle().setProperty("position", "absolute");
         dummyButton.getElement().getStyle().setProperty("top", "40px");
         dummyButton.getElement().getStyle().setProperty("right", "40px");
@@ -422,8 +418,10 @@ public class AppEntryPoint implements EntryPoint {
                 double x = extent.getLowerLeftX() + extent.getWidth() / 2;
                 double y = extent.getLowerLeftY() + extent.getHeight() / 2;
 
-                view.setCenter(new Coordinate(x, y));
-
+                // Das ist jetzt ziemlich heuristisch...
+                // 500 = Breite des Suchresultates
+                view.setCenter(new Coordinate(x-(500*view.getResolution())/2, y));
+                                
 //                ImageWmsParams imageWMSParams = OLFactory.createOptions();
 //                imageWMSParams.setLayers(result.getExtract().getReferenceWMS().getLayers());
 //
