@@ -1,5 +1,6 @@
 package com.gwidgets.shared.models;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
@@ -26,11 +27,11 @@ public class RealEstateDPR implements IsSerializable {
     // Wkt representation
     private String limit;
     
-    private LinkedList<ThemeWithoutData> themesWithoutData;
+    private ArrayList<ThemeWithoutData> themesWithoutData;
     
-    private LinkedList<NotConcernedTheme> notConcernedThemes;
+    private ArrayList<NotConcernedTheme> notConcernedThemes;
     
-    private LinkedList<ConcernedTheme> concernedThemes;
+    private ArrayList<ConcernedTheme> concernedThemes;
 
     public String getRealEstateType() {
         return realEstateType;
@@ -112,27 +113,27 @@ public class RealEstateDPR implements IsSerializable {
         this.limit = limit;
     }
 
-    public LinkedList<ThemeWithoutData> getThemesWithoutData() {
+    public ArrayList<ThemeWithoutData> getThemesWithoutData() {
         return themesWithoutData;
     }
 
-    public void setThemesWithoutData(LinkedList<ThemeWithoutData> themesWithoutData) {
+    public void setThemesWithoutData(ArrayList<ThemeWithoutData> themesWithoutData) {
         this.themesWithoutData = themesWithoutData;
     }
 
-    public LinkedList<NotConcernedTheme> getNotConcernedThemes() {
+    public ArrayList<NotConcernedTheme> getNotConcernedThemes() {
         return notConcernedThemes;
     }
 
-    public void setNotConcernedThemes(LinkedList<NotConcernedTheme> notConcernedThemes) {
+    public void setNotConcernedThemes(ArrayList<NotConcernedTheme> notConcernedThemes) {
         this.notConcernedThemes = notConcernedThemes;
     }
 
-    public LinkedList<ConcernedTheme> getConcernedThemes() {
+    public ArrayList<ConcernedTheme> getConcernedThemes() {
         return concernedThemes;
     }
 
-    public void setConcernedThemes(LinkedList<ConcernedTheme> concernedThemes) {
+    public void setConcernedThemes(ArrayList<ConcernedTheme> concernedThemes) {
         this.concernedThemes = concernedThemes;
     }
 }

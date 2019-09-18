@@ -67,7 +67,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
     Jaxb2Marshaller marshaller;
     
     private List<String> themesOrderingList = Stream.of(
-            "LandUsePlans",
+            //"LandUsePlans",
             "ch.SO.NutzungsplanungGrundnutzung", 
             "ch.SO.NutzungsplanungUeberlagernd", 
             "ch.SO.NutzungsplanungSondernutzungsplaene", 
@@ -87,7 +87,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             "GroundwaterProtectionSites",
             "NoiseSensitivityLevels",
             "ForestPerimeters",
-            "ForestDistanceLines")
+            "ForestDistanceLines",
+            "ch.SO.Einzelschutz")
             .collect(Collectors.toList());
     
     // see: https://stackoverflow.com/questions/51874785/gwt-spring-boot-autowired-is-not-working
@@ -107,7 +108,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         
 //        URL url = new URL(oerebWebServiceUrl + "/reduced/xml/geometry/" + egrid);
 //        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH533287066291.xml");
-        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH368132060914.xml");
+//        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH368132060914.xml");
+        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629.xml");
         logger.info(url.toString());
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -119,7 +121,6 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
 
         logger.info("File downloaded: " + xmlFile.getAbsolutePath());
 
-        
         StreamSource xmlSource = new StreamSource(xmlFile);
         GetExtractByIdResponse obj = (GetExtractByIdResponse) marshaller.unmarshal(xmlSource);
         ExtractType xmlExtract = obj.getValue().getExtract().getValue();
@@ -127,24 +128,24 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         Extract extract = new Extract();
         extract.setExtractIdentifier(xmlExtract.getExtractIdentifier());
 
-        LinkedList<ThemeWithoutData> themesWithoutData = xmlExtract.getThemeWithoutData().stream()
+        ArrayList<ThemeWithoutData> themesWithoutData = xmlExtract.getThemeWithoutData().stream()
                 .map(theme -> { 
                     ThemeWithoutData themeWithoutData = new ThemeWithoutData();
                     themeWithoutData.setCode(theme.getCode());
                     themeWithoutData.setName(theme.getText().getText());
                     return themeWithoutData; 
                 })
-                .collect(collectingAndThen(toList(), LinkedList<ThemeWithoutData>::new));
+                .collect(collectingAndThen(toList(), ArrayList<ThemeWithoutData>::new));
         themesWithoutData.sort(compare);
         
-        LinkedList<NotConcernedTheme> notConcernedThemes = xmlExtract.getNotConcernedTheme().stream()
+        ArrayList<NotConcernedTheme> notConcernedThemes = xmlExtract.getNotConcernedTheme().stream()
                 .map(theme -> { 
                     NotConcernedTheme notConcernedTheme = new NotConcernedTheme();
                     notConcernedTheme.setCode(theme.getCode());
                     notConcernedTheme.setName(theme.getText().getText());
                     return notConcernedTheme; 
                 })
-                .collect(collectingAndThen(toList(), LinkedList<NotConcernedTheme>::new));
+                .collect(collectingAndThen(toList(), ArrayList<NotConcernedTheme>::new));
         notConcernedThemes.sort(compare);
         
         RealEstateDPRType xmlRealEstate = xmlExtract.getRealEstate();
@@ -176,7 +177,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
 
         // We create one ConcernedTheme object per theme with all restrictions belonging to the same theme
         // since this is the way we present the restriction in the GUI.
-        LinkedList<ConcernedTheme> concernedThemesList = new LinkedList<ConcernedTheme>();
+        ArrayList<ConcernedTheme> concernedThemesList = new ArrayList<ConcernedTheme>();
         for (Map.Entry<String, List<RestrictionOnLandownershipType>> entry : groupedXmlRestrictions.entrySet()) {
             logger.info("*********************************************");
             logger.info("ConcernedTheme: " + entry.getKey());
@@ -309,6 +310,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             concernedTheme.setLegendAtWeb(legendAtWeb);
             concernedTheme.setCode(xmlRestrictions.get(0).getTheme().getCode());
             concernedTheme.setName(xmlRestrictions.get(0).getTheme().getText().getText());
+            concernedTheme.setSubtheme(xmlRestrictions.get(0).getSubTheme());
             
             concernedThemesList.add(concernedTheme);
         }
@@ -331,7 +333,18 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
     // TODO: test if it works with AbstractTheme!
     // But themesOrderingList contains already new codes.
     Comparator<AbstractTheme> compare = new Comparator<AbstractTheme>() {
-        public int compare(AbstractTheme t1, AbstractTheme t2) {
+        public int compare(AbstractTheme t1, AbstractTheme t2) {            
+            if (t1.getSubtheme() != null && t2.getSubtheme() == null) {
+                return themesOrderingList.indexOf(t1.getSubtheme()) - themesOrderingList.indexOf(t2.getCode());
+            }
+            
+            if (t2.getSubtheme() != null && t1.getSubtheme() == null) {
+                return themesOrderingList.indexOf(t1.getCode()) - themesOrderingList.indexOf(t2.getSubtheme());
+            }
+            
+            if (t1.getSubtheme() != null && t2.getSubtheme() != null) {
+                return themesOrderingList.indexOf(t1.getSubtheme()) - themesOrderingList.indexOf(t2.getSubtheme());                
+            }
             return themesOrderingList.indexOf(t1.getCode()) - themesOrderingList.indexOf(t2.getCode());
         }
    };
