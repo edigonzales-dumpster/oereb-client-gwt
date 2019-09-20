@@ -941,79 +941,7 @@ public class AppEntryPoint implements EntryPoint {
 
                     resultDiv.add(collapsibleGeneralInformation);
                 }
-          
-                /*
-                MaterialCollapsible collapsible = new MaterialCollapsible();
-                collapsible.addExpandHandler(event -> {
-                    MaterialToast.fireToast("ExpandEvent fired: " + (event.getTarget().getId()));
-                });
-                collapsible.setBackgroundColor(Color.GREY_LIGHTEN_5);
-                collapsible.setMarginTop(25);
-                collapsible.setShadow(0);
-                for (ThemeWithoutData theme : realEstate.getThemesWithoutData()) {                    
-                    MaterialCollapsibleItem collapsibleItem = new MaterialCollapsibleItem();
-                    collapsibleItem.setId(theme.getCode());
-                    
-                    MaterialCollapsibleHeader collapsibleHeader = new MaterialCollapsibleHeader();
-                    collapsibleHeader.setBackgroundColor(Color.GREY_LIGHTEN_3);
-//                    collapsibleHeader.setBackgroundColor(Color.RED_LIGHTEN_1);
-//                    collapsibleHeader.setMinHeight("0px");
-//                    collapsibleHeader.setLineHeight(0);
-                    
-                    MaterialRow headerRow = new MaterialRow();
-                    headerRow.setMarginBottom(0);
-                    
-                    MaterialColumn columnLeft = new MaterialColumn();
-                    columnLeft.setGrid("s10");
-                    columnLeft.setMargin(0);
-                    columnLeft.setPadding(0);
-                    MaterialColumn columnRight = new MaterialColumn();
-                    columnRight.setGrid("s2");
-                    columnRight.setTextAlign(TextAlign.RIGHT);
-                    columnRight.setMargin(0);
-                    columnRight.setPadding(0);
 
-                    MaterialLink collapsibleHeaderLink = new MaterialLink();
-                    collapsibleHeaderLink.setText(theme.getName());
-                    collapsibleHeaderLink.setFontWeight(FontWeight.BOLD);
-                    collapsibleHeaderLink.setFontSize("16px");
-//                    collapsibleHeaderLink.setIconType(IconType.POLYMER);
-//                    collapsibleHeaderLink.setIconPosition(IconPosition.LEFT);
-                    collapsibleHeaderLink.setTextColor(Color.BLACK);
-
-                    columnLeft.add(collapsibleHeaderLink);
-                    
-//                    MaterialBadge badge = new MaterialBadge();
-//                    badge.setText("3");
-//                    collapsibleHeaderLink.add(badge);
-                    
-                    MaterialChip chip = new MaterialChip();
-                    chip.setMargin(0);
-                    chip.setText("3");
-                    chip.setBackgroundColor(Color.GREY_LIGHTEN_1);
-                    columnRight.add(chip);
-//                    collapsibleHeaderLink.add(chip);
-                    
-                    headerRow.add(columnLeft);
-                    headerRow.add(columnRight);
-
-//                    collapsibleHeader.add(collapsibleHeaderLink);
-                    collapsibleHeader.add(headerRow);
-                    
-                    MaterialCollapsibleBody collapsibleBody = new MaterialCollapsibleBody();
-                    MaterialLabel collapsibleBodyLabel = new MaterialLabel();
-                    collapsibleBodyLabel.setText("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.");
-                    collapsibleBody.add(collapsibleBodyLabel);
-                    
-                    collapsibleItem.add(collapsibleHeader);
-                    collapsibleItem.add(collapsibleBody);
-                    collapsible.add(collapsibleItem);
-                    
-                    break;
-                }
-                resultDiv.add(collapsible);
-                */
-                
                 resultCardContent.add(resultDiv);
                 resultCard.getElement().getStyle().setProperty("visibility", "visible");
             }
