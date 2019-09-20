@@ -45,24 +45,17 @@ import com.gwidgets.shared.models.RealEstateDPR;
 import com.gwidgets.shared.models.ThemeWithoutData;
 
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
-import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType;
 import gwt.material.design.addins.client.window.MaterialWindow;
 import gwt.material.design.client.constants.ButtonSize;
 import gwt.material.design.client.constants.ButtonType;
 import gwt.material.design.client.constants.Color;
 import gwt.material.design.client.constants.Display;
-import gwt.material.design.client.constants.IconPosition;
 import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.constants.Position;
 import gwt.material.design.client.constants.TextAlign;
-import gwt.material.design.client.events.CollapseEvent;
-import gwt.material.design.client.events.ExpandEvent;
-import gwt.material.design.client.events.ExpandEvent.ExpandHandler;
-import gwt.material.design.client.ui.MaterialBadge;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialCard;
 import gwt.material.design.client.ui.MaterialCardContent;
-import gwt.material.design.client.ui.MaterialCardTitle;
 import gwt.material.design.client.ui.MaterialChip;
 import gwt.material.design.client.ui.MaterialCollapsible;
 import gwt.material.design.client.ui.MaterialCollapsibleBody;
@@ -76,9 +69,7 @@ import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialLoader;
 import gwt.material.design.client.ui.MaterialPanel;
-import gwt.material.design.client.ui.MaterialPreLoader;
 import gwt.material.design.client.ui.MaterialRow;
-import gwt.material.design.client.ui.MaterialSpinner;
 import gwt.material.design.client.ui.MaterialToast;
 import gwt.material.design.client.ui.html.Div;
 import ol.Collection;
@@ -90,21 +81,13 @@ import ol.Map;
 import ol.MapBrowserEvent;
 import ol.MapOptions;
 import ol.OLFactory;
-import ol.Overlay;
-import ol.OverlayOptions;
 import ol.View;
 import ol.ViewOptions;
 import ol.control.Control;
-import ol.control.Rotate;
-import ol.control.ScaleLine;
-import ol.control.Zoom;
 import ol.event.EventListener;
 import ol.format.Wkt;
 import ol.geom.Geometry;
-import ol.interaction.KeyboardPan;
-import ol.interaction.KeyboardZoom;
 import ol.layer.Base;
-import ol.layer.Image;
 import ol.layer.LayerOptions;
 import ol.layer.Tile;
 import ol.layer.VectorLayerOptions;
@@ -113,15 +96,12 @@ import ol.proj.ProjectionOptions;
 import ol.source.ImageWms;
 import ol.source.ImageWmsOptions;
 import ol.source.ImageWmsParams;
-import ol.source.Osm;
 import ol.source.Vector;
 import ol.source.VectorOptions;
 import ol.source.Wmts;
 import ol.source.WmtsOptions;
-import ol.source.XyzOptions;
 import ol.style.Stroke;
 import ol.style.Style;
-import ol.color.*;
 import ol.tilegrid.TileGrid;
 import ol.tilegrid.WmtsTileGrid;
 import ol.tilegrid.WmtsTileGridOptions;
@@ -143,9 +123,9 @@ public class AppEntryPoint implements EntryPoint {
     private String REAL_ESTATE_DATAPRODUCT_ID = "ch.so.agi.av.grundstuecke.rechtskraeftig";
     private String ADDRESS_DATAPRODUCT_ID = "ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge";
 
-    private String COLLAPSIBLE_CONCERNED_ID = "collapsible-concerned-id";
-    private String COLLAPSIBLE_NOT_CONCERNED_ID = "collapsible-not-concerned-id";
-    private String COLLAPSIBLE_NO_DATA_ID = "collapsibe-no-data-id";
+//    private String COLLAPSIBLE_CONCERNED_ID = "collapsible-concerned-id";
+//    private String COLLAPSIBLE_NOT_CONCERNED_ID = "collapsible-not-concerned-id";
+//    private String COLLAPSIBLE_NO_DATA_ID = "collapsibe-no-data-id";
     
     private String SEARCH_SERVICE_URL;
     private String DATA_SERVICE_URL;
@@ -164,11 +144,9 @@ public class AppEntryPoint implements EntryPoint {
     private MaterialCollapsible collapsibleConcernedTheme;
     private MaterialCollapsible collapsibleNotConcernedTheme;
     private MaterialCollapsible collapsibleThemesWithoutData;
-    private MaterialCollapsibleHeader collapsibleConcernedThemeHeader;
-    private MaterialCollapsibleItem collapsibleConcernedThemeItem;
-    private MaterialCollapsibleItem collapsibleNotConcernedThemeItem;
-    private MaterialCollapsibleItem collapsibleThemesWithoutDataItem;
+    private MaterialCollapsible collapsibleGeneralInformation;
 
+    private ArrayList<String> concernedWmsLayers = new ArrayList<String>();
     
     public void onModuleLoad() {
         // Get the settings from the server with an async call.
@@ -181,8 +159,9 @@ public class AppEntryPoint implements EntryPoint {
 
             @Override
             public void onSuccess(SettingsResponse result) {
-                SEARCH_SERVICE_URL = result.getSettings().get("SEARCH_SERVICE_URL");
-                DATA_SERVICE_URL = result.getSettings().get("DATA_SERVICE_URL");
+                SEARCH_SERVICE_URL = (String) result.getSettings().get("SEARCH_SERVICE_URL");
+                DATA_SERVICE_URL = (String) result.getSettings().get("DATA_SERVICE_URL");
+                WMS_LAYER_MAPPINGS = (HashMap) result.getSettings().get("WMS_LAYER_MAPPINGS");
                 init();
             }
         });
@@ -199,6 +178,7 @@ public class AppEntryPoint implements EntryPoint {
 //        GWT.log(Window.Location.getHash());
 //        GWT.log(Window.Location.getHref());
 
+        GWT.log(WMS_LAYER_MAPPINGS.toString());
         
         GWT.log(GWT.getModuleBaseURL());
         GWT.log(GWT.getHostPageBaseURL());
@@ -451,7 +431,7 @@ public class AppEntryPoint implements EntryPoint {
 
                 View view = map.getView();
                 double resolution = view.getResolutionForExtent(extent);
-                view.setZoom(Math.floor(view.getZoomForResolution(resolution)) - 1);
+                view.setZoom(Math.floor(view.getZoomForResolution(resolution)) - 0);
 
                 double x = extent.getLowerLeftX() + extent.getWidth() / 2;
                 double y = extent.getLowerLeftY() + extent.getHeight() / 2;
@@ -602,36 +582,31 @@ public class AppEntryPoint implements EntryPoint {
                 resultDiv.add(generalInfoRow);
                 resultDiv.add(egridInfoRow);
                 resultDiv.add(areaInfoRow);
-                
-                // FIXME add expand handler to item not collapsible
-                
+                                
                 // TODO: rename everything except the global objects
                 {
                     collapsibleConcernedTheme = new MaterialCollapsible();
-                    collapsibleConcernedTheme.setId(COLLAPSIBLE_CONCERNED_ID);
+//                    collapsibleConcernedTheme.setId(COLLAPSIBLE_CONCERNED_ID);
                     collapsibleConcernedTheme.setBackgroundColor(Color.GREY_LIGHTEN_5);
                     collapsibleConcernedTheme.setMarginTop(25);
                     collapsibleConcernedTheme.setShadow(0);
                     
                     collapsibleConcernedTheme.addExpandHandler(event -> {
-                        collapsibleNotConcernedTheme.close(1);
-                        collapsibleThemesWithoutData.close(1);
-                        
-                        GWT.log("rot");
-                        collapsibleConcernedThemeHeader.setBackgroundColor(Color.GREY_LIGHTEN_2);
-                        collapsibleConcernedThemeHeader.setBackgroundColor(Color.RED);
+                        collapsibleNotConcernedTheme.closeAll();
+                        collapsibleThemesWithoutData.closeAll();
+                        collapsibleGeneralInformation.closeAll();
                     });
                     
-                    collapsibleConcernedTheme.addCollapseHandler(event -> {
-                        collapsibleConcernedThemeHeader.setBackgroundColor(Color.GREY_LIGHTEN_3);
+                    // TODO: Beim Ausschalten der WMS-Layer eventuell wieder intressant (oder bei den Sub-Collapsibles).
+//                    collapsibleConcernedTheme.addCollapseHandler(event -> {
+//                        GWT.log("collapsibleConcernedTheme.addCollapseHandler");                        
+//                    });
 
-                    });
-
-                    collapsibleConcernedThemeItem = new MaterialCollapsibleItem();
+                    MaterialCollapsibleItem collapsibleConcernedThemeItem = new MaterialCollapsibleItem();
                     
-                    collapsibleConcernedThemeHeader = new MaterialCollapsibleHeader();
+                    MaterialCollapsibleHeader collapsibleConcernedThemeHeader = new MaterialCollapsibleHeader();
                     collapsibleConcernedThemeHeader.setBackgroundColor(Color.GREY_LIGHTEN_3);
-
+                    
                     MaterialRow collapsibleConcernedThemeHeaderRow = new MaterialRow();
                     collapsibleConcernedThemeHeaderRow.setMarginBottom(0);
                     
@@ -656,6 +631,7 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleThemesWithoutHeaderChip.setMargin(0);
                     collapsibleThemesWithoutHeaderChip.setText(String.valueOf(realEstate.getConcernedThemes().size()));
                     collapsibleThemesWithoutHeaderChip.setBackgroundColor(Color.GREY_LIGHTEN_1);
+//                    collapsibleThemesWithoutHeaderChip.setBackgroundColor(Color.RED_LIGHTEN_1);
                     collapsibleConcernedThemeColumnRight.add(collapsibleThemesWithoutHeaderChip);
 
                     collapsibleConcernedThemeHeaderRow.add(collapsibleConcernedThemeColumnLeft);
@@ -668,7 +644,9 @@ public class AppEntryPoint implements EntryPoint {
                     
                     MaterialCollapsible collapsible = new MaterialCollapsible();
                     collapsible.setAccordion(true);
+                    int i=0;
                     for (ConcernedTheme theme : realEstate.getConcernedThemes()) {
+                        i++;
                         collapsible.setBackgroundColor(Color.GREY_LIGHTEN_3);
                         collapsible.setMarginTop(0);
                         collapsible.setMarginBottom(0);
@@ -676,12 +654,21 @@ public class AppEntryPoint implements EntryPoint {
                         collapsible.setBorder("0px");
 
                         MaterialCollapsibleItem item = new MaterialCollapsibleItem();
-                        item.setId(theme.getCode());
+                        
+                        // Cannot use code since all subthemes share
+                        // the same code.
+                        item.setId(theme.getReferenceWMS().getLayers());
+                        concernedWmsLayers.add(theme.getReferenceWMS().getLayers());
+                                                
                         MaterialCollapsibleHeader header = new MaterialCollapsibleHeader();
-                        header.setBackgroundColor(Color.GREY_LIGHTEN_3);
+                        header.setBackgroundColor(Color.GREY_LIGHTEN_4);
                         header.setLineHeight(18); // heuristic 
                         header.setDisplay(Display.TABLE);
-                        header.setBorderBottom("1px solid #dddddd");
+                        if (i < realEstate.getConcernedThemes().size()) {
+                            header.setBorderBottom("1px solid #dddddd");
+                        } else {
+                            header.setBorderBottom("0px solid #dddddd");
+                        }
                         header.setWidth("100%");
 //                        header.setMinHeight("45px");
                         header.setHeight("45px"); // Firefox
@@ -693,7 +680,7 @@ public class AppEntryPoint implements EntryPoint {
                         foo.setDisplay(Display.TABLE_CELL);
                         foo.setVerticalAlign(VerticalAlign.MIDDLE);
                         
-                        link.setText(theme.getName() + " " + theme.getName());
+                        link.setText(theme.getName());
                         link.setFontWeight(FontWeight.BOLD);
                         link.setFontSize(BODY_FONT_SIZE);
                         link.setTextColor(Color.BLACK);
@@ -704,21 +691,42 @@ public class AppEntryPoint implements EntryPoint {
                         item.add(header);
                         
                         MaterialCollapsibleBody body = new MaterialCollapsibleBody();
-                        body.add(new Label(theme.getReferenceWMS().getBaseUrl()));
-                        item.add(body);
+                        body.addMouseOverHandler(event -> {
+                            body.getElement().getStyle().setCursor(Cursor.DEFAULT);
+                        });
+                        body.setBackgroundColor(Color.WHITE);
+                        body.setPaddingLeft(15);
+                        body.setPaddingRight(15);
+                        body.setPaddingTop(5);
+                        body.setPaddingBottom(5);
+                        if (i < realEstate.getConcernedThemes().size()) {
+                            body.setBorderBottom("1px solid #dddddd");
+                        } else {
+                            body.setBorderBottom("0px solid #dddddd");
+                            body.setBorderTop("1px solid #dddddd");
+                        }                        
                         
+                        String baseUrl = theme.getReferenceWMS().getBaseUrl();
+                        if (WMS_LAYER_MAPPINGS.get(baseUrl) != null) {
+                            baseUrl = WMS_LAYER_MAPPINGS.get(theme.getReferenceWMS().getBaseUrl());
+                        }
+                        body.add(new Label(baseUrl + "?LAYERS=" + theme.getReferenceWMS().getLayers()));
+
+                        
+                        item.add(body);
                         collapsible.add(item);
-                    }
+                    }               
                     
-                                    
+                    collapsible.addExpandHandler(event -> {
+                       GWT.log("id of expand item: " + event.getTarget().getId()); 
+                    });
+                    
                     collapsibleConcernedThemeBody.add(collapsible);
 
                     collapsibleConcernedThemeItem.add(collapsibleConcernedThemeHeader);
                     collapsibleConcernedThemeItem.add(collapsibleConcernedThemeBody);
                     collapsibleConcernedTheme.add(collapsibleConcernedThemeItem);
 
-                    
-                    
                     resultDiv.add(collapsibleConcernedTheme);
                 }    
                 
@@ -727,25 +735,25 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleNotConcernedTheme.setBackgroundColor(Color.GREY_LIGHTEN_5);
                     collapsibleNotConcernedTheme.setMarginTop(25);
                     collapsibleNotConcernedTheme.setShadow(0);
-                    
-                    collapsibleNotConcernedTheme.addExpandHandler(event -> {
-                        GWT.log("collapsibleNotConcernedTheme expand" );
-//                        collapsibleConcernedTheme.closeAll();
-//                        collapsibleConcernedTheme.close(1);
-//                        collapsibleConcernedTheme.fireEvent(new CollapseEvent(event));
-//                        collapsibleThemesWithoutData.close(1);
-                        collapsibleConcernedThemeItem.setActive(false);
 
-                    });
+                     collapsibleNotConcernedTheme.addExpandHandler(event -> {
+                        collapsibleConcernedTheme.close(1);
+                        collapsibleThemesWithoutData.closeAll();
+                        collapsibleGeneralInformation.closeAll();
+                     });
+                     
+//                     collapsibleNotConcernedTheme.addCollapseHandler(event -> {
+//                         GWT.log("collapsibleNotConcernedTheme.addCollapseHandler");
+//                      });
                     
-                    collapsibleNotConcernedThemeItem = new MaterialCollapsibleItem();
+                    MaterialCollapsibleItem collapsibleNotConcernedThemeItem = new MaterialCollapsibleItem();
                     
                     MaterialCollapsibleHeader collapsibleNotConcernedThemeHeader = new MaterialCollapsibleHeader();
                     collapsibleNotConcernedThemeHeader.setBackgroundColor(Color.GREY_LIGHTEN_3);
 
                     MaterialRow collapsibleNotConcernedThemeHeaderRow = new MaterialRow();
                     collapsibleNotConcernedThemeHeaderRow.setMarginBottom(0);
-                    
+
                     MaterialColumn collapsibleNotConcernedThemeColumnLeft = new MaterialColumn();
                     collapsibleNotConcernedThemeColumnLeft.setGrid("s10");
                     collapsibleNotConcernedThemeColumnLeft.setMargin(0);
@@ -762,7 +770,7 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleNotConcernedHeaderLink.setFontSize(SUB_HEADER_FONT_SIZE);
                     collapsibleNotConcernedHeaderLink.setTextColor(Color.BLACK);
                     collapsibleNotConcernedThemeColumnLeft.add(collapsibleNotConcernedHeaderLink);
-                    
+
                     MaterialChip collapsibleNotConcernedHeaderChip = new MaterialChip();
                     collapsibleNotConcernedHeaderChip.setMargin(0);
                     collapsibleNotConcernedHeaderChip.setText(String.valueOf(realEstate.getNotConcernedThemes().size()));
@@ -775,9 +783,12 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleNotConcernedThemeHeader.add(collapsibleNotConcernedThemeHeaderRow);
                     
                     MaterialCollapsibleBody collapsibleBody = new MaterialCollapsibleBody();
+                    collapsibleBody.addMouseOverHandler(event -> {
+                        collapsibleBody.getElement().getStyle().setCursor(Cursor.DEFAULT);
+                    });                    
                     collapsibleBody.setPadding(0);
                     MaterialCollection collection = new MaterialCollection();
-                    
+
                     for (NotConcernedTheme theme : realEstate.getNotConcernedThemes()) {
                         MaterialCollectionItem item = new MaterialCollectionItem();
                         MaterialLabel label = new MaterialLabel(theme.getName());
@@ -786,11 +797,11 @@ public class AppEntryPoint implements EntryPoint {
                         collection.add(item);
                     }
                     collapsibleBody.add(collection);
-                                     
+ 
                     collapsibleNotConcernedThemeItem.add(collapsibleNotConcernedThemeHeader);
                     collapsibleNotConcernedThemeItem.add(collapsibleBody);
                     collapsibleNotConcernedTheme.add(collapsibleNotConcernedThemeItem);
-
+                    
                     resultDiv.add(collapsibleNotConcernedTheme);
                 }      
                 
@@ -801,13 +812,13 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleThemesWithoutData.setShadow(0);
                     
                     collapsibleThemesWithoutData.addExpandHandler(event -> {
-//                        collapsibleConcernedTheme.close(1);
 //                        collapsibleConcernedTheme.closeAll();
-//                        collapsibleConcernedTheme.fireEvent(new CollapseEvent(event));
-//                        collapsibleNotConcernedTheme.closeAll();
+                        collapsibleConcernedTheme.close(1);                    
+                        collapsibleNotConcernedTheme.closeAll();
+                        collapsibleGeneralInformation.closeAll();
                     });
                     
-                    collapsibleThemesWithoutDataItem = new MaterialCollapsibleItem();
+                    MaterialCollapsibleItem collapsibleThemesWithoutDataItem = new MaterialCollapsibleItem();
                     
                     MaterialCollapsibleHeader collapsibleThemesWithoutDataHeader = new MaterialCollapsibleHeader();
                     collapsibleThemesWithoutDataHeader.setBackgroundColor(Color.GREY_LIGHTEN_3);
@@ -844,6 +855,9 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleThemesWithoutDataHeader.add(collapsibleThemesWithoutDataHeaderRow);
                     
                     MaterialCollapsibleBody collapsibleBody = new MaterialCollapsibleBody();
+                    collapsibleBody.addMouseOverHandler(event -> {
+                        collapsibleBody.getElement().getStyle().setCursor(Cursor.DEFAULT);
+                    });                    
                     collapsibleBody.setPadding(0);
                     MaterialCollection collection = new MaterialCollection();
                     
@@ -864,37 +878,45 @@ public class AppEntryPoint implements EntryPoint {
                 }
                 
                 {
-                    MaterialCollapsible collapsibleGeneralInformation = new MaterialCollapsible();
+                    collapsibleGeneralInformation = new MaterialCollapsible();
                     collapsibleGeneralInformation.setBackgroundColor(Color.GREY_LIGHTEN_5);
                     collapsibleGeneralInformation.setMarginTop(25);
                     collapsibleGeneralInformation.setShadow(0);
                     
+                    collapsibleGeneralInformation.addExpandHandler(event -> {
+                        collapsibleConcernedTheme.close(1);
+                        collapsibleNotConcernedTheme.closeAll();
+                        collapsibleThemesWithoutData.closeAll();
+                     });
+
                     MaterialCollapsibleItem collapsibleGeneralInformationItem = new MaterialCollapsibleItem();
                     
                     MaterialCollapsibleHeader collapsibleGeneralInformationHeader = new MaterialCollapsibleHeader();
                     collapsibleGeneralInformationHeader.setBackgroundColor(Color.GREY_LIGHTEN_3);
                     
-//                    collapsibleGeneralInformationHeader.addClickHandler(event -> {
-//                        MaterialWindow generalInformationWindow = new MaterialWindow();
-//                        generalInformationWindow.setTitle("ÖREB-Kataster Kanton Solothurn");
-//                        generalInformationWindow.setFontSize("16px");
-//                        generalInformationWindow.setMarginLeft(0);
-//                        generalInformationWindow.setMarginRight(0);
-//                        generalInformationWindow.setWidth("1024px");
-//                        generalInformationWindow.setToolbarColor(Color.RED_LIGHTEN_1); 
-//                        
-//                        MaterialPanel panel = new MaterialPanel();
-//                        MaterialRow row = new MaterialRow();
-//                        row.setPadding(5);
-//                        row.add(new MaterialLabel("Hallo Welt."));
-//
-//                        panel.add(row);
-//                        generalInformationWindow.add(panel);
-//                        
-//                        generalInformationWindow.setTop(Window.getClientHeight()/2);
-//                        generalInformationWindow.open();
-//                    });
-    
+                    MaterialCollapsibleBody body = new MaterialCollapsibleBody();
+                    body.addMouseOverHandler(event -> {
+                        body.getElement().getStyle().setCursor(Cursor.DEFAULT);
+                    });                                        
+                    body.setBackgroundColor(Color.WHITE);
+                    body.setFontSize(BODY_FONT_SIZE);
+                    body.setPaddingLeft(15);
+                    body.setPaddingRight(15);
+                    body.setPaddingTop(5);
+                    body.setPaddingBottom(5);
+
+                    Div div = new Div();
+                    
+                    HTML infoHtml = new HTML();
+                    
+                    StringBuilder html = new StringBuilder();
+                    html.append("<b>Katasterverantwortliche Stelle</b>");
+                    html.append("<br>");
+                    html.append(extract.getPlrCadastreAuthority().getName());
+                    
+                    infoHtml.setHTML(html.toString());
+                    body.add(infoHtml);
+ 
                     MaterialRow collapsibleGeneralInformationHeaderRow = new MaterialRow();
                     collapsibleGeneralInformationHeaderRow.setMarginBottom(0);
                     
@@ -914,6 +936,7 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleGeneralInformationHeader.add(collapsibleGeneralInformationHeaderRow);
                     
                     collapsibleGeneralInformationItem.add(collapsibleGeneralInformationHeader);
+                    collapsibleGeneralInformationItem.add(body);
                     collapsibleGeneralInformation.add(collapsibleGeneralInformationItem);
 
                     resultDiv.add(collapsibleGeneralInformation);
@@ -1335,6 +1358,7 @@ public class AppEntryPoint implements EntryPoint {
                                 realEstateWindow.setFontSize("16px");
                                 realEstateWindow.setMarginLeft(0);
                                 realEstateWindow.setMarginRight(0);
+//                                realEstateWindow.setShadow(0);
                                 realEstateWindow.setWidth("300px");
                                 realEstateWindow.setToolbarColor(Color.RED_LIGHTEN_1); 
 
@@ -1370,13 +1394,11 @@ public class AppEntryPoint implements EntryPoint {
                                     realEstateRow.addMouseOverHandler(event -> {
                                         realEstateRow.setBackgroundColor(Color.GREY_LIGHTEN_3);
                                         realEstateRow.getElement().getStyle().setCursor(Cursor.POINTER); 
-
                                     });
                                     
                                     realEstateRow.addMouseOutHandler(event -> {
                                         realEstateRow.setBackgroundColor(Color.WHITE);
                                         realEstateRow.getElement().getStyle().setCursor(Cursor.DEFAULT); 
-
                                     });
                                     
                                     realEstatePanel.add(realEstateRow);

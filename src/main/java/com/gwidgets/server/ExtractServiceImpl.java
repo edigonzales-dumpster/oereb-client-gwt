@@ -33,6 +33,7 @@ import com.gwidgets.shared.models.ConcernedTheme;
 import com.gwidgets.shared.models.Document;
 import com.gwidgets.shared.models.Extract;
 import com.gwidgets.shared.models.NotConcernedTheme;
+import com.gwidgets.shared.models.Office;
 import com.gwidgets.shared.models.RealEstateDPR;
 import com.gwidgets.shared.models.ReferenceWMS;
 import com.gwidgets.shared.models.Restriction;
@@ -285,7 +286,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             StringBuilder baseUrlBuilder = new StringBuilder();
             baseUrlBuilder.append(schema).append("://").append(host);
             if (uriComponents.getPort() != -1) {
-                baseUrlBuilder.append(String.valueOf(uriComponents.getPort()));
+                baseUrlBuilder.append(":"+String.valueOf(uriComponents.getPort()));
             }
             baseUrlBuilder.append(path);
             String baseUrl = baseUrlBuilder.toString();
@@ -321,6 +322,15 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         extract.setRealEstate(realEstate);
         extract.setPdfLink(oerebWebServiceUrl + "/reduced/pdf/geometry/" + egrid);
                
+        Office plrCadastreAuthority = new Office();
+        plrCadastreAuthority.setName(xmlExtract.getPLRCadastreAuthority().getName().getLocalisedText().get(0).getText());
+        plrCadastreAuthority.setOfficeAtWeb(xmlExtract.getPLRCadastreAuthority().getOfficeAtWeb().getValue());
+        plrCadastreAuthority.setStreet(xmlExtract.getPLRCadastreAuthority().getStreet());
+        plrCadastreAuthority.setNumber(xmlExtract.getPLRCadastreAuthority().getNumber());
+        plrCadastreAuthority.setPostalCode(xmlExtract.getPLRCadastreAuthority().getPostalCode());
+        plrCadastreAuthority.setCity(xmlExtract.getPLRCadastreAuthority().getCity());
+        extract.setPlrCadastreAuthority(plrCadastreAuthority);
+        
         ExtractResponse response = new ExtractResponse();
         response.setExtract(extract);
 //        response.setEgrid("lilalaunebär");

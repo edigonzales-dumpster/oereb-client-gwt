@@ -2,6 +2,7 @@ package com.gwidgets.server;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 
@@ -20,6 +21,8 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
     @Value("${app.dataServiceUrl}")
     private String dataServiceUrl;
 
+    @Value("#{${app.wmsLayerMappings}}")
+    HashMap<String, String> wmsLayerMappings;
 
     @Override
     public void init() throws ServletException {
@@ -29,10 +32,11 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
     
     @Override
     public SettingsResponse settingsServer() throws IllegalArgumentException, IOException {
-        HashMap<String,String> settings = new HashMap<String,String>();
+        HashMap<String,Object> settings = new HashMap<String,Object>();
         
         settings.put("SEARCH_SERVICE_URL", searchServiceUrl);
         settings.put("DATA_SERVICE_URL", dataServiceUrl);
+        settings.put("WMS_LAYER_MAPPINGS", wmsLayerMappings);
         
         SettingsResponse response = new SettingsResponse();
         response.setSettings(settings);

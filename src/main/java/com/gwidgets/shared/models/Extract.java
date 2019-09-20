@@ -9,6 +9,8 @@ public class Extract implements IsSerializable {
 
     String pdfLink;
     
+    Office plrCadastreAuthority;
+    
     public String getExtractIdentifier() {
         return extractIdentifier;
     }
@@ -31,5 +33,13 @@ public class Extract implements IsSerializable {
 
     public void setPdfLink(String pdfLink) {
         this.pdfLink = pdfLink;
+    }
+
+    public Office getPlrCadastreAuthority() {
+        return plrCadastreAuthority;
+    }
+
+    public void setPlrCadastreAuthority(Office plrCadastreAuthority) {
+        this.plrCadastreAuthority = plrCadastreAuthority;
     }
 }
