@@ -108,6 +108,7 @@ import ol.tilegrid.WmtsTileGridOptions;
 import proj4.Proj4;
 
 public class AppEntryPoint implements EntryPoint {
+    private PLRMessages messages = GWT.create(PLRMessages.class);
     private final ExtractServiceAsync extractService = GWT.create(ExtractService.class);
     private final SettingsServiceAsync settingsService = GWT.create(SettingsService.class);
 
@@ -120,12 +121,9 @@ public class AppEntryPoint implements EntryPoint {
     private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer";
     private String REAL_ESTATE_VECTOR_FEATURE_ID = "real_estate_fid";
 
+    // TODO: move to settings
     private String REAL_ESTATE_DATAPRODUCT_ID = "ch.so.agi.av.grundstuecke.rechtskraeftig";
     private String ADDRESS_DATAPRODUCT_ID = "ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge";
-
-//    private String COLLAPSIBLE_CONCERNED_ID = "collapsible-concerned-id";
-//    private String COLLAPSIBLE_NOT_CONCERNED_ID = "collapsible-not-concerned-id";
-//    private String COLLAPSIBLE_NO_DATA_ID = "collapsibe-no-data-id";
     
     private String SEARCH_SERVICE_URL;
     private String DATA_SERVICE_URL;
@@ -253,7 +251,7 @@ public class AppEntryPoint implements EntryPoint {
         // need the object.
         // The chip can be made invisible with CSS. But the size
         // must be also set to zero.
-        autocomplete.setPlaceholder("Suche: Grundstücke und Adressen");
+        autocomplete.setPlaceholder(messages.searchPlaceholder());
         autocomplete.setAutoSuggestLimit(5);
         autocomplete.setLimit(1);
         autocomplete.addValueChangeHandler(new SearchValueChangeHandler());
@@ -431,7 +429,7 @@ public class AppEntryPoint implements EntryPoint {
 
                 View view = map.getView();
                 double resolution = view.getResolutionForExtent(extent);
-                view.setZoom(Math.floor(view.getZoomForResolution(resolution)) - 0);
+                view.setZoom(Math.floor(view.getZoomForResolution(resolution)) - 1);
 
                 double x = extent.getLowerLeftX() + extent.getWidth() / 2;
                 double y = extent.getLowerLeftY() + extent.getHeight() / 2;
@@ -529,7 +527,8 @@ public class AppEntryPoint implements EntryPoint {
                 generalInfoTitleColumn.getElement().getStyle().setProperty("fontSize", HEADER_FONT_SIZE);
                 generalInfoTitleColumn.getElement().getStyle().setProperty("fontWeight", "700");
 
-                String lbl = "Grundstück " + number + " in " + municipality;
+//                String lbl = "Grundstück " + number + " in " + municipality;
+                String lbl = messages.resultHeader(number, municipality);
                 if (!municipality.contains("(")) {
                     lbl += " (" + canton + ")";
                 }
@@ -566,7 +565,7 @@ public class AppEntryPoint implements EntryPoint {
                 areaInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
                 areaInfoKeyColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
                 areaInfoKeyColumn.getElement().getStyle().setProperty("fontWeight", "700");
-                areaInfoKeyColumn.add(new Label("Fläche:"));
+                areaInfoKeyColumn.add(new Label(messages.resultArea()+":"));
                 areaInfoRow.add(areaInfoKeyColumn);
 
                 MaterialColumn areaInfoValueColumn = new MaterialColumn();
@@ -621,7 +620,7 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleConcernedThemeColumnRight.setPadding(0);
 
                     MaterialLink collapsibleThemesWithoutHeaderLink = new MaterialLink();
-                    collapsibleThemesWithoutHeaderLink.setText("Betroffene Themen");
+                    collapsibleThemesWithoutHeaderLink.setText(messages.concernedThemes());
                     collapsibleThemesWithoutHeaderLink.setFontWeight(FontWeight.BOLD);
                     collapsibleThemesWithoutHeaderLink.setFontSize(SUB_HEADER_FONT_SIZE);
                     collapsibleThemesWithoutHeaderLink.setTextColor(Color.BLACK);
@@ -765,7 +764,7 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleNotConcernedThemeColumnRight.setPadding(0);
 
                     MaterialLink collapsibleNotConcernedHeaderLink = new MaterialLink();
-                    collapsibleNotConcernedHeaderLink.setText("Nicht betroffene Themen");
+                    collapsibleNotConcernedHeaderLink.setText(messages.notConcernedThemes());
                     collapsibleNotConcernedHeaderLink.setFontWeight(FontWeight.BOLD);
                     collapsibleNotConcernedHeaderLink.setFontSize(SUB_HEADER_FONT_SIZE);
                     collapsibleNotConcernedHeaderLink.setTextColor(Color.BLACK);
@@ -837,7 +836,7 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleThemesWithoutDataColumnRight.setPadding(0);
 
                     MaterialLink collapsibleThemesWithoutHeaderLink = new MaterialLink();
-                    collapsibleThemesWithoutHeaderLink.setText("Nicht verfügbare Themen");
+                    collapsibleThemesWithoutHeaderLink.setText(messages.themesWithoutData());
                     collapsibleThemesWithoutHeaderLink.setFontWeight(FontWeight.BOLD);
                     collapsibleThemesWithoutHeaderLink.setFontSize(SUB_HEADER_FONT_SIZE);
                     collapsibleThemesWithoutHeaderLink.setTextColor(Color.BLACK);
@@ -926,7 +925,7 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleGeneralInformationColumnLeft.setPadding(0);
     
                     MaterialLink collapsibleThemesWithoutHeaderLink = new MaterialLink();
-                    collapsibleThemesWithoutHeaderLink.setText("Allgemeine und rechtliche Informationen");
+                    collapsibleThemesWithoutHeaderLink.setText(messages.generalInformation());
                     collapsibleThemesWithoutHeaderLink.setFontWeight(FontWeight.BOLD);
                     collapsibleThemesWithoutHeaderLink.setFontSize(SUB_HEADER_FONT_SIZE);
                     collapsibleThemesWithoutHeaderLink.setTextColor(Color.BLACK);
