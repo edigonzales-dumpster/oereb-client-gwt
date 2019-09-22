@@ -5,7 +5,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class Restriction implements IsSerializable {
     private String information;
     
-    private byte[] symbol;
+    private String symbol;
     
     private String typeCode;
     
@@ -25,11 +25,11 @@ public class Restriction implements IsSerializable {
         this.information = information;
     }
 
-    public byte[] getSymbol() {
+    public String getSymbol() {
         return symbol;
     }
 
-    public void setSymbol(byte[] symbol) {
+    public void setSymbol(String symbol) {
         this.symbol = symbol;
     }
 

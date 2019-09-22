@@ -42,6 +42,7 @@ import com.gwidgets.shared.models.ConcernedTheme;
 import com.gwidgets.shared.models.Extract;
 import com.gwidgets.shared.models.NotConcernedTheme;
 import com.gwidgets.shared.models.RealEstateDPR;
+import com.gwidgets.shared.models.ReferenceWMS;
 import com.gwidgets.shared.models.ThemeWithoutData;
 
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
@@ -69,6 +70,7 @@ import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialLoader;
 import gwt.material.design.client.ui.MaterialPanel;
+import gwt.material.design.client.ui.MaterialRange;
 import gwt.material.design.client.ui.MaterialRow;
 import gwt.material.design.client.ui.MaterialToast;
 import gwt.material.design.client.ui.html.Div;
@@ -88,6 +90,7 @@ import ol.event.EventListener;
 import ol.format.Wkt;
 import ol.geom.Geometry;
 import ol.layer.Base;
+import ol.layer.Image;
 import ol.layer.LayerOptions;
 import ol.layer.Tile;
 import ol.layer.VectorLayerOptions;
@@ -404,22 +407,12 @@ public class AppEntryPoint implements EntryPoint {
                 int area = realEstate.getLandRegistryArea();
 
                 GWT.log(result.getExtract().getExtractIdentifier().toString());
-//                GWT.log(result.getExtract().getExtractIdentifier());
-//                GWT.log(result.getExtract().getReferenceWMS().getBaseUrl());
-//                GWT.log(result.getExtract().getReferenceWMS().getLayers());
-//                GWT.log(result.getExtract().getGeometry());
 
                 // Remove all oereb layers from the map.
                 // TODO: They are removed already when requesting the extract
                 // from the server.
-                removeOerebLayers();
-
-                // FIXME do i need this anymore?
-//                ol.layer.Vector vlayer = (ol.layer.Vector) getLayerById(REAL_ESTATE_VECTOR_LAYER_ID);
-//                if (vlayer != null) {
-//                    map.removeLayer(vlayer);
-//                }
-
+                removePlrLayers();
+                
                 // create the vector layer for highlighting the real estate
                 ol.layer.Vector vlayer = createRealEstateVectorLayer(result.getExtract().getRealEstate().getLimit());
 
@@ -437,47 +430,14 @@ public class AppEntryPoint implements EntryPoint {
                 // Das ist jetzt ziemlich heuristisch...
                 // 500 = Breite des Suchresultates
                 view.setCenter(new Coordinate(x-(500*view.getResolution())/2, y));
-                                
-//                ImageWmsParams imageWMSParams = OLFactory.createOptions();
-//                imageWMSParams.setLayers(result.getExtract().getReferenceWMS().getLayers());
-//
-//                ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
-//                imageWMSOptions.setUrl(result.getExtract().getReferenceWMS().getBaseUrl());
-//                imageWMSOptions.setParams(imageWMSParams);
-//                imageWMSOptions.setRatio(1.5f);
-//
-//                ImageWms imageWMSSource = new ImageWms(imageWMSOptions);
-//
-//                LayerOptions layerOptions = OLFactory.createOptions();
-//                layerOptions.setSource(imageWMSSource);
-//
-//                Image wmsLayer = new Image(layerOptions);
-//                wmsLayer.set("id", result.getExtract().getReferenceWMS().getLayers());              
-//              
-////              map.addOverlay(overlay);
-//                map.addLayer(wmsLayer);
-//
-                // add vector layer for hightlighting the real estate
+                
+                vlayer.setZIndex(1001);
                 map.addLayer(vlayer);
-//                
-//                Collection<Base> layers = map.getLayers();
-//                for (int i = 0; i < layers.getLength(); i++) {
-//                    Base item = layers.item(i);
-//                    GWT.log(item.toString());
-//                    // GWT.log(item.get("id").toString());
-//                    try {
-//                        GWT.log(item.get("id").toString());
-//                    } catch (Exception e) {
-//                    }
-//
-//                }              
 
                 resultDiv = new Div();
 
                 MaterialRow buttonRow = new MaterialRow();
                 buttonRow.setMarginBottom(25);
-//                buttonRow.setGrid("s12");
-//                buttonRow.getElement().getStyle().setProperty("margin", "0px");
 
                 MaterialColumn pdfButtonColumn = new MaterialColumn();
                 pdfButtonColumn.setPadding(0);
@@ -486,11 +446,12 @@ public class AppEntryPoint implements EntryPoint {
                 MaterialButton pdfButton = new MaterialButton();
                 pdfButton.setIconType(IconType.INSERT_DRIVE_FILE);
                 pdfButton.setType(ButtonType.FLOATING);
-                pdfButton.setTooltip("Auszug als PDF anfordern");
+                pdfButton.setTooltip(messages.resultPDFTooltip());
                 pdfButton.setTooltipPosition(Position.TOP);
                 pdfButtonColumn.add(pdfButton);
                 buttonRow.add(pdfButtonColumn);
 
+                // TODO: Request via service. Nicht direkt das PDF aufrufen (dauert zu lange).
                 pdfButton.addClickHandler(event -> {
 //                    Window.open("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629_layer_ordering.pdf", "_target", "enabled");
                     Window.open(
@@ -506,7 +467,7 @@ public class AppEntryPoint implements EntryPoint {
                 MaterialButton deleteExtractButton = new MaterialButton();
                 deleteExtractButton.setIconType(IconType.CLOSE);
                 deleteExtractButton.setType(ButtonType.FLOATING);
-                deleteExtractButton.setTooltip("Auszug schliessen");
+                deleteExtractButton.setTooltip(messages.resultCloseTooltip());
                 deleteExtractButton.setTooltipPosition(Position.TOP);
                 deleteExtractButtonColumn.add(deleteExtractButton);
                 buttonRow.add(deleteExtractButtonColumn);
@@ -527,7 +488,6 @@ public class AppEntryPoint implements EntryPoint {
                 generalInfoTitleColumn.getElement().getStyle().setProperty("fontSize", HEADER_FONT_SIZE);
                 generalInfoTitleColumn.getElement().getStyle().setProperty("fontWeight", "700");
 
-//                String lbl = "Grundstück " + number + " in " + municipality;
                 String lbl = messages.resultHeader(number, municipality);
                 if (!municipality.contains("(")) {
                     lbl += " (" + canton + ")";
@@ -646,6 +606,10 @@ public class AppEntryPoint implements EntryPoint {
                     int i=0;
                     for (ConcernedTheme theme : realEstate.getConcernedThemes()) {
                         i++;
+                        
+                        Image wmsLayer = createPlrWmsLayer(theme.getReferenceWMS());
+                        map.addLayer(wmsLayer);
+
                         collapsible.setBackgroundColor(Color.GREY_LIGHTEN_3);
                         collapsible.setMarginTop(0);
                         collapsible.setMarginBottom(0);
@@ -654,10 +618,11 @@ public class AppEntryPoint implements EntryPoint {
 
                         MaterialCollapsibleItem item = new MaterialCollapsibleItem();
                         
-                        // Cannot use code since all subthemes share
+                        // Cannot use the code since all subthemes share
                         // the same code.
-                        item.setId(theme.getReferenceWMS().getLayers());
-                        concernedWmsLayers.add(theme.getReferenceWMS().getLayers());
+                        String layerId = theme.getReferenceWMS().getLayers();
+                        item.setId(layerId);
+                        concernedWmsLayers.add(layerId);
                                                 
                         MaterialCollapsibleHeader header = new MaterialCollapsibleHeader();
                         header.setBackgroundColor(Color.GREY_LIGHTEN_4);
@@ -669,24 +634,22 @@ public class AppEntryPoint implements EntryPoint {
                             header.setBorderBottom("0px solid #dddddd");
                         }
                         header.setWidth("100%");
-//                        header.setMinHeight("45px");
                         header.setHeight("45px"); // Firefox
                         
                         MaterialLink link = new MaterialLink();
-                        Div foo = new Div();
-                        foo.setBorder("0px");
-                        foo.setId("foo");
-                        foo.setDisplay(Display.TABLE_CELL);
-                        foo.setVerticalAlign(VerticalAlign.MIDDLE);
+                        Div aParent = new Div();
+                        aParent.setBorder("0px");
+                        aParent.setDisplay(Display.TABLE_CELL);
+                        aParent.setVerticalAlign(VerticalAlign.MIDDLE);
                         
                         link.setText(theme.getName());
                         link.setFontWeight(FontWeight.BOLD);
                         link.setFontSize(BODY_FONT_SIZE);
                         link.setTextColor(Color.BLACK);
                         link.setBorder("0px");
-                        foo.add(link);
+                        aParent.add(link);
                        
-                        header.add(foo);
+                        header.add(aParent);
                         item.add(header);
                         
                         MaterialCollapsibleBody body = new MaterialCollapsibleBody();
@@ -705,6 +668,71 @@ public class AppEntryPoint implements EntryPoint {
                             body.setBorderTop("1px solid #dddddd");
                         }                        
                         
+                        MaterialRow sliderRow = new MaterialRow();
+                        sliderRow.setMarginBottom(15);
+                        
+                        MaterialColumn sliderRowLeft = new MaterialColumn();
+                        sliderRowLeft.setGrid("s2");
+                        MaterialColumn sliderRowRight = new MaterialColumn();
+                        sliderRowRight.setGrid("s10");
+
+                        MaterialRange slider = new MaterialRange();
+                        slider.setPadding(0);
+                        slider.setMin(0);
+                        slider.setMax(100);
+                        slider.setValue(Double.valueOf((theme.getReferenceWMS().getLayerOpacity() * 100)).intValue());
+                        slider.addValueChangeHandler(event -> {
+                            double opacity = slider.getValue() / 100.0;
+                            wmsLayer.setOpacity(opacity);
+                        });
+                        sliderRowLeft.add(new Label(messages.resultOpacity() + ":"));
+                        sliderRowLeft.setFontSize(BODY_FONT_SIZE);
+                        sliderRowLeft.setPadding(0);
+                        
+                        sliderRowRight.add(slider);
+
+                        sliderRow.add(sliderRowLeft);
+                        sliderRow.add(sliderRowRight);
+                        body.add(sliderRow);
+                        
+                        
+                        // TODO: eher Tabelle. Das mit den Umbrüchen habe ich nicht wirklich im Griff.
+                        MaterialRow informationHeaderRow = new MaterialRow();
+
+                        MaterialColumn typeColumn = new MaterialColumn();
+                        typeColumn.setGrid("s6");
+                        typeColumn.setPadding(0);
+                        typeColumn.setMarginRight(5);
+                        typeColumn.setFontSize(BODY_FONT_SIZE);
+                        typeColumn.add(new Label(theme.getRestrictions().get(0).getInformation() + theme.getRestrictions().get(0).getInformation()));
+                        
+                        MaterialColumn symbolColumn = new MaterialColumn();
+                        symbolColumn.setPadding(0);
+                        symbolColumn.setMarginRight(5);
+                        symbolColumn.setGrid("s2");
+                        symbolColumn.setTextAlign(TextAlign.RIGHT);
+                        
+                        com.google.gwt.user.client.ui.Image symbolImage = new com.google.gwt.user.client.ui.Image(theme.getRestrictions().get(0).getSymbol());
+                        symbolImage.setWidth("40px");
+                        symbolImage.getElement().getStyle().setProperty("border", "1px solid black");
+                        symbolColumn.add(symbolImage);
+
+                        MaterialColumn shareColumn = new MaterialColumn();
+                        shareColumn.setPadding(0);
+                        shareColumn.setGrid("s2");
+                        shareColumn.add(new Label("foo"));
+
+                        MaterialColumn sharePercentColumn = new MaterialColumn();
+                        sharePercentColumn.setPadding(0);
+                        sharePercentColumn.setGrid("s1");
+                        sharePercentColumn.add(new Label("foo"));
+
+                        informationHeaderRow.add(typeColumn);
+                        informationHeaderRow.add(symbolColumn);
+                        informationHeaderRow.add(shareColumn);
+                        informationHeaderRow.add(sharePercentColumn);
+                        body.add(informationHeaderRow);
+                        
                         String baseUrl = theme.getReferenceWMS().getBaseUrl();
                         if (WMS_LAYER_MAPPINGS.get(baseUrl) != null) {
                             baseUrl = WMS_LAYER_MAPPINGS.get(theme.getReferenceWMS().getBaseUrl());
@@ -716,8 +744,16 @@ public class AppEntryPoint implements EntryPoint {
                         collapsible.add(item);
                     }               
                     
-                    collapsible.addExpandHandler(event -> {
-                       GWT.log("id of expand item: " + event.getTarget().getId()); 
+                    collapsible.addExpandHandler(event -> {                       
+                       String expandedLayerId = event.getTarget().getId();
+                       for (String layerId : concernedWmsLayers) {
+                           Image wmsLayer = (Image) getLayerById(layerId);
+                           if (layerId.equalsIgnoreCase(expandedLayerId)) {
+                               wmsLayer.setVisible(true);
+                           } else {
+                               wmsLayer.setVisible(false);
+                           }
+                       }
                     });
                     
                     collapsibleConcernedThemeBody.add(collapsible);
@@ -728,7 +764,7 @@ public class AppEntryPoint implements EntryPoint {
 
                     resultDiv.add(collapsibleConcernedTheme);
                 }    
-                
+
                 {
                     collapsibleNotConcernedTheme = new MaterialCollapsible();
                     collapsibleNotConcernedTheme.setBackgroundColor(Color.GREY_LIGHTEN_5);
@@ -741,10 +777,6 @@ public class AppEntryPoint implements EntryPoint {
                         collapsibleGeneralInformation.closeAll();
                      });
                      
-//                     collapsibleNotConcernedTheme.addCollapseHandler(event -> {
-//                         GWT.log("collapsibleNotConcernedTheme.addCollapseHandler");
-//                      });
-                    
                     MaterialCollapsibleItem collapsibleNotConcernedThemeItem = new MaterialCollapsibleItem();
                     
                     MaterialCollapsibleHeader collapsibleNotConcernedThemeHeader = new MaterialCollapsibleHeader();
@@ -947,20 +979,22 @@ public class AppEntryPoint implements EntryPoint {
         });
     }
 
-    private void removeOerebLayers() {
-        Collection<Base> layers = map.getLayers();
-        for (int i = 0; i < layers.getLength(); i++) {
-            Base item = layers.item(i);
-            try {
-                String layerId = item.get(ID_ATTR_NAME);
-                // do not delete background layer from map
-                if (item.get(ID_ATTR_NAME).toString().equalsIgnoreCase(BACKGROUND_LAYER_ID)) {
-                    continue;
-                }
-                map.removeLayer(item);
-            } catch (Exception e) {
-            }
+    private void removePlrLayers() {
+        // I cannot iterate over map.getLayers() and
+        // use map.removeLayers(). Seems to get some
+        // confusion with the indices or whatever...
+        for (String layerId : concernedWmsLayers) {
+            Image rlayer = (Image) getLayerById(layerId);
+            map.removeLayer(rlayer);
         }
+
+        // Remove vector layer
+        Base vlayer = getLayerById(REAL_ESTATE_VECTOR_LAYER_ID);
+        map.removeLayer(vlayer);
+        
+        
+        // Empty concernedWmsLayers list.
+        concernedWmsLayers.clear();        
     }
 
     private ol.layer.Vector createRealEstateVectorLayer(String geometry) {
@@ -1074,7 +1108,6 @@ public class AppEntryPoint implements EntryPoint {
             try {
                 String layerId = item.get(ID_ATTR_NAME);
                 if (item.get(ID_ATTR_NAME).toString().equalsIgnoreCase(id)) {
-                    GWT.log("FOUND");
                     return item;
                 }
             } catch (Exception e) {
@@ -1085,7 +1118,7 @@ public class AppEntryPoint implements EntryPoint {
     }
 
     private void resetGui() {
-        removeOerebLayers();
+        removePlrLayers();
 
         if (resultDiv != null) {
             resultCardContent.remove(resultDiv);
@@ -1142,11 +1175,8 @@ public class AppEntryPoint implements EntryPoint {
                             if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
                                 String responseBody = response.getText();
                                 JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
-//                                String egrid = getEgridFromRealEstateFeature(responseObj);
                                 ArrayList<JSONObject> features = parseRealEstateFeatures(responseObj);
                                 String egrid = features.get(0).get("egrid").toString().trim().replaceAll("^.|.$", "");
-
-//                                GWT.log("get extract for: " + egrid);
 
                                 // TODO: make rpc request.
 
@@ -1198,9 +1228,8 @@ public class AppEntryPoint implements EntryPoint {
                                                 String responseBody = response.getText();
                                                 JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
 
-                                                // TODO: test it
                                                 // Features can have multiple objects since we searched an adress.
-                                                // But we don't want to show a selection. Try to force the "Liegenschaft"
+                                                // But we don't want to show a selection. Try to force the "Liegenschaft".
                                                 String egrid = "";
                                                 ArrayList<JSONObject> features = parseRealEstateFeatures(responseObj);
                                                 for (JSONObject feature : features) {
@@ -1264,7 +1293,6 @@ public class AppEntryPoint implements EntryPoint {
 
             try {
                 builder.sendRequest("", new RequestCallback() {
-                    @SuppressWarnings("deprecation")
                     @Override
                     public void onResponseReceived(com.google.gwt.http.client.Request request,
                             com.google.gwt.http.client.Response response) {
@@ -1272,7 +1300,6 @@ public class AppEntryPoint implements EntryPoint {
                         if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
                             String responseBody = response.getText();
                             JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
-//                            String egrid = getEgridFromRealEstateFeature(responseObj);
                             ArrayList<JSONObject> features = parseRealEstateFeatures(responseObj);
 
                             if (features.size() > 1) {
@@ -1285,7 +1312,6 @@ public class AppEntryPoint implements EntryPoint {
                                 realEstateWindow.setFontSize("16px");
                                 realEstateWindow.setMarginLeft(0);
                                 realEstateWindow.setMarginRight(0);
-//                                realEstateWindow.setShadow(0);
                                 realEstateWindow.setWidth("300px");
                                 realEstateWindow.setToolbarColor(Color.RED_LIGHTEN_1); 
 
@@ -1370,5 +1396,36 @@ public class AppEntryPoint implements EntryPoint {
                 e.printStackTrace();
             }
         }
+    }
+    
+    public Image createPlrWmsLayer(ReferenceWMS referenceWms) {
+        ImageWmsParams imageWMSParams = OLFactory.createOptions();
+        imageWMSParams.setLayers(referenceWms.getLayers());
+
+        ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
+        
+        String baseUrl = referenceWms.getBaseUrl();
+        if (WMS_LAYER_MAPPINGS.get(baseUrl) != null) {
+            baseUrl = WMS_LAYER_MAPPINGS.get(referenceWms.getBaseUrl());
+        }
+        
+        imageWMSOptions.setUrl(baseUrl);
+        imageWMSOptions.setParams(imageWMSParams);
+        imageWMSOptions.setRatio(1.5f);
+
+        ImageWms imageWMSSource = new ImageWms(imageWMSOptions);
+
+        LayerOptions layerOptions = OLFactory.createOptions();
+        layerOptions.setSource(imageWMSSource);
+
+        Image wmsLayer = new Image(layerOptions);
+        wmsLayer.set(ID_ATTR_NAME, referenceWms.getLayers());
+        wmsLayer.setVisible(false);
+        wmsLayer.setOpacity(referenceWms.getLayerOpacity());
+        // It works for the Grundbuchplan but not for 
+        // the Landeskarten. They are not transparent.
+//        wmsLayer.setZIndex(referenceWms.getLayerIndex());
+
+        return wmsLayer;
     }
 }

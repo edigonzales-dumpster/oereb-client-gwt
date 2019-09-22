@@ -23,4 +23,13 @@ public interface PLRMessages extends Messages {
     
     @DefaultMessage("Area")
     String resultArea();
+    
+    @DefaultMessage("Opacity")
+    String resultOpacity();
+
+    @DefaultMessage("Close extract")
+    String resultCloseTooltip();
+    
+    @DefaultMessage("Request extract as PDF")
+    String resultPDFTooltip();
 }

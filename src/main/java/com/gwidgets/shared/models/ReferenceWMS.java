@@ -11,6 +11,8 @@ public class ReferenceWMS implements IsSerializable {
     
     private double layerOpacity;
     
+    private int layerIndex;
+    
     public String getBaseUrl() {
         return baseUrl;
     }
@@ -41,5 +43,13 @@ public class ReferenceWMS implements IsSerializable {
 
     public void setLayerOpacity(double layerOpacity) {
         this.layerOpacity = layerOpacity;
+    }
+
+    public int getLayerIndex() {
+        return layerIndex;
+    }
+
+    public void setLayerIndex(int layerIndex) {
+        this.layerIndex = layerIndex;
     }
 }

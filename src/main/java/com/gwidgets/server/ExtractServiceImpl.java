@@ -25,6 +25,7 @@ import static java.util.stream.Collectors.collectingAndThen;
 import javax.servlet.ServletException;
 import javax.xml.transform.stream.StreamSource;
 
+import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.gwidgets.shared.ExtractResponse;
 import com.gwidgets.shared.ExtractService;
@@ -46,6 +47,7 @@ import ch.ehi.oereb.schemas.oereb._1_0.extractdata.ExtractType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RealEstateDPRType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RestrictionOnLandownershipType;
 
+import org.apache.xerces.impl.dv.util.Base64;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -195,7 +197,9 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                         Restriction restriction = new Restriction();
                         restriction.setInformation(r.getInformation().getLocalisedText().get(0).getText());
                         restriction.setTypeCode(r.getTypeCode());
-                        restriction.setSymbol(r.getSymbol());
+                        String encodedImage = Base64.encode(r.getSymbol());
+                        encodedImage = "data:image/png;base64,"+encodedImage;
+                        restriction.setSymbol(encodedImage);
                         return restriction;
                     }).collect(Collectors.toMap(Restriction::getTypeCode, Function.identity()));
             
@@ -274,6 +278,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
 
             // WMS
             double layerOpacity = xmlRestrictions.get(0).getMap().getLayerOpacity();
+            int layerIndex = xmlRestrictions.get(0).getMap().getLayerIndex();
             String wmsUrl = xmlRestrictions.get(0).getMap().getReferenceWMS();
 
             UriComponents uriComponents = UriComponentsBuilder.fromUriString(wmsUrl).build();
@@ -294,8 +299,9 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             ReferenceWMS referenceWMS = new ReferenceWMS();
             referenceWMS.setBaseUrl(baseUrl);
             referenceWMS.setLayers(layers);
-            referenceWMS.setLayerOpacity(layerOpacity);
             referenceWMS.setImageFormat(imageFormat);
+            referenceWMS.setLayerOpacity(layerOpacity);
+            referenceWMS.setLayerIndex(layerIndex);
             
             // LegendAtWeb
             String legendAtWeb = xmlRestrictions.get(0).getMap().getLegendAtWeb().getValue();
