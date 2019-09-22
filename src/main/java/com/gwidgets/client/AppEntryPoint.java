@@ -451,7 +451,10 @@ public class AppEntryPoint implements EntryPoint {
                 pdfButtonColumn.add(pdfButton);
                 buttonRow.add(pdfButtonColumn);
 
-                // TODO: Request via service. Nicht direkt das PDF aufrufen (dauert zu lange).
+                // TODO: Request via spring controller (nicht gwt async service). Nicht direkt das PDF aufrufen (dauert zu lange).
+                // Problem: context path?
+                // Wie schaffe ich es eine Sanduhr zu zeigen, die dann wieder verschwindet?
+                // ajax call?
                 pdfButton.addClickHandler(event -> {
 //                    Window.open("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629_layer_ordering.pdf", "_target", "enabled");
                     Window.open(

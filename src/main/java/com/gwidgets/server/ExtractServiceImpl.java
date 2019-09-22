@@ -22,6 +22,8 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.collectingAndThen;
 
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.xml.transform.stream.StreamSource;
 
@@ -52,6 +54,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -104,7 +107,9 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
     @Override
     public ExtractResponse extractServer(String egrid) throws IllegalArgumentException, IOException {
         logger.info(egrid);
-        logger.info(oerebWebServiceUrl.toString());
+        logger.info(oerebWebServiceUrl.toString()); 
+        logger.info(getRequestModuleBasePath());
+        
 
         // TODO: handle empty file / no extract returned
         File xmlFile = Files.createTempFile("data_extract_", ".xml").toFile();
