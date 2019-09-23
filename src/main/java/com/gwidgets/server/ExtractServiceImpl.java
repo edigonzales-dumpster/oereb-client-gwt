@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,12 +21,9 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.collectingAndThen;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.xml.transform.stream.StreamSource;
 
-import com.google.gwt.user.server.Base64Utils;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.gwidgets.shared.ExtractResponse;
 import com.gwidgets.shared.ExtractService;
@@ -54,7 +50,6 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -114,10 +109,11 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         // TODO: handle empty file / no extract returned
         File xmlFile = Files.createTempFile("data_extract_", ".xml").toFile();
         
-//        URL url = new URL(oerebWebServiceUrl + "/reduced/xml/geometry/" + egrid);
+        URL url = new URL(oerebWebServiceUrl + "/reduced/xml/geometry/" + egrid);
+//        URL url = new URL("https://geo-t.so.ch/api/oereb/v1/extract/" + "/reduced/xml/geometry/" + egrid);
 //        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH533287066291.xml");
 //        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH368132060914.xml");
-        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629.xml");
+//        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629.xml");
         logger.info(url.toString());
 
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -223,9 +219,15 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     .filter(r -> r.getNrOfPoints() != null)
                     .collect(Collectors.groupingBy(r -> r.getTypeCode(), Collectors.summingInt(r -> r.getNrOfPoints())));
 
+            Map<String, Double> sumAreaPercentShare = xmlRestrictions.stream()
+                    .filter(r -> r.getPartInPercent() != null)
+                    .collect(Collectors.groupingBy(r -> r.getTypeCode(), Collectors.summingDouble(r -> r.getPartInPercent().doubleValue())));
+
+            
             logger.info("sumAreaShare: " + sumAreaShare.toString());
             logger.info("sumLengthShare: " + sumLengthShare.toString());
             logger.info("sumNrOfPoints: " + sumNrOfPoints.toString());
+            logger.info("sumAreaPercentShare: " + sumAreaPercentShare.toString());
             
             // Assign the sum to the simplified restriction.
             // And add the restriction to the final restrictons list.
@@ -246,6 +248,10 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     restrictionEntry.getValue().setNrOfPoints(sumNrOfPoints.get(typeCode));
                     logger.info(String.valueOf(restrictionEntry.getValue().getNrOfPoints()));
                 }
+                if (sumAreaPercentShare.get(typeCode) != null) {
+                    restrictionEntry.getValue().setPartInPercent(sumAreaPercentShare.get(typeCode));
+                    logger.info(String.valueOf(restrictionEntry.getValue().getPartInPercent()));
+                }
                 restrictionsList.add(restrictionEntry.getValue());
             }
             
@@ -259,6 +265,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     DocumentType xmlLegalProvision =  (DocumentType) xmlDocumentBase;
                     Document legalProvision = new Document();
                     legalProvision.setTitle(xmlLegalProvision.getTitle().getLocalisedText().get(0).getText());
+                    legalProvision.setOfficialTitle(xmlLegalProvision.getOfficialTitle().getLocalisedText().get(0).getText());
+                    legalProvision.setOfficialNumber(xmlLegalProvision.getOfficialNumber());
                     legalProvision.setAbbreviation(xmlLegalProvision.getAbbreviation().getLocalisedText().get(0).getText());
                     legalProvision.setTextAtWeb(xmlLegalProvision.getTextAtWeb().getLocalisedText().get(0).getText());
                     legalProvisionsList.add(legalProvision);
@@ -267,6 +275,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     for (DocumentType xmlLaw : xmlLaws) {
                         Document law = new Document();
                         law.setTitle(xmlLaw.getTitle().getLocalisedText().get(0).getText());
+                        law.setOfficialTitle(xmlLaw.getOfficialTitle().getLocalisedText().get(0).getText());
+                        law.setOfficialNumber(xmlLaw.getOfficialNumber());
                         law.setAbbreviation(xmlLaw.getAbbreviation().getLocalisedText().get(0).getText());
                         law.setTextAtWeb(xmlLaw.getTextAtWeb().getLocalisedText().get(0).getText());
                         lawsList.add(law);
@@ -307,9 +317,13 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             referenceWMS.setImageFormat(imageFormat);
             referenceWMS.setLayerOpacity(layerOpacity);
             referenceWMS.setLayerIndex(layerIndex);
+//            referenceWMS.setLegendAtWeb(xmlRestrictions.get(0).getMap().getLegendAtWeb().getValue());
             
-            // LegendAtWeb
-            String legendAtWeb = xmlRestrictions.get(0).getMap().getLegendAtWeb().getValue();
+            // Bundesthemen haben (teilweise) LegendeImWeb 
+            String legendAtWeb = null;
+            if (xmlRestrictions.get(0).getMap().getLegendAtWeb() != null) {
+                legendAtWeb = xmlRestrictions.get(0).getMap().getLegendAtWeb().getValue();
+            }             
                         
             // Finally we create the concerned theme with all
             // the information.
@@ -317,7 +331,6 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             concernedTheme.setRestrictions(restrictionsList);
             concernedTheme.setLegalProvisions(distinctLegalProvisionsList);
             concernedTheme.setLaws(distinctLawsList);
-            concernedTheme.setReferenceWMS(referenceWMS);
             concernedTheme.setReferenceWMS(referenceWMS);
             concernedTheme.setLegendAtWeb(legendAtWeb);
             concernedTheme.setCode(xmlRestrictions.get(0).getTheme().getCode());
@@ -344,15 +357,10 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         
         ExtractResponse response = new ExtractResponse();
         response.setExtract(extract);
-//        response.setEgrid("lilalaunebär");
-//        response.setExtract(extract);
-        
-        
+                
         return response;
     }
     
-    // TODO: test if it works with AbstractTheme!
-    // But themesOrderingList contains already new codes.
     Comparator<AbstractTheme> compare = new Comparator<AbstractTheme>() {
         public int compare(AbstractTheme t1, AbstractTheme t2) {            
             if (t1.getSubtheme() != null && t2.getSubtheme() == null) {

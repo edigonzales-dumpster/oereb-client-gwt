@@ -1,16 +1,20 @@
 package com.gwidgets.shared.models;
 
-import java.net.URL;
+import java.util.Date;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class Document implements IsSerializable {
     private String title;
     
+    private String officialTitle;
+    
+    private String officialNumber;
+    
     private String abbreviation;
     
     private String textAtWeb;
-
+    
     public String getTitle() {
         return title;
     }
@@ -33,5 +37,21 @@ public class Document implements IsSerializable {
 
     public void setTextAtWeb(String textAtWeb) {
         this.textAtWeb = textAtWeb;
+    }
+
+    public String getOfficialTitle() {
+        return officialTitle;
+    }
+
+    public void setOfficialTitle(String officialTitle) {
+        this.officialTitle = officialTitle;
+    }
+
+    public String getOfficialNumber() {
+        return officialNumber;
+    }
+
+    public void setOfficialNumber(String officialNumber) {
+        this.officialNumber = officialNumber;
     }
 }

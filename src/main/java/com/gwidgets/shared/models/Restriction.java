@@ -9,13 +9,13 @@ public class Restriction implements IsSerializable {
     
     private String typeCode;
     
-    private int areaShare;
+    private Integer areaShare;
     
-    private int lengthShare;
+    private Integer lengthShare;
     
-    private int nrOfPoints;
+    private Integer nrOfPoints;
     
-    private double partInPercent;
+    private Double partInPercent;
 
     public String getInformation() {
         return information;
@@ -41,7 +41,7 @@ public class Restriction implements IsSerializable {
         this.typeCode = typeCode;
     }
 
-    public int getAreaShare() {
+    public Integer getAreaShare() {
         return areaShare;
     }
 
@@ -49,7 +49,7 @@ public class Restriction implements IsSerializable {
         this.areaShare = areaShare;
     }
 
-    public int getLengthShare() {
+    public Integer getLengthShare() {
         return lengthShare;
     }
 
@@ -57,7 +57,7 @@ public class Restriction implements IsSerializable {
         this.lengthShare = lengthShare;
     }
 
-    public int getNrOfPoints() {
+    public Integer getNrOfPoints() {
         return nrOfPoints;
     }
 
@@ -65,7 +65,7 @@ public class Restriction implements IsSerializable {
         this.nrOfPoints = nrOfPoints;
     }
 
-    public double getPartInPercent() {
+    public Double getPartInPercent() {
         return partInPercent;
     }
 

@@ -74,6 +74,4 @@ public class ConcernedTheme extends AbstractTheme implements IsSerializable {
     public void setResponsibleOffice(List<String> responsibleOffice) {
         this.responsibleOffice = responsibleOffice;
     }
-    
-    
 }

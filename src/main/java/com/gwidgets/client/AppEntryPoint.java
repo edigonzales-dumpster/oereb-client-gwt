@@ -3,22 +3,18 @@ package com.gwidgets.client;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsonUtils;
-import com.google.gwt.dom.client.DivElement;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style.Cursor;
 import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.VerticalAlign;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.DomEvent.Type;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
-import com.google.gwt.event.shared.GwtEvent;
 import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.i18n.client.NumberFormat;
@@ -27,7 +23,6 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
@@ -43,6 +38,7 @@ import com.gwidgets.shared.models.Extract;
 import com.gwidgets.shared.models.NotConcernedTheme;
 import com.gwidgets.shared.models.RealEstateDPR;
 import com.gwidgets.shared.models.ReferenceWMS;
+import com.gwidgets.shared.models.Restriction;
 import com.gwidgets.shared.models.ThemeWithoutData;
 
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
@@ -74,6 +70,7 @@ import gwt.material.design.client.ui.MaterialRange;
 import gwt.material.design.client.ui.MaterialRow;
 import gwt.material.design.client.ui.MaterialToast;
 import gwt.material.design.client.ui.html.Div;
+import gwt.material.design.client.ui.html.Span;
 import ol.Collection;
 import ol.Coordinate;
 import ol.Extent;
@@ -118,21 +115,22 @@ public class AppEntryPoint implements EntryPoint {
     private String HEADER_FONT_SIZE = "18px";
     private String SUB_HEADER_FONT_SIZE = "16px";
     private String BODY_FONT_SIZE = "14px";
+    private String SMALL_FONT_SIZE = "12px";
     
     private String ID_ATTR_NAME = "id";
     private String BACKGROUND_LAYER_ID = "ch.so.agi.hintergrundkarte_sw";
     private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer";
     private String REAL_ESTATE_VECTOR_FEATURE_ID = "real_estate_fid";
-
-    // TODO: move to settings
     private String REAL_ESTATE_DATAPRODUCT_ID = "ch.so.agi.av.grundstuecke.rechtskraeftig";
     private String ADDRESS_DATAPRODUCT_ID = "ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge";
     
+    private String OEREB_SERVICE_URL;
     private String SEARCH_SERVICE_URL;
     private String DATA_SERVICE_URL;
     private HashMap<String, String> WMS_LAYER_MAPPINGS;
 
-    private NumberFormat fmt = NumberFormat.getDecimalFormat();
+    private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
+    private NumberFormat fmtPercent = NumberFormat.getFormat("#.0");
 
     private MaterialAutoComplete autocomplete;
     private Map map;
@@ -160,6 +158,7 @@ public class AppEntryPoint implements EntryPoint {
 
             @Override
             public void onSuccess(SettingsResponse result) {
+                OEREB_SERVICE_URL = (String) result.getSettings().get("OEREB_SERVICE_URL");
                 SEARCH_SERVICE_URL = (String) result.getSettings().get("SEARCH_SERVICE_URL");
                 DATA_SERVICE_URL = (String) result.getSettings().get("DATA_SERVICE_URL");
                 WMS_LAYER_MAPPINGS = (HashMap) result.getSettings().get("WMS_LAYER_MAPPINGS");
@@ -179,6 +178,7 @@ public class AppEntryPoint implements EntryPoint {
 //        GWT.log(Window.Location.getHash());
 //        GWT.log(Window.Location.getHref());
 
+        GWT.log(OEREB_SERVICE_URL.toString());
         GWT.log(WMS_LAYER_MAPPINGS.toString());
         
         GWT.log(GWT.getModuleBaseURL());
@@ -384,8 +384,8 @@ public class AppEntryPoint implements EntryPoint {
 //  CH938278494529
 
 // CH533287066291 (SO)
-    private void sendEgridToServer() {
-        extractService.extractServer("CH533287066291", new AsyncCallback<ExtractResponse>() {
+    private void sendEgridToServer(String egrid) {
+        extractService.extractServer(egrid, new AsyncCallback<ExtractResponse>() {
             @Override
             public void onFailure(Throwable caught) {
                 MaterialLoader.loading(false);
@@ -405,8 +405,6 @@ public class AppEntryPoint implements EntryPoint {
                 String canton = realEstate.getCanton();
                 String egrid = realEstate.getEgrid();
                 int area = realEstate.getLandRegistryArea();
-
-                GWT.log(result.getExtract().getExtractIdentifier().toString());
 
                 // Remove all oereb layers from the map.
                 // TODO: They are removed already when requesting the extract
@@ -429,7 +427,7 @@ public class AppEntryPoint implements EntryPoint {
 
                 // Das ist jetzt ziemlich heuristisch...
                 // 500 = Breite des Suchresultates
-                view.setCenter(new Coordinate(x-(500*view.getResolution())/2, y));
+                view.setCenter(new Coordinate(x-(resultCard.getWidth()*view.getResolution())/2, y));
                 
                 vlayer.setZIndex(1001);
                 map.addLayer(vlayer);
@@ -451,14 +449,12 @@ public class AppEntryPoint implements EntryPoint {
                 pdfButtonColumn.add(pdfButton);
                 buttonRow.add(pdfButtonColumn);
 
-                // TODO: Request via spring controller (nicht gwt async service). Nicht direkt das PDF aufrufen (dauert zu lange).
-                // Problem: context path?
+                // TODO: 
+                // Request via spring controller? (nicht gwt rpc)
                 // Wie schaffe ich es eine Sanduhr zu zeigen, die dann wieder verschwindet?
-                // ajax call?
                 pdfButton.addClickHandler(event -> {
 //                    Window.open("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629_layer_ordering.pdf", "_target", "enabled");
-                    Window.open(
-                            "https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629_layer_ordering.pdf",
+                    Window.open(OEREB_SERVICE_URL + "/reduced/pdf/geometry/" + egrid,
                             "_blank", null);
                 });
 
@@ -502,7 +498,7 @@ public class AppEntryPoint implements EntryPoint {
                 egridInfoRow.getElement().getStyle().setProperty("margin", "0px");
 
                 MaterialColumn egridInfoKeyColumn = new MaterialColumn();
-                egridInfoKeyColumn.setGrid("s2");
+                egridInfoKeyColumn.setGrid("s3");
                 egridInfoKeyColumn.getElement().getStyle().setProperty("margin", "0px");
                 egridInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
                 egridInfoKeyColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
@@ -511,7 +507,7 @@ public class AppEntryPoint implements EntryPoint {
                 egridInfoRow.add(egridInfoKeyColumn);
 
                 MaterialColumn egridInfoValueColumn = new MaterialColumn();
-                egridInfoValueColumn.setGrid("s10");
+                egridInfoValueColumn.setGrid("s9");
                 egridInfoValueColumn.getElement().getStyle().setProperty("margin", "0px");
                 egridInfoValueColumn.getElement().getStyle().setProperty("padding", "0px");
                 egridInfoValueColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
@@ -523,7 +519,7 @@ public class AppEntryPoint implements EntryPoint {
                 areaInfoRow.getElement().getStyle().setProperty("margin", "0px");
 
                 MaterialColumn areaInfoKeyColumn = new MaterialColumn();
-                areaInfoKeyColumn.setGrid("s2");
+                areaInfoKeyColumn.setGrid("s3");
                 areaInfoKeyColumn.getElement().getStyle().setProperty("margin", "0px");
                 areaInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
                 areaInfoKeyColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
@@ -532,23 +528,45 @@ public class AppEntryPoint implements EntryPoint {
                 areaInfoRow.add(areaInfoKeyColumn);
 
                 MaterialColumn areaInfoValueColumn = new MaterialColumn();
-                areaInfoValueColumn.setGrid("s10");
+                areaInfoValueColumn.setGrid("s9");
                 areaInfoValueColumn.getElement().getStyle().setProperty("margin", "0px");
                 areaInfoValueColumn.getElement().getStyle().setProperty("padding", "0px");
                 areaInfoValueColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
                 areaInfoValueColumn.getElement().getStyle().setProperty("fontWeight", "400");
 
-                areaInfoValueColumn.add(new HTML(fmt.format(area) + " m<sup>2</sup>"));
+                areaInfoValueColumn.add(new HTML(fmtDefault.format(area) + " m<sup>2</sup>"));
                 areaInfoRow.add(areaInfoValueColumn);
+                
+                MaterialRow subunitInfoRow = new MaterialRow();
+                subunitInfoRow.getElement().getStyle().setProperty("margin", "0px");
+                
+                MaterialColumn subunitInfoKeyColumn = new MaterialColumn();
+                subunitInfoKeyColumn.setGrid("s3");
+                subunitInfoKeyColumn.getElement().getStyle().setProperty("margin", "0px");
+                subunitInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
+                subunitInfoKeyColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
+                subunitInfoKeyColumn.getElement().getStyle().setProperty("fontWeight", "700");
+                subunitInfoKeyColumn.add(new Label(messages.resultSubunitOfLandRegister()+":"));
+                subunitInfoRow.add(subunitInfoKeyColumn);
 
+                MaterialColumn subunitInfoValueColumn = new MaterialColumn();
+                subunitInfoValueColumn.setGrid("s9");
+                subunitInfoValueColumn.getElement().getStyle().setProperty("margin", "0px");
+                subunitInfoValueColumn.getElement().getStyle().setProperty("padding", "0px");
+                subunitInfoValueColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
+                subunitInfoValueColumn.getElement().getStyle().setProperty("fontWeight", "400");
+
+                subunitInfoValueColumn.add(new Label(subunitOfLandRegister));
+                subunitInfoRow.add(subunitInfoValueColumn);
+                
                 resultDiv.add(generalInfoRow);
                 resultDiv.add(egridInfoRow);
                 resultDiv.add(areaInfoRow);
+                resultDiv.add(subunitInfoRow);
                                 
                 // TODO: rename everything except the global objects
                 {
                     collapsibleConcernedTheme = new MaterialCollapsible();
-//                    collapsibleConcernedTheme.setId(COLLAPSIBLE_CONCERNED_ID);
                     collapsibleConcernedTheme.setBackgroundColor(Color.GREY_LIGHTEN_5);
                     collapsibleConcernedTheme.setMarginTop(25);
                     collapsibleConcernedTheme.setShadow(0);
@@ -559,11 +577,6 @@ public class AppEntryPoint implements EntryPoint {
                         collapsibleGeneralInformation.closeAll();
                     });
                     
-                    // TODO: Beim Ausschalten der WMS-Layer eventuell wieder intressant (oder bei den Sub-Collapsibles).
-//                    collapsibleConcernedTheme.addCollapseHandler(event -> {
-//                        GWT.log("collapsibleConcernedTheme.addCollapseHandler");                        
-//                    });
-
                     MaterialCollapsibleItem collapsibleConcernedThemeItem = new MaterialCollapsibleItem();
                     
                     MaterialCollapsibleHeader collapsibleConcernedThemeHeader = new MaterialCollapsibleHeader();
@@ -602,167 +615,369 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleConcernedThemeHeader.add(collapsibleConcernedThemeHeaderRow);
                     
                     MaterialCollapsibleBody collapsibleConcernedThemeBody = new MaterialCollapsibleBody();
-                    collapsibleConcernedThemeBody.setPadding(0);
-                    
-                    MaterialCollapsible collapsible = new MaterialCollapsible();
-                    collapsible.setAccordion(true);
-                    int i=0;
-                    for (ConcernedTheme theme : realEstate.getConcernedThemes()) {
-                        i++;
+                    if (realEstate.getConcernedThemes().size() > 0 ) {
+                        collapsibleConcernedThemeBody.setPadding(0);
                         
-                        Image wmsLayer = createPlrWmsLayer(theme.getReferenceWMS());
-                        map.addLayer(wmsLayer);
-
-                        collapsible.setBackgroundColor(Color.GREY_LIGHTEN_3);
-                        collapsible.setMarginTop(0);
-                        collapsible.setMarginBottom(0);
-                        collapsible.setShadow(0);
-                        collapsible.setBorder("0px");
-
-                        MaterialCollapsibleItem item = new MaterialCollapsibleItem();
+                        MaterialCollapsible collapsible = new MaterialCollapsible();
+                        collapsible.setAccordion(true);
+                        int i=0;
+    
+                        for (ConcernedTheme theme : realEstate.getConcernedThemes()) {
+                            i++;
+                            
+                            Image wmsLayer = createPlrWmsLayer(theme.getReferenceWMS());
+                            map.addLayer(wmsLayer);
+    
+                            collapsible.setBackgroundColor(Color.GREY_LIGHTEN_3);
+                            collapsible.setMarginTop(0);
+                            collapsible.setMarginBottom(0);
+                            collapsible.setShadow(0);
+                            collapsible.setBorder("0px");
+    
+                            MaterialCollapsibleItem item = new MaterialCollapsibleItem();
+                            
+                            // Cannot use the code since all subthemes share
+                            // the same code.
+                            String layerId = theme.getReferenceWMS().getLayers();
+                            item.setId(layerId);
+                            concernedWmsLayers.add(layerId);
+                                                    
+                            MaterialCollapsibleHeader header = new MaterialCollapsibleHeader();
+                            header.setBackgroundColor(Color.GREY_LIGHTEN_4);
+                            header.setLineHeight(18); // heuristic 
+                            header.setDisplay(Display.TABLE);
+                            if (i < realEstate.getConcernedThemes().size()) {
+                                header.setBorderBottom("1px solid #dddddd");
+                            } else {
+                                header.setBorderBottom("0px solid #dddddd");
+                            }
+                            header.setWidth("100%");
+                            header.setHeight("45px"); // Firefox
+                            
+                            MaterialLink link = new MaterialLink();
+                            Div aParent = new Div();
+                            aParent.setBorder("0px");
+                            aParent.setDisplay(Display.TABLE_CELL);
+                            aParent.setVerticalAlign(VerticalAlign.MIDDLE);
+                            
+                            link.setText(theme.getName());
+                            link.setFontWeight(FontWeight.BOLD);
+                            link.setFontSize(BODY_FONT_SIZE);
+                            link.setTextColor(Color.BLACK);
+                            link.setBorder("0px");
+                            aParent.add(link);
+                           
+                            header.add(aParent);
+                            item.add(header);
+                            
+                            MaterialCollapsibleBody body = new MaterialCollapsibleBody();
+                            body.addMouseOverHandler(event -> {
+                                body.getElement().getStyle().setCursor(Cursor.DEFAULT);
+                            });
+                            body.setBackgroundColor(Color.WHITE);
+                            body.setPaddingLeft(15);
+                            body.setPaddingRight(15);
+                            body.setPaddingTop(5);
+                            body.setPaddingBottom(5);
+                            if (i < realEstate.getConcernedThemes().size()) {
+                                body.setBorderBottom("1px solid #dddddd");
+                            } else {
+                                body.setBorderBottom("0px solid #dddddd");
+                                body.setBorderTop("1px solid #dddddd");
+                            }                        
+                            
+                            MaterialRow sliderRow = new MaterialRow();
+                            sliderRow.setMarginBottom(15);
+                            
+                            MaterialColumn sliderRowLeft = new MaterialColumn();
+                            sliderRowLeft.setGrid("s2");
+                            MaterialColumn sliderRowRight = new MaterialColumn();
+                            sliderRowRight.setGrid("s10");
+    
+                            MaterialRange slider = new MaterialRange();
+                            slider.setPadding(0);
+                            slider.setMin(0);
+                            slider.setMax(100);
+                            slider.setValue(Double.valueOf((theme.getReferenceWMS().getLayerOpacity() * 100)).intValue());
+                            slider.addValueChangeHandler(event -> {
+                                double opacity = slider.getValue() / 100.0;
+                                wmsLayer.setOpacity(opacity);
+                            });
+                            sliderRowLeft.add(new Label(messages.resultOpacity() + ":"));
+                            sliderRowLeft.setFontSize(BODY_FONT_SIZE);
+                            sliderRowLeft.setPadding(0);
+                            
+                            sliderRowRight.add(slider);
+    
+                            sliderRow.add(sliderRowLeft);
+                            sliderRow.add(sliderRowRight);
+                            body.add(sliderRow);
+                            
+                            {
+                                MaterialRow informationHeaderRow = new MaterialRow();
+                                informationHeaderRow.setBorderBottom("1px #bdbdbd solid");
+                                informationHeaderRow.setMarginBottom(5);
+                                
+                                MaterialColumn typeColumn = new MaterialColumn();
+                                typeColumn.setGrid("s6");
+                                typeColumn.setPadding(0);
+                                typeColumn.setMarginRight(0);
+                                typeColumn.setFontSize(SMALL_FONT_SIZE);
+                                typeColumn.add(new Label(messages.resultType()));
+                                
+                                MaterialColumn symbolColumn = new MaterialColumn();
+                                symbolColumn.setPadding(0);
+                                symbolColumn.setMarginRight(0);
+                                symbolColumn.setGrid("s1");
+                                symbolColumn.setTextAlign(TextAlign.RIGHT);
+                                symbolColumn.add(new HTML("&nbsp;"));
+    
+                                MaterialColumn shareColumn = new MaterialColumn();
+                                shareColumn.setTextAlign(TextAlign.RIGHT);                            
+                                shareColumn.setPadding(0);
+                                shareColumn.setGrid("s3");
+                                shareColumn.add(new Label(messages.resultShare()));
+        
+                                MaterialColumn sharePercentColumn = new MaterialColumn();
+                                sharePercentColumn.setTextAlign(TextAlign.RIGHT);
+                                sharePercentColumn.setPadding(0);
+                                sharePercentColumn.setGrid("s2");
+                                sharePercentColumn.add(new Label(messages.resultShareInPercent()));
+        
+                                informationHeaderRow.add(typeColumn);
+                                informationHeaderRow.add(symbolColumn);
+                                informationHeaderRow.add(shareColumn);
+                                informationHeaderRow.add(sharePercentColumn);
+                                body.add(informationHeaderRow);
+                            }
+                            
+                            {
+                                for (Restriction restriction : theme.getRestrictions()) {
+                                    MaterialRow informationRow = new MaterialRow();
+                                    informationRow.setMarginBottom(10);
+    //                              informationRow.setBorder("1px red solid");
+          
+                                    MaterialColumn typeColumn = new MaterialColumn();
+                                    typeColumn.setGrid("s6");
+                                    typeColumn.setPadding(0);
+                                    typeColumn.setMarginRight(0);
+                                    typeColumn.setFontSize(BODY_FONT_SIZE);
+                                    typeColumn.add(new Label(restriction.getInformation()));
+    
+                                    MaterialColumn symbolColumn = new MaterialColumn();
+                                    symbolColumn.setPadding(0);
+                                    symbolColumn.setMarginRight(0);
+                                    symbolColumn.setGrid("s1");
+                                    symbolColumn.setTextAlign(TextAlign.CENTER);
+                                    symbolColumn.setVerticalAlign(VerticalAlign.MIDDLE);
+    
+                                    Span helper = new Span();
+                                    helper.setDisplay(Display.INLINE_BLOCK);
+                                    helper.setVerticalAlign(VerticalAlign.MIDDLE);
+                                    symbolColumn.add(helper);
+    
+                                    com.google.gwt.user.client.ui.Image symbolImage = new com.google.gwt.user.client.ui.Image(restriction.getSymbol());
+                                    symbolImage.setWidth("30px");
+                                    symbolImage.getElement().getStyle().setProperty("border", "1px solid black");
+                                    symbolImage.getElement().getStyle().setProperty("verticalAlign", "middle");
+                                    symbolColumn.add(symbolImage);
+    
+                                    MaterialColumn shareColumn = new MaterialColumn();
+                                    shareColumn.setTextAlign(TextAlign.RIGHT);
+                                    shareColumn.setPadding(0);
+                                    shareColumn.setGrid("s3");
+                                    shareColumn.setFontSize(BODY_FONT_SIZE);
+                                    
+                                    if (restriction.getAreaShare() != null) {
+                                        HTML htmlArea;
+                                        if (restriction.getAreaShare() < 0.1) {
+                                            htmlArea = new HTML("< 0.1 m<sup>2</sup>");
+                                        } else {
+                                            htmlArea = new HTML(fmtDefault.format(restriction.getAreaShare()) + " m<sup>2</sup>");
+                                        }
+                                        shareColumn.add(htmlArea);
+                                    } else if (restriction.getLengthShare() != null) {
+                                        HTML htmlLength;
+                                        if (restriction.getLengthShare() < 0.1) {
+                                            htmlLength = new HTML("< 0.1 m");
+                                        } else {
+                                            htmlLength = new HTML(fmtDefault.format(restriction.getLengthShare()) + " m");
+                                        }
+                                        shareColumn.add(htmlLength);
+                                    } else if (restriction.getNrOfPoints() != null) {
+                                        HTML htmlPoints = new HTML(fmtDefault.format(restriction.getNrOfPoints()));
+                                        shareColumn.add(htmlPoints);
+                                    } else {
+                                        shareColumn.add(new Label("should not reach here"));
+                                    }
+    
+                                    MaterialColumn sharePercentColumn = new MaterialColumn();
+                                    sharePercentColumn.setTextAlign(TextAlign.RIGHT);
+                                    sharePercentColumn.setPadding(0);
+                                    sharePercentColumn.setGrid("s2");
+                                    sharePercentColumn.setFontSize(BODY_FONT_SIZE);
+                                                                    
+                                    if (restriction.getPartInPercent() != null) {
+                                        HTML htmlArea;
+                                        if (restriction.getPartInPercent() < 0.1) {
+                                            htmlArea = new HTML("< 0.1");
+                                        } else {
+                                            htmlArea = new HTML(fmtPercent.format(restriction.getPartInPercent()));
+                                        }
+                                        sharePercentColumn.add(htmlArea);
+                                    } else {
+                                        sharePercentColumn.add(new HTML("&nbsp;"));
+                                    }
+    
+                                    informationRow.add(typeColumn);
+                                    informationRow.add(symbolColumn);
+                                    informationRow.add(shareColumn);
+                                    informationRow.add(sharePercentColumn);
+                                    body.add(informationRow);
+                                }
+                            }
+ 
+                            if (theme.getLegendAtWeb() != null) 
+                            {
+                                MaterialRow legendRow = new MaterialRow();
+                                legendRow.setBorderTop("1px #bdbdbd solid");
+                                legendRow.setBorderBottom("1px #bdbdbd solid");
+                                legendRow.setMarginBottom(10);
+    
+                                MaterialColumn legendColumn = new MaterialColumn();
+                                legendColumn.setPaddingTop(5);
+                                legendColumn.setPaddingBottom(5);
+                                legendColumn.setPaddingLeft(0);
+                                legendColumn.setMarginRight(0);
+                                legendColumn.setGrid("s12");
+                                legendColumn.setFontSize(BODY_FONT_SIZE);
+                                
+                                
+                                MaterialLink legendLink = new MaterialLink();
+                                legendLink.setText(messages.resultShowLegend());
+                                legendLink.setTarget("_blank");
+                                legendLink.setTextColor(Color.RED_DARKEN_2);
+                                legendLink.addStyleName("result-link");
+                                legendColumn.add(legendLink);
+                                
+                                String legendUrl = theme.getLegendAtWeb();
+                                for (Entry<String, String> entry : WMS_LAYER_MAPPINGS.entrySet()) {
+                                    if (theme.getLegendAtWeb().contains(entry.getKey())) {                                    
+                                        legendUrl = theme.getLegendAtWeb().replace(entry.getKey(), entry.getValue());
+                                    }                                
+                                }
+       
+                                legendLink.setHref(legendUrl);
+                                legendRow.add(legendColumn);
+                                body.add(legendRow);
+                            }
+                            
+                            {
+                                MaterialRow legalProvisionsHeaderRow = new MaterialRow();
+                                legalProvisionsHeaderRow.setMarginBottom(5);
+                                legalProvisionsHeaderRow.setFontSize(BODY_FONT_SIZE);
+                                legalProvisionsHeaderRow.setFontWeight(FontWeight.BOLD);
+                                legalProvisionsHeaderRow.add(new Label(messages.legalProvisions()));
+                                body.add(legalProvisionsHeaderRow);
+                                
+                                for (com.gwidgets.shared.models.Document legalProvision : theme.getLegalProvisions()) {
+                                    MaterialRow row = new MaterialRow();
+                                    row.setMarginBottom(0);
+                                    row.setFontSize(BODY_FONT_SIZE);
+    
+                                    MaterialLink legalProvisionLink = new MaterialLink();
+                                    
+                                    if (legalProvision.getOfficialTitle() != null) {
+                                        legalProvisionLink.setText(legalProvision.getOfficialTitle());
+                                    } else {
+                                        legalProvisionLink.setText(legalProvision.getTitle());
+                                    }
+                                    legalProvisionLink.setHref(legalProvision.getTextAtWeb());
+                                    legalProvisionLink.setTarget("_blank");
+                                    legalProvisionLink.setTextColor(Color.RED_DARKEN_2);
+                                    legalProvisionLink.addStyleName("result-link");
+                                    row.add(legalProvisionLink);
+                                    body.add(row);
+                                    
+                                    MaterialRow additionalInfoRow = new MaterialRow();
+                                    additionalInfoRow.setMarginBottom(10);
+                                    additionalInfoRow.setFontSize(SMALL_FONT_SIZE); 
+                                    
+                                    String labelText = legalProvision.getTitle();
+                                    if (legalProvision.getOfficialNumber() != null) {
+                                        labelText += " Nr. " + legalProvision.getOfficialNumber();
+                                    }
+                                    Label label = new Label(labelText);
+                                    additionalInfoRow.add(label);
+                                    body.add(additionalInfoRow);
+                                }
+                                
+                                MaterialRow lawsHeaderRow = new MaterialRow();
+                                lawsHeaderRow.setMarginTop(15);
+                                lawsHeaderRow.setMarginBottom(5);
+                                lawsHeaderRow.setFontSize(BODY_FONT_SIZE);
+                                lawsHeaderRow.setFontWeight(FontWeight.BOLD);
+                                lawsHeaderRow.add(new Label(messages.laws()));
+                                body.add(lawsHeaderRow);
+    
+                                for (com.gwidgets.shared.models.Document law : theme.getLaws()) {
+                                    MaterialRow row = new MaterialRow();
+                                    row.setMarginBottom(10);
+                                    row.setFontSize(BODY_FONT_SIZE);
+    
+                                    MaterialLink lawLink = new MaterialLink();
+                                   
+                                    String linkText = "";
+                                    if (law.getOfficialTitle() != null) {
+                                        linkText = law.getOfficialTitle();
+                                    } else {
+                                        linkText = law.getTitle();
+                                    }
+                                    if (law.getAbbreviation() != null) {
+                                        linkText += " (" + law.getAbbreviation() + ")";
+                                    }
+                                    if (law.getOfficialNumber() != null) {
+                                        linkText += ", " + law.getOfficialNumber();
+                                    }
+                                    lawLink.setText(linkText);
+                                    lawLink.setHref(law.getTextAtWeb());
+                                    lawLink.setTarget("_blank");
+                                    lawLink.setTextColor(Color.RED_DARKEN_2);
+                                    lawLink.addStyleName("result-link");
+                                    row.add(lawLink);
+                                    body.add(row);
+                                }
+                            }
+                            item.add(body);
+                            collapsible.add(item);
+                        }               
                         
-                        // Cannot use the code since all subthemes share
-                        // the same code.
-                        String layerId = theme.getReferenceWMS().getLayers();
-                        item.setId(layerId);
-                        concernedWmsLayers.add(layerId);
-                                                
-                        MaterialCollapsibleHeader header = new MaterialCollapsibleHeader();
-                        header.setBackgroundColor(Color.GREY_LIGHTEN_4);
-                        header.setLineHeight(18); // heuristic 
-                        header.setDisplay(Display.TABLE);
-                        if (i < realEstate.getConcernedThemes().size()) {
-                            header.setBorderBottom("1px solid #dddddd");
-                        } else {
-                            header.setBorderBottom("0px solid #dddddd");
-                        }
-                        header.setWidth("100%");
-                        header.setHeight("45px"); // Firefox
-                        
-                        MaterialLink link = new MaterialLink();
-                        Div aParent = new Div();
-                        aParent.setBorder("0px");
-                        aParent.setDisplay(Display.TABLE_CELL);
-                        aParent.setVerticalAlign(VerticalAlign.MIDDLE);
-                        
-                        link.setText(theme.getName());
-                        link.setFontWeight(FontWeight.BOLD);
-                        link.setFontSize(BODY_FONT_SIZE);
-                        link.setTextColor(Color.BLACK);
-                        link.setBorder("0px");
-                        aParent.add(link);
-                       
-                        header.add(aParent);
-                        item.add(header);
-                        
-                        MaterialCollapsibleBody body = new MaterialCollapsibleBody();
-                        body.addMouseOverHandler(event -> {
-                            body.getElement().getStyle().setCursor(Cursor.DEFAULT);
-                        });
-                        body.setBackgroundColor(Color.WHITE);
-                        body.setPaddingLeft(15);
-                        body.setPaddingRight(15);
-                        body.setPaddingTop(5);
-                        body.setPaddingBottom(5);
-                        if (i < realEstate.getConcernedThemes().size()) {
-                            body.setBorderBottom("1px solid #dddddd");
-                        } else {
-                            body.setBorderBottom("0px solid #dddddd");
-                            body.setBorderTop("1px solid #dddddd");
-                        }                        
-                        
-                        MaterialRow sliderRow = new MaterialRow();
-                        sliderRow.setMarginBottom(15);
-                        
-                        MaterialColumn sliderRowLeft = new MaterialColumn();
-                        sliderRowLeft.setGrid("s2");
-                        MaterialColumn sliderRowRight = new MaterialColumn();
-                        sliderRowRight.setGrid("s10");
-
-                        MaterialRange slider = new MaterialRange();
-                        slider.setPadding(0);
-                        slider.setMin(0);
-                        slider.setMax(100);
-                        slider.setValue(Double.valueOf((theme.getReferenceWMS().getLayerOpacity() * 100)).intValue());
-                        slider.addValueChangeHandler(event -> {
-                            double opacity = slider.getValue() / 100.0;
-                            wmsLayer.setOpacity(opacity);
-                        });
-                        sliderRowLeft.add(new Label(messages.resultOpacity() + ":"));
-                        sliderRowLeft.setFontSize(BODY_FONT_SIZE);
-                        sliderRowLeft.setPadding(0);
-                        
-                        sliderRowRight.add(slider);
-
-                        sliderRow.add(sliderRowLeft);
-                        sliderRow.add(sliderRowRight);
-                        body.add(sliderRow);
-                        
-                        
-                        // TODO: eher Tabelle. Das mit den Umbrüchen habe ich nicht wirklich im Griff.
-                        MaterialRow informationHeaderRow = new MaterialRow();
-
-                        MaterialColumn typeColumn = new MaterialColumn();
-                        typeColumn.setGrid("s6");
-                        typeColumn.setPadding(0);
-                        typeColumn.setMarginRight(5);
-                        typeColumn.setFontSize(BODY_FONT_SIZE);
-                        typeColumn.add(new Label(theme.getRestrictions().get(0).getInformation() + theme.getRestrictions().get(0).getInformation()));
-                        
-                        MaterialColumn symbolColumn = new MaterialColumn();
-                        symbolColumn.setPadding(0);
-                        symbolColumn.setMarginRight(5);
-                        symbolColumn.setGrid("s2");
-                        symbolColumn.setTextAlign(TextAlign.RIGHT);
-                        
-                        com.google.gwt.user.client.ui.Image symbolImage = new com.google.gwt.user.client.ui.Image(theme.getRestrictions().get(0).getSymbol());
-                        symbolImage.setWidth("40px");
-                        symbolImage.getElement().getStyle().setProperty("border", "1px solid black");
-                        symbolColumn.add(symbolImage);
-
-                        MaterialColumn shareColumn = new MaterialColumn();
-                        shareColumn.setPadding(0);
-                        shareColumn.setGrid("s2");
-                        shareColumn.add(new Label("foo"));
-
-                        MaterialColumn sharePercentColumn = new MaterialColumn();
-                        sharePercentColumn.setPadding(0);
-                        sharePercentColumn.setGrid("s1");
-                        sharePercentColumn.add(new Label("foo"));
-
-                        informationHeaderRow.add(typeColumn);
-                        informationHeaderRow.add(symbolColumn);
-                        informationHeaderRow.add(shareColumn);
-                        informationHeaderRow.add(sharePercentColumn);
-                        body.add(informationHeaderRow);
-                        
-                        String baseUrl = theme.getReferenceWMS().getBaseUrl();
-                        if (WMS_LAYER_MAPPINGS.get(baseUrl) != null) {
-                            baseUrl = WMS_LAYER_MAPPINGS.get(theme.getReferenceWMS().getBaseUrl());
-                        }
-                        body.add(new Label(baseUrl + "?LAYERS=" + theme.getReferenceWMS().getLayers()));
-
-                        
-                        item.add(body);
-                        collapsible.add(item);
-                    }               
-                    
-                    collapsible.addExpandHandler(event -> {                       
-                       String expandedLayerId = event.getTarget().getId();
-                       for (String layerId : concernedWmsLayers) {
-                           Image wmsLayer = (Image) getLayerById(layerId);
-                           if (layerId.equalsIgnoreCase(expandedLayerId)) {
-                               wmsLayer.setVisible(true);
-                           } else {
-                               wmsLayer.setVisible(false);
+                        collapsible.addExpandHandler(event -> {                       
+                           String expandedLayerId = event.getTarget().getId();
+                           for (String layerId : concernedWmsLayers) {
+                               Image wmsLayer = (Image) getLayerById(layerId);
+                               if (layerId.equalsIgnoreCase(expandedLayerId)) {
+                                   wmsLayer.setVisible(true);
+                               } else {
+                                   wmsLayer.setVisible(false);
+                               }
                            }
-                       }
-                    });
+                        });
+                        
+                        collapsible.addCollapseHandler(event -> {
+                           GWT.log("collaps "  +  event.getTarget().getId()); 
+                           Image wmsLayer = (Image) getLayerById(event.getTarget().getId());
+                           wmsLayer.setVisible(false);
+                        });
+                        
+                        collapsibleConcernedThemeBody.add(collapsible);
+                    }
                     
-                    collapsibleConcernedThemeBody.add(collapsible);
-
                     collapsibleConcernedThemeItem.add(collapsibleConcernedThemeHeader);
-                    collapsibleConcernedThemeItem.add(collapsibleConcernedThemeBody);
+                    if (realEstate.getConcernedThemes().size() > 0) {
+                        collapsibleConcernedThemeItem.add(collapsibleConcernedThemeBody);
+                    }
+                    
                     collapsibleConcernedTheme.add(collapsibleConcernedThemeItem);
 
                     resultDiv.add(collapsibleConcernedTheme);
@@ -1138,10 +1353,10 @@ public class AppEntryPoint implements EntryPoint {
         @Override
         public void onClick(ClickEvent event) {
             MaterialLoader.loading(true);
-
             resetGui();
-
-            sendEgridToServer();
+            //CH870679603216 (KbS ÖV)
+            //CH857632820629 (Kappel)
+            sendEgridToServer("CH870679603216");
         }
     }
 
@@ -1181,8 +1396,9 @@ public class AppEntryPoint implements EntryPoint {
                                 ArrayList<JSONObject> features = parseRealEstateFeatures(responseObj);
                                 String egrid = features.get(0).get("egrid").toString().trim().replaceAll("^.|.$", "");
 
-                                // TODO: make rpc request.
-
+                                MaterialLoader.loading(true);
+                                resetGui();
+                                sendEgridToServer(egrid);
                                 return;
                             } else {
                                 GWT.log("error from request");
@@ -1244,10 +1460,11 @@ public class AppEntryPoint implements EntryPoint {
                                                 }
 
                                                 // TODO egrid can be null or ""
-                                                GWT.log("get extract for: " + egrid);
+                                                GWT.log("get extract for (from address): " + egrid);
 
-                                                // TODO: make rpc request.
-
+                                                MaterialLoader.loading(true);
+                                                resetGui();
+                                                sendEgridToServer(egrid);
                                                 return;
                                             } else {
                                                 GWT.log("error from request");
@@ -1305,6 +1522,7 @@ public class AppEntryPoint implements EntryPoint {
                             JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
                             ArrayList<JSONObject> features = parseRealEstateFeatures(responseObj);
 
+                            String egrid;
                             if (features.size() > 1) {
                                 if (realEstateWindow != null) {
                                     realEstateWindow.removeFromParent();
@@ -1329,7 +1547,7 @@ public class AppEntryPoint implements EntryPoint {
                                 
                                 for (JSONObject feature : features) {
                                     String number = feature.get("nummer").toString().trim().replaceAll("^.|.$", "");
-                                    String egrid = feature.get("egrid").toString().trim().replaceAll("^.|.$", "");
+                                    egrid = feature.get("egrid").toString().trim().replaceAll("^.|.$", "");
                                     String type = feature.get("art_txt").toString().trim().replaceAll("^.|.$", "");
 
                                     MaterialRow realEstateRow = new MaterialRow();
@@ -1338,13 +1556,13 @@ public class AppEntryPoint implements EntryPoint {
                                     realEstateRow.setPadding(5);
                                     realEstateRow.add(new Label("GB-Nr.: " + number + " (" + type.substring(type.lastIndexOf(".") + 1) + ")"));
                                    
-                                    realEstateRow.addClickHandler(event -> {
-                                        
+                                    realEstateRow.addClickHandler(event -> {                                        
                                         realEstateWindow.removeFromParent();
+                                        GWT.log("get extract from click for (multiple result): " + realEstateRow.getId());                                
 
-                                        GWT.log(realEstateRow.getId());
-                                        // make rpc call
-                                        
+                                        MaterialLoader.loading(true);
+                                        resetGui();
+                                        sendEgridToServer(realEstateRow.getId());
                                     });
                                     
                                     realEstateRow.addMouseOverHandler(event -> {
@@ -1375,13 +1593,13 @@ public class AppEntryPoint implements EntryPoint {
                                 map.addOverlay(new Overlay(overlayOptions));
                                 */
                             } else {
-                                String egrid = features.get(0).get("egrid").toString().trim().replaceAll("^.|.$", "");
-                                GWT.log("get extract from click for: " + egrid);
-
+                                egrid = features.get(0).get("egrid").toString().trim().replaceAll("^.|.$", "");
+                                GWT.log("get extract from click for (single result): " + egrid);  
+                                
+                                MaterialLoader.loading(true);
+                                resetGui();
+                                sendEgridToServer(egrid);
                             }
-                            
-                            // TODO: make rpc request.
-
                             return;
                         } else {
                             GWT.log("error from request");

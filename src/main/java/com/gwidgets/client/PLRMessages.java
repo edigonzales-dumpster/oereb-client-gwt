@@ -24,6 +24,9 @@ public interface PLRMessages extends Messages {
     @DefaultMessage("Area")
     String resultArea();
     
+    @DefaultMessage("Subunit of Land Register")
+    String resultSubunitOfLandRegister();
+
     @DefaultMessage("Opacity")
     String resultOpacity();
 
@@ -32,4 +35,22 @@ public interface PLRMessages extends Messages {
     
     @DefaultMessage("Request extract as PDF")
     String resultPDFTooltip();
+    
+    @DefaultMessage("Type")
+    String resultType();
+    
+    @DefaultMessage("Share")
+    String resultShare();
+        
+    @DefaultMessage("Share in %")
+    String resultShareInPercent();
+    
+    @DefaultMessage("Show full legend")
+    String resultShowLegend();
+
+    @DefaultMessage("Legal provisions")
+    String legalProvisions();
+    
+    @DefaultMessage("Laws")
+    String laws();
 }

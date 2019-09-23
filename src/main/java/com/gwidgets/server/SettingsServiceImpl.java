@@ -15,6 +15,9 @@ import com.gwidgets.shared.SettingsService;
 
 public class SettingsServiceImpl extends RemoteServiceServlet implements SettingsService {
 
+    @Value("${app.oerebWebServiceUrl}")
+    private String oerebWebServiceUrl;
+
     @Value("${app.searchServiceUrl}")
     private String searchServiceUrl;
     
@@ -34,6 +37,7 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
     public SettingsResponse settingsServer() throws IllegalArgumentException, IOException {
         HashMap<String,Object> settings = new HashMap<String,Object>();
         
+        settings.put("OEREB_SERVICE_URL", oerebWebServiceUrl);
         settings.put("SEARCH_SERVICE_URL", searchServiceUrl);
         settings.put("DATA_SERVICE_URL", dataServiceUrl);
         settings.put("WMS_LAYER_MAPPINGS", wmsLayerMappings);
