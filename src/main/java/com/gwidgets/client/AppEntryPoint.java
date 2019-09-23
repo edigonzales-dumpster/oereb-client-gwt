@@ -173,11 +173,12 @@ public class AppEntryPoint implements EntryPoint {
 //        GWT.log(Window.Location.getHost());
 //        GWT.log(Window.Location.getHostName());
 //        GWT.log(Window.Location.getPath());
-//        GWT.log(Window.Location.getQueryString());
+        GWT.log(Window.Location.getQueryString());
 //        GWT.log(Window.Location.getProtocol());
 //        GWT.log(Window.Location.getHash());
 //        GWT.log(Window.Location.getHref());
-
+        GWT.log( Window.Location.getParameter("egrid"));   
+        
         GWT.log(OEREB_SERVICE_URL.toString());
         GWT.log(WMS_LAYER_MAPPINGS.toString());
         
@@ -302,49 +303,6 @@ public class AppEntryPoint implements EntryPoint {
 
         // Initialize openlayers map with background wmts layer.
         initMap(mapDiv.getId());
-
-//      ImageWmsParams imageWMSParams = OLFactory.createOptions();
-//      imageWMSParams.setLayers("ch.swisstopo.geologie-geotechnik-gk500-gesteinsklassierung,ch.bafu.schutzgebiete-paerke_nationaler_bedeutung");
-//
-//      ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
-//      imageWMSOptions.setUrl("http://wms.geo.admin.ch/");
-//      imageWMSOptions.setParams(imageWMSParams);
-//      imageWMSOptions.setRatio(1.5f);
-//
-//      ImageWms imageWMSSource = new ImageWms(imageWMSOptions);
-//
-//      LayerOptions layerOptions = OLFactory.createOptions();
-//      layerOptions.setSource(imageWMSSource);
-//
-//      Image wmsLayer = new Image(layerOptions);
-//
-//      // create a projection
-//      ProjectionOptions projectionOptions = OLFactory.createOptions();
-//      projectionOptions.setCode("EPSG:21781");
-//      projectionOptions.setUnits("m");
-//
-//      Projection projection = new Projection(projectionOptions);
-//      // projection.setExtent()...
-//
-//      // create a view
-//      ViewOptions viewOptions = OLFactory.createOptions();
-//      viewOptions.setProjection(projection);
-//      View view = new View(viewOptions);
-//     
-//      Coordinate centerCoordinate = new Coordinate(660000, 190000);
-//
-//      view.setCenter(centerCoordinate);
-//      view.setZoom(9);
-//
-//      // create the map
-//      MapOptions mapOptions = OLFactory.createOptions();
-//      mapOptions.setTarget(mapDiv.getId());
-//      mapOptions.setView(view);
-//      mapOptions.setControls(new Collection<Control>());
-//
-//      Map map = new Map(mapOptions);
-//
-//      map.addLayer(wmsLayer);
     }
 
     private ArrayList<JSONObject> parseRealEstateFeatures(JSONObject obj) {
@@ -396,6 +354,8 @@ public class AppEntryPoint implements EntryPoint {
             @Override
             public void onSuccess(ExtractResponse result) {
                 MaterialLoader.loading(false);
+                
+                // TODO: change egrid in url
 
                 Extract extract = result.getExtract();
                 RealEstateDPR realEstate = extract.getRealEstate();
@@ -406,9 +366,6 @@ public class AppEntryPoint implements EntryPoint {
                 String egrid = realEstate.getEgrid();
                 int area = realEstate.getLandRegistryArea();
 
-                // Remove all oereb layers from the map.
-                // TODO: They are removed already when requesting the extract
-                // from the server.
                 removePlrLayers();
                 
                 // create the vector layer for highlighting the real estate
@@ -437,9 +394,26 @@ public class AppEntryPoint implements EntryPoint {
                 MaterialRow buttonRow = new MaterialRow();
                 buttonRow.setMarginBottom(25);
 
+                MaterialColumn deleteExtractButtonColumn = new MaterialColumn();
+                deleteExtractButtonColumn.setPadding(0);
+                deleteExtractButtonColumn.setGrid("s6");
+
+                MaterialButton deleteExtractButton = new MaterialButton();
+                deleteExtractButton.setIconType(IconType.CLOSE);
+                deleteExtractButton.setType(ButtonType.FLOATING);
+                deleteExtractButton.setTooltip(messages.resultCloseTooltip());
+                deleteExtractButton.setTooltipPosition(Position.TOP);
+                deleteExtractButtonColumn.add(deleteExtractButton);
+                buttonRow.add(deleteExtractButtonColumn);
+
+                deleteExtractButton.addClickHandler(event -> {
+                    resetGui();
+                });
+                
                 MaterialColumn pdfButtonColumn = new MaterialColumn();
                 pdfButtonColumn.setPadding(0);
                 pdfButtonColumn.setGrid("s6");
+                pdfButtonColumn.getElement().getStyle().setProperty("textAlign", "right");
 
                 MaterialButton pdfButton = new MaterialButton();
                 pdfButton.setIconType(IconType.INSERT_DRIVE_FILE);
@@ -456,23 +430,6 @@ public class AppEntryPoint implements EntryPoint {
 //                    Window.open("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629_layer_ordering.pdf", "_target", "enabled");
                     Window.open(OEREB_SERVICE_URL + "/reduced/pdf/geometry/" + egrid,
                             "_blank", null);
-                });
-
-                MaterialColumn deleteExtractButtonColumn = new MaterialColumn();
-                deleteExtractButtonColumn.setPadding(0);
-                deleteExtractButtonColumn.setGrid("s6");
-                deleteExtractButtonColumn.getElement().getStyle().setProperty("textAlign", "right");
-
-                MaterialButton deleteExtractButton = new MaterialButton();
-                deleteExtractButton.setIconType(IconType.CLOSE);
-                deleteExtractButton.setType(ButtonType.FLOATING);
-                deleteExtractButton.setTooltip(messages.resultCloseTooltip());
-                deleteExtractButton.setTooltipPosition(Position.TOP);
-                deleteExtractButtonColumn.add(deleteExtractButton);
-                buttonRow.add(deleteExtractButtonColumn);
-
-                deleteExtractButton.addClickHandler(event -> {
-                    resetGui();
                 });
 
                 resultDiv.add(buttonRow);
@@ -687,8 +644,8 @@ public class AppEntryPoint implements EntryPoint {
                             }                        
                             
                             MaterialRow sliderRow = new MaterialRow();
-                            sliderRow.setMarginBottom(15);
-                            
+                            sliderRow.setMarginBottom(0);
+
                             MaterialColumn sliderRowLeft = new MaterialColumn();
                             sliderRowLeft.setGrid("s2");
                             MaterialColumn sliderRowRight = new MaterialColumn();
@@ -715,8 +672,14 @@ public class AppEntryPoint implements EntryPoint {
                             
                             {
                                 MaterialRow informationHeaderRow = new MaterialRow();
+                                informationHeaderRow.setPaddingTop(10);
+                                informationHeaderRow.setPaddingBottom(0);
+                                informationHeaderRow.setPaddingLeft(0);
+                                informationHeaderRow.setPaddingRight(0);
                                 informationHeaderRow.setBorderBottom("1px #bdbdbd solid");
                                 informationHeaderRow.setMarginBottom(5);
+                                informationHeaderRow.setBorderTop("1px #bdbdbd solid");
+                                informationHeaderRow.setMarginTop(15);
                                 
                                 MaterialColumn typeColumn = new MaterialColumn();
                                 typeColumn.setGrid("s6");
@@ -970,6 +933,8 @@ public class AppEntryPoint implements EntryPoint {
                            wmsLayer.setVisible(false);
                         });
                         
+                        collapsible.open(1);
+                        
                         collapsibleConcernedThemeBody.add(collapsible);
                     }
                     
@@ -980,6 +945,10 @@ public class AppEntryPoint implements EntryPoint {
                     
                     collapsibleConcernedTheme.add(collapsibleConcernedThemeItem);
 
+                    if (realEstate.getConcernedThemes().size() > 0) {
+                        collapsibleConcernedTheme.open(1);;
+                    }
+                    
                     resultDiv.add(collapsibleConcernedTheme);
                 }    
 
@@ -1153,8 +1122,6 @@ public class AppEntryPoint implements EntryPoint {
                     body.setPaddingRight(15);
                     body.setPaddingTop(5);
                     body.setPaddingBottom(5);
-
-                    Div div = new Div();
                     
                     HTML infoHtml = new HTML();
                     
@@ -1363,6 +1330,7 @@ public class AppEntryPoint implements EntryPoint {
     public class SearchValueChangeHandler implements ValueChangeHandler {
         @Override
         public void onValueChange(ValueChangeEvent event) {
+            MaterialLoader.loading(true);
             resetGui();
 
             // We only allow one result in the autocomplete widget.
@@ -1396,11 +1364,10 @@ public class AppEntryPoint implements EntryPoint {
                                 ArrayList<JSONObject> features = parseRealEstateFeatures(responseObj);
                                 String egrid = features.get(0).get("egrid").toString().trim().replaceAll("^.|.$", "");
 
-                                MaterialLoader.loading(true);
-                                resetGui();
                                 sendEgridToServer(egrid);
                                 return;
                             } else {
+                                MaterialLoader.loading(false);
                                 GWT.log("error from request");
                                 GWT.log(String.valueOf(statusCode));
                                 GWT.log(response.getStatusText());
@@ -1409,10 +1376,12 @@ public class AppEntryPoint implements EntryPoint {
 
                         @Override
                         public void onError(com.google.gwt.http.client.Request request, Throwable exception) {
+                            MaterialLoader.loading(false);
                             GWT.log("error actually sending the request, never got sent");
                         }
                     });
                 } catch (Exception e) {
+                    MaterialLoader.loading(true);
                     e.printStackTrace();
                 }
             } else {
@@ -1461,12 +1430,10 @@ public class AppEntryPoint implements EntryPoint {
 
                                                 // TODO egrid can be null or ""
                                                 GWT.log("get extract for (from address): " + egrid);
-
-                                                MaterialLoader.loading(true);
-                                                resetGui();
                                                 sendEgridToServer(egrid);
                                                 return;
                                             } else {
+                                                MaterialLoader.loading(false);
                                                 GWT.log("error from request");
                                                 GWT.log(String.valueOf(statusCode));
                                                 GWT.log(response.getStatusText());
@@ -1476,13 +1443,16 @@ public class AppEntryPoint implements EntryPoint {
                                         @Override
                                         public void onError(com.google.gwt.http.client.Request request,
                                                 Throwable exception) {
+                                            MaterialLoader.loading(false);
                                             GWT.log("error actually sending the request, never got sent");
                                         }
                                     });
                                 } catch (Exception e) {
+                                    MaterialLoader.loading(false);
                                     e.printStackTrace();
                                 }
                             } else {
+                                MaterialLoader.loading(false);
                                 GWT.log("error from request");
                                 GWT.log(String.valueOf(statusCode));
                                 GWT.log(response.getStatusText());
@@ -1491,6 +1461,7 @@ public class AppEntryPoint implements EntryPoint {
 
                         @Override
                         public void onError(com.google.gwt.http.client.Request request, Throwable exception) {
+                            MaterialLoader.loading(false);
                             GWT.log("error actually sending the request, never got sent");
                         }
                     });
@@ -1504,6 +1475,9 @@ public class AppEntryPoint implements EntryPoint {
     public final class MapSingleClickListener implements EventListener<MapBrowserEvent> {
         @Override
         public void onEvent(MapBrowserEvent event) {
+            MaterialLoader.loading(true);
+            resetGui();
+            
             Coordinate coordinate = event.getCoordinate();
             String bbox = coordinate.getX() + "," + coordinate.getY() + "," + coordinate.getX() + ","
                     + coordinate.getY();
@@ -1560,8 +1534,6 @@ public class AppEntryPoint implements EntryPoint {
                                         realEstateWindow.removeFromParent();
                                         GWT.log("get extract from click for (multiple result): " + realEstateRow.getId());                                
 
-                                        MaterialLoader.loading(true);
-                                        resetGui();
                                         sendEgridToServer(realEstateRow.getId());
                                     });
                                     
@@ -1596,12 +1568,11 @@ public class AppEntryPoint implements EntryPoint {
                                 egrid = features.get(0).get("egrid").toString().trim().replaceAll("^.|.$", "");
                                 GWT.log("get extract from click for (single result): " + egrid);  
                                 
-                                MaterialLoader.loading(true);
-                                resetGui();
                                 sendEgridToServer(egrid);
                             }
                             return;
                         } else {
+                            MaterialLoader.loading(false);
                             GWT.log("error from request");
                             GWT.log(String.valueOf(statusCode));
                             GWT.log(response.getStatusText());
@@ -1610,8 +1581,8 @@ public class AppEntryPoint implements EntryPoint {
 
                     @Override
                     public void onError(com.google.gwt.http.client.Request request, Throwable exception) {
-                        GWT.log("error actually sending the request, never got sent");
-                    }
+                        MaterialLoader.loading(false);
+                        GWT.log("error actually sending the request, never got sent");                    }
                 });
             } catch (Exception e) {
                 e.printStackTrace();
