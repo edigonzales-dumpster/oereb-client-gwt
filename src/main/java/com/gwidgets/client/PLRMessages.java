@@ -53,4 +53,10 @@ public interface PLRMessages extends Messages {
     
     @DefaultMessage("Laws")
     String laws();
+
+    @DefaultMessage("Responsible office")
+    String responsibleOffice();
+    
+    @DefaultMessage("Cadastre authority")
+    String plrCadastreAuthority();
 }
