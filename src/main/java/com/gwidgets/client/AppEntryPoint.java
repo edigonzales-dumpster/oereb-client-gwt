@@ -250,6 +250,9 @@ public class AppEntryPoint implements EntryPoint {
 
         SearchOracle searchOracle = new SearchOracle(SEARCH_SERVICE_URL);
         autocomplete = new MaterialAutoComplete(searchOracle);
+        autocomplete.setBorder("1px #455a64 solid");
+        autocomplete.setPadding(5);
+        autocomplete.setBorderRadius("10px");
         // It's not possible to get the object with AutocompleteType.TEXT
         // you only the the text then. But we definitely
         // need the object.
@@ -527,6 +530,7 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleConcernedTheme.setBackgroundColor(Color.GREY_LIGHTEN_5);
                     collapsibleConcernedTheme.setMarginTop(25);
                     collapsibleConcernedTheme.setShadow(0);
+//                    collapsibleConcernedTheme.setBorderRadius("10px");
                     
                     collapsibleConcernedTheme.addExpandHandler(event -> {
                         collapsibleNotConcernedTheme.closeAll();
