@@ -195,7 +195,6 @@ public class AppEntryPoint implements EntryPoint {
         // A material card for the search.
         controlsCard = new MaterialCard();
         controlsCard.setBackgroundColor(Color.GREY_LIGHTEN_5);
-        controlsCard.getElement().getStyle().setProperty("transition", "height 0.5s");
         controlsCard.getElement().getStyle().setProperty("position", "absolute");
         controlsCard.getElement().getStyle().setProperty("marginTop", "0px");
         controlsCard.getElement().getStyle().setProperty("marginLeft", "0px");
