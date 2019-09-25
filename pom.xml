@@ -82,9 +82,6 @@
       <version>1.16.1</version>
       <type>pom</type>
    </dependency>
-   
-
-
     <dependency>
       <groupId>javax.xml.bind</groupId>
       <artifactId>jaxb-api</artifactId>
@@ -145,6 +142,35 @@
           </execution>
         </executions>
       </plugin>
+		<plugin>
+		    <groupId>org.codehaus.mojo</groupId>
+		    <artifactId>exec-maven-plugin</artifactId>
+		    <version>1.6.0</version>
+		    <executions>
+		        <execution>
+		            <id>docker-package</id>
+		            <phase>package</phase>
+		            <goals>
+		                <goal>exec</goal>
+		            </goals>
+		            <configuration>
+		                <executable>docker</executable>
+		                <workingDirectory>${project.basedir}</workingDirectory>
+		                <arguments>
+		                    <argument>build</argument>
+		                    <argument>.</argument>
+		                    <argument>-t</argument>
+		                    <argument>sogis/oereb-client:1.0.${env.TRAVIS_BUILD_NUMBER}</argument>                    
+		                    <argument>-t</argument>
+		                    <argument>sogis/oereb-client:latest</argument>                    
+		                    <argument>--build-arg</argument>
+		                    <argument>JAR_FILE=target/oereb-client-${project.version}.jar</argument>
+		                </arguments>
+		            </configuration>
+		        </execution>
+		    </executions>
+		</plugin>
+      
     </plugins>
   </build>
 </project>

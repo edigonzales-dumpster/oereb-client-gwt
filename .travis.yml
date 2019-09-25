@@ -1,0 +1,21 @@
+services:
+  - docker
+
+env:
+  global:
+    - DOCKER_ACCOUNT=sogis
+    - DOCKER_REPO=oereb-client
+
+branches:
+  only:
+    - master
+
+script:
+  - mvn package
+  - docker images
+
+deploy:
+  provider: script
+  script: echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin && docker push $DOCKER_ACCOUNT/$DOCKER_REPO
+  on:
+    branch: master

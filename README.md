@@ -17,8 +17,8 @@ Or simple devmode (which worked better for java.xml.bind on client side):
 mvn gwt:generate-module gwt:devmode 
 ```
 
-Build fat jar:
+Build fat jar and docker image:
 ```
-mvn package
+TRAVIS_BUILD_NUMBER=9999 mvn package
 ```
 
