@@ -301,14 +301,12 @@ public class AppEntryPoint implements EntryPoint {
         
         // If there is an egrid query parameter in the url,
         // we request the extract without further interaction.
-        GWT.log( Window.Location.getParameter("egrid"));   
         if (Window.Location.getParameter("egrid") != null) {
             String egrid = Window.Location.getParameter("egrid").toString();
             MaterialLoader.loading(true);
             resetGui();
             sendEgridToServer(egrid);
         }
-        
     }
 
     private ArrayList<JSONObject> parseRealEstateFeatures(JSONObject obj) {
