@@ -262,7 +262,9 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     }))
                     .map(r -> {
                         Office office = new Office();
-                        office.setName(r.getResponsibleOffice().getName().getLocalisedText().get(0).getText());
+                        if (r.getResponsibleOffice().getName() != null) {
+                            office.setName(r.getResponsibleOffice().getName().getLocalisedText().get(0).getText());
+                        }
                         office.setOfficeAtWeb(r.getResponsibleOffice().getOfficeAtWeb().getValue());
                         return office;
                     }).collect(Collectors.toList());
@@ -278,21 +280,37 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                 for (DocumentBaseType xmlDocumentBase : xmlLegalProvisions) {
                     DocumentType xmlLegalProvision =  (DocumentType) xmlDocumentBase;
                     Document legalProvision = new Document();
-                    legalProvision.setTitle(xmlLegalProvision.getTitle().getLocalisedText().get(0).getText());
-                    legalProvision.setOfficialTitle(xmlLegalProvision.getOfficialTitle().getLocalisedText().get(0).getText());
+                    if (xmlLegalProvision.getTitle() != null) {
+                        legalProvision.setTitle(xmlLegalProvision.getTitle().getLocalisedText().get(0).getText());
+                    }
+                    if (xmlLegalProvision.getOfficialTitle() != null) {
+                        legalProvision.setOfficialTitle(xmlLegalProvision.getOfficialTitle().getLocalisedText().get(0).getText());
+                    }
                     legalProvision.setOfficialNumber(xmlLegalProvision.getOfficialNumber());
-                    legalProvision.setAbbreviation(xmlLegalProvision.getAbbreviation().getLocalisedText().get(0).getText());
-                    legalProvision.setTextAtWeb(xmlLegalProvision.getTextAtWeb().getLocalisedText().get(0).getText());
+                    if (xmlLegalProvision.getAbbreviation() != null) {
+                        legalProvision.setAbbreviation(xmlLegalProvision.getAbbreviation().getLocalisedText().get(0).getText());
+                    }
+                    if (xmlLegalProvision.getTextAtWeb() != null) {
+                        legalProvision.setTextAtWeb(xmlLegalProvision.getTextAtWeb().getLocalisedText().get(0).getText());
+                    }
                     legalProvisionsList.add(legalProvision);
                     
                     List<DocumentType> xmlLaws = xmlLegalProvision.getReference();
                     for (DocumentType xmlLaw : xmlLaws) {
                         Document law = new Document();
-                        law.setTitle(xmlLaw.getTitle().getLocalisedText().get(0).getText());
-                        law.setOfficialTitle(xmlLaw.getOfficialTitle().getLocalisedText().get(0).getText());
+                        if (xmlLaw.getTitle() != null) {
+                            law.setTitle(xmlLaw.getTitle().getLocalisedText().get(0).getText());
+                        }
+                        if (xmlLaw.getOfficialTitle() != null) {
+                            law.setOfficialTitle(xmlLaw.getOfficialTitle().getLocalisedText().get(0).getText());
+                        }
                         law.setOfficialNumber(xmlLaw.getOfficialNumber());
-                        law.setAbbreviation(xmlLaw.getAbbreviation().getLocalisedText().get(0).getText());
-                        law.setTextAtWeb(xmlLaw.getTextAtWeb().getLocalisedText().get(0).getText());
+                        if (xmlLaw.getAbbreviation() != null) {
+                            law.setAbbreviation(xmlLaw.getAbbreviation().getLocalisedText().get(0).getText());
+                        }
+                        if (xmlLaw.getTextAtWeb() != null) {
+                            law.setTextAtWeb(xmlLaw.getTextAtWeb().getLocalisedText().get(0).getText());
+                        }
                         lawsList.add(law);
                     }
                 }

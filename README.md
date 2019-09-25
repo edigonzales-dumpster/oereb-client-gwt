@@ -1,25 +1,24 @@
 # oereb-client-gwt
 
+## Development
+
+First Terminal:
 ```
 mvn clean spring-boot:run
+```
+
+Second Terminal:
+```
 mvn gwt:generate-module gwt:codeserver
+```
 
+Or simple devmode (which worked better for java.xml.bind on client side):
+```
 mvn gwt:generate-module gwt:devmode 
-(java.xml.bind)
+```
 
+Build fat jar:
+```
 mvn package
-
-
-(mvn clean gwt:generate-module gwt:compile)
 ```
 
-maven local löschen...
-http://127.0.0.1:9876/ -> "Clean"
-
-
-Testen:
-```
-<source path="model">
-    <exclude name="**/ObjectFactory.*" />
-</source>
-```
