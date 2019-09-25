@@ -173,12 +173,6 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         logger.info("*********************************************");
         logger.info("*********************************************");
         
-//        try {
-//            Thread.sleep(10000);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
-
         // We create one ConcernedTheme object per theme with all restrictions belonging to the same theme
         // since this is the way we present the restriction in the GUI.
         ArrayList<ConcernedTheme> concernedThemesList = new ArrayList<ConcernedTheme>();
@@ -189,12 +183,15 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             
             List<RestrictionOnLandownershipType> xmlRestrictions = entry.getValue();
             
-            // Create a map with one simplified restriction for each type code.
+            // Create a map with one (and only one) simplified restriction for each type code.
             // We cannot use groupingBy because this will return a list of
             // restriction per type code.
             // Afterwards will add more information to the restriction.
+            // FIXME: Auch hier besteht das Problem, dass 'nur' über den
+            // TypeCode gruppiert wird. Das reicht nicht immer.
             Map<String, Restriction> restrictionsMap = xmlRestrictions.stream()
-                    .filter(distinctByKey(RestrictionOnLandownershipType::getTypeCode)).map(r -> {
+                    .filter(distinctByKey(RestrictionOnLandownershipType::getTypeCode))
+                    .map(r -> {
                         Restriction restriction = new Restriction();
                         restriction.setInformation(r.getInformation().getLocalisedText().get(0).getText());
                         restriction.setTypeCode(r.getTypeCode());
@@ -203,6 +200,9 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                         restriction.setSymbol(encodedImage);
                         return restriction;
                     }).collect(Collectors.toMap(Restriction::getTypeCode, Function.identity()));
+//                    }).collect(Collectors.toMap(r -> {
+//                        return r.getTypeCode();
+//                      }, Function.identity()));
             
             logger.info(restrictionsMap.toString());
             
@@ -234,8 +234,6 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             List<Restriction> restrictionsList = new ArrayList<Restriction>();
             for (Map.Entry<String, Restriction> restrictionEntry : restrictionsMap.entrySet()) {
                 String typeCode = restrictionEntry.getKey();
-                // I think this helps to find out which one to print in the client.
-                // Only one of the shares is not null.
                 if (sumAreaShare.get(typeCode) != null) {
                     restrictionEntry.getValue().setAreaShare(sumAreaShare.get(typeCode));
                     logger.info(String.valueOf(restrictionEntry.getValue().getAreaShare()));

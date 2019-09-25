@@ -130,7 +130,7 @@ public class AppEntryPoint implements EntryPoint {
     private HashMap<String, String> WMS_LAYER_MAPPINGS;
 
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
-    private NumberFormat fmtPercent = NumberFormat.getFormat("#.0");
+    private NumberFormat fmtPercent = NumberFormat.getFormat("#0.0");
 
     private MaterialAutoComplete autocomplete;
     private Map map;
@@ -161,7 +161,7 @@ public class AppEntryPoint implements EntryPoint {
                 OEREB_SERVICE_URL = (String) result.getSettings().get("OEREB_SERVICE_URL");
                 SEARCH_SERVICE_URL = (String) result.getSettings().get("SEARCH_SERVICE_URL");
                 DATA_SERVICE_URL = (String) result.getSettings().get("DATA_SERVICE_URL");
-                WMS_LAYER_MAPPINGS = (HashMap) result.getSettings().get("WMS_LAYER_MAPPINGS");
+                WMS_LAYER_MAPPINGS = (HashMap<String, String>) result.getSettings().get("WMS_LAYER_MAPPINGS");
                 init();
             }
         });
@@ -719,88 +719,35 @@ public class AppEntryPoint implements EntryPoint {
                             }
                             
                             {
+                                int j = 0;
                                 for (Restriction restriction : theme.getRestrictions()) {
-                                    MaterialRow informationRow = new MaterialRow();
-                                    informationRow.setMarginBottom(10);
-    //                              informationRow.setBorder("1px red solid");
-          
-                                    MaterialColumn typeColumn = new MaterialColumn();
-                                    typeColumn.setGrid("s6");
-                                    typeColumn.setPadding(0);
-                                    typeColumn.setMarginRight(0);
-                                    typeColumn.setFontSize(BODY_FONT_SIZE);
-                                    typeColumn.add(new Label(restriction.getInformation()));
-    
-                                    MaterialColumn symbolColumn = new MaterialColumn();
-                                    symbolColumn.setPadding(0);
-                                    symbolColumn.setMarginRight(0);
-                                    symbolColumn.setGrid("s1");
-                                    symbolColumn.setTextAlign(TextAlign.CENTER);
-                                    symbolColumn.setVerticalAlign(VerticalAlign.MIDDLE);
-    
-                                    Span helper = new Span();
-                                    helper.setDisplay(Display.INLINE_BLOCK);
-                                    helper.setVerticalAlign(VerticalAlign.MIDDLE);
-                                    symbolColumn.add(helper);
-    
-                                    com.google.gwt.user.client.ui.Image symbolImage = new com.google.gwt.user.client.ui.Image(restriction.getSymbol());
-                                    symbolImage.setWidth("30px");
-                                    symbolImage.getElement().getStyle().setProperty("border", "1px solid black");
-                                    symbolImage.getElement().getStyle().setProperty("verticalAlign", "middle");
-                                    symbolColumn.add(symbolImage);
-    
-                                    MaterialColumn shareColumn = new MaterialColumn();
-                                    shareColumn.setTextAlign(TextAlign.RIGHT);
-                                    shareColumn.setPadding(0);
-                                    shareColumn.setGrid("s3");
-                                    shareColumn.setFontSize(BODY_FONT_SIZE);
+                                    j++;
                                     
                                     if (restriction.getAreaShare() != null) {
-                                        HTML htmlArea;
-                                        if (restriction.getAreaShare() < 0.1) {
-                                            htmlArea = new HTML("< 0.1 m<sup>2</sup>");
-                                        } else {
-                                            htmlArea = new HTML(fmtDefault.format(restriction.getAreaShare()) + " m<sup>2</sup>");
-                                        }
-                                        shareColumn.add(htmlArea);
-                                    } else if (restriction.getLengthShare() != null) {
-                                        HTML htmlLength;
-                                        if (restriction.getLengthShare() < 0.1) {
-                                            htmlLength = new HTML("< 0.1 m");
-                                        } else {
-                                            htmlLength = new HTML(fmtDefault.format(restriction.getLengthShare()) + " m");
-                                        }
-                                        shareColumn.add(htmlLength);
-                                    } else if (restriction.getNrOfPoints() != null) {
-                                        HTML htmlPoints = new HTML(fmtDefault.format(restriction.getNrOfPoints()));
-                                        shareColumn.add(htmlPoints);
-                                    } else {
-                                        shareColumn.add(new Label("should not reach here"));
+                                        GWT.log("process areas");
+                                        MaterialRow informationRow = processRestrictionRow(restriction, GeometryType.POLYGON);
+                                        body.add(informationRow);
                                     }
-    
-                                    MaterialColumn sharePercentColumn = new MaterialColumn();
-                                    sharePercentColumn.setTextAlign(TextAlign.RIGHT);
-                                    sharePercentColumn.setPadding(0);
-                                    sharePercentColumn.setGrid("s2");
-                                    sharePercentColumn.setFontSize(BODY_FONT_SIZE);
-                                                                    
-                                    if (restriction.getPartInPercent() != null) {
-                                        HTML htmlArea;
-                                        if (restriction.getPartInPercent() < 0.1) {
-                                            htmlArea = new HTML("< 0.1");
-                                        } else {
-                                            htmlArea = new HTML(fmtPercent.format(restriction.getPartInPercent()));
-                                        }
-                                        sharePercentColumn.add(htmlArea);
-                                    } else {
-                                        sharePercentColumn.add(new HTML("&nbsp;"));
+                                    
+                                    if (restriction.getLengthShare() != null) {
+                                        GWT.log("process lines");
+                                        MaterialRow informationRow = processRestrictionRow(restriction, GeometryType.LINE);
+                                        body.add(informationRow);
                                     }
-    
-                                    informationRow.add(typeColumn);
-                                    informationRow.add(symbolColumn);
-                                    informationRow.add(shareColumn);
-                                    informationRow.add(sharePercentColumn);
-                                    body.add(informationRow);
+                                    
+                                    if (restriction.getNrOfPoints() != null) {
+                                        GWT.log("process points");
+                                        MaterialRow informationRow = processRestrictionRow(restriction, GeometryType.POINT);
+                                        body.add(informationRow);
+                                    }
+                                    
+                                    if (j == theme.getRestrictions().size()) {
+                                        MaterialRow fakeRow = new MaterialRow();
+                                        fakeRow.setBorderBottom("1px #bdbdbd solid");
+                                        body.add(fakeRow);
+                                  } 
+                                    
+                                    
                                 }
                             }
  
@@ -1594,7 +1541,7 @@ public class AppEntryPoint implements EntryPoint {
         }
     }
     
-    public Image createPlrWmsLayer(ReferenceWMS referenceWms) {
+    private Image createPlrWmsLayer(ReferenceWMS referenceWms) {
         ImageWmsParams imageWMSParams = OLFactory.createOptions();
         imageWMSParams.setLayers(referenceWms.getLayers());
 
@@ -1623,5 +1570,89 @@ public class AppEntryPoint implements EntryPoint {
 //        wmsLayer.setZIndex(referenceWms.getLayerIndex());
 
         return wmsLayer;
+    }
+    
+    private MaterialRow processRestrictionRow(Restriction restriction, GeometryType type) {
+        MaterialRow informationRow = new MaterialRow();
+        informationRow.setMarginBottom(10);
+
+        MaterialColumn typeColumn = new MaterialColumn();
+        typeColumn.setGrid("s6");
+        typeColumn.setPadding(0);
+        typeColumn.setMarginRight(0);
+        typeColumn.setFontSize(BODY_FONT_SIZE);
+        typeColumn.add(new Label(restriction.getInformation()));
+
+        MaterialColumn symbolColumn = new MaterialColumn();
+        symbolColumn.setPadding(0);
+        symbolColumn.setMarginRight(0);
+        symbolColumn.setGrid("s1");
+        symbolColumn.setTextAlign(TextAlign.CENTER);
+        symbolColumn.setVerticalAlign(VerticalAlign.MIDDLE);
+
+        Span helper = new Span();
+        helper.setDisplay(Display.INLINE_BLOCK);
+        helper.setVerticalAlign(VerticalAlign.MIDDLE);
+        symbolColumn.add(helper);
+
+        com.google.gwt.user.client.ui.Image symbolImage = new com.google.gwt.user.client.ui.Image(restriction.getSymbol());
+        symbolImage.setWidth("30px");
+        symbolImage.getElement().getStyle().setProperty("border", "1px solid black");
+        symbolImage.getElement().getStyle().setProperty("verticalAlign", "middle");
+        symbolColumn.add(symbolImage);
+
+        MaterialColumn shareColumn = new MaterialColumn();
+        shareColumn.setTextAlign(TextAlign.RIGHT);
+        shareColumn.setPadding(0);
+        shareColumn.setGrid("s3");
+        shareColumn.setFontSize(BODY_FONT_SIZE);
+        
+        if (type == GeometryType.POLYGON) {
+            HTML htmlArea;
+            if (restriction.getAreaShare() < 0.1) {
+                htmlArea = new HTML("< 0.1 m<sup>2</sup>");
+            } else {
+                htmlArea = new HTML(fmtDefault.format(restriction.getAreaShare()) + " m<sup>2</sup>");
+            }
+            shareColumn.add(htmlArea);
+        }
+        if (type == GeometryType.LINE) {
+            HTML htmlLength;
+            if (restriction.getLengthShare() < 0.1) {
+                htmlLength = new HTML("< 0.1 m");
+            } else {
+                htmlLength = new HTML(fmtDefault.format(restriction.getLengthShare()) + " m");
+            }
+            shareColumn.add(htmlLength);
+        }
+        if (type == GeometryType.POINT) {
+            HTML htmlPoints = new HTML(fmtDefault.format(restriction.getNrOfPoints()));
+            shareColumn.add(htmlPoints);
+        }
+        
+        MaterialColumn sharePercentColumn = new MaterialColumn();
+        sharePercentColumn.setTextAlign(TextAlign.RIGHT);
+        sharePercentColumn.setPadding(0);
+        sharePercentColumn.setGrid("s2");
+        sharePercentColumn.setFontSize(BODY_FONT_SIZE);
+                                        
+        if (type == GeometryType.POLYGON && restriction.getPartInPercent() != null) {
+            HTML htmlArea;
+            if (restriction.getPartInPercent() < 0.1) {
+                htmlArea = new HTML("< 0.1");
+            } else {
+                htmlArea = new HTML(fmtPercent.format(restriction.getPartInPercent()));
+            }
+            sharePercentColumn.add(htmlArea);
+        } else {
+            sharePercentColumn.add(new HTML("&nbsp;"));
+        }
+
+        informationRow.add(typeColumn);
+        informationRow.add(symbolColumn);
+        informationRow.add(shareColumn);
+        informationRow.add(sharePercentColumn);
+
+        return informationRow;
     }
 }
