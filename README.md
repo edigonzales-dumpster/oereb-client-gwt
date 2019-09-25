@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/edigonzales/oereb-client-gwt.svg?branch=master)](https://travis-ci.org/edigonzales/oereb-client-gwt)
+
 # oereb-client-gwt
 
 ## Development

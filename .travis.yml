@@ -11,7 +11,7 @@ branches:
     - master
 
 script:
-  - mvn package
+  - mvn -B package
   - docker images
 
 deploy:
