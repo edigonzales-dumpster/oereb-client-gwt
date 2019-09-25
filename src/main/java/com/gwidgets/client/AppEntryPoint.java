@@ -27,6 +27,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
+import com.google.gwt.user.client.ui.Widget;
 import com.gwidgets.shared.ExtractResponse;
 import com.gwidgets.shared.ExtractService;
 import com.gwidgets.shared.ExtractServiceAsync;
@@ -36,6 +37,7 @@ import com.gwidgets.shared.SettingsServiceAsync;
 import com.gwidgets.shared.models.ConcernedTheme;
 import com.gwidgets.shared.models.Extract;
 import com.gwidgets.shared.models.NotConcernedTheme;
+import com.gwidgets.shared.models.Office;
 import com.gwidgets.shared.models.RealEstateDPR;
 import com.gwidgets.shared.models.ReferenceWMS;
 import com.gwidgets.shared.models.Restriction;
@@ -47,6 +49,7 @@ import gwt.material.design.client.constants.ButtonSize;
 import gwt.material.design.client.constants.ButtonType;
 import gwt.material.design.client.constants.Color;
 import gwt.material.design.client.constants.Display;
+import gwt.material.design.client.constants.IconPosition;
 import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.constants.Position;
 import gwt.material.design.client.constants.TextAlign;
@@ -167,18 +170,7 @@ public class AppEntryPoint implements EntryPoint {
         });
     }
 
-    private void init() {
-        // TODO: get extract by url
-//        String egridRequestValue = Window.Location.getParameter("egrid");        
-//        GWT.log(Window.Location.getHost());
-//        GWT.log(Window.Location.getHostName());
-//        GWT.log(Window.Location.getPath());
-        GWT.log(Window.Location.getQueryString());
-//        GWT.log(Window.Location.getProtocol());
-//        GWT.log(Window.Location.getHash());
-//        GWT.log(Window.Location.getHref());
-        GWT.log( Window.Location.getParameter("egrid"));   
-        
+    private void init() {        
         GWT.log(OEREB_SERVICE_URL.toString());
         GWT.log(WMS_LAYER_MAPPINGS.toString());
         
@@ -306,6 +298,17 @@ public class AppEntryPoint implements EntryPoint {
 
         // Initialize openlayers map with background wmts layer.
         initMap(mapDiv.getId());
+        
+        // If there is an egrid query parameter in the url,
+        // we request the extract without further interaction.
+        GWT.log( Window.Location.getParameter("egrid"));   
+        if (Window.Location.getParameter("egrid") != null) {
+            String egrid = Window.Location.getParameter("egrid").toString();
+            MaterialLoader.loading(true);
+            resetGui();
+            sendEgridToServer(egrid);
+        }
+        
     }
 
     private ArrayList<JSONObject> parseRealEstateFeatures(JSONObject obj) {
@@ -343,8 +346,7 @@ public class AppEntryPoint implements EntryPoint {
 //  CH158782774974
 //  CH944982786913
 //  CH938278494529
-
-// CH533287066291 (SO)
+//  CH533287066291 (SO)
     private void sendEgridToServer(String egrid) {
         extractService.extractServer(egrid, new AsyncCallback<ExtractResponse>() {
             @Override
@@ -358,8 +360,10 @@ public class AppEntryPoint implements EntryPoint {
             public void onSuccess(ExtractResponse result) {
                 MaterialLoader.loading(false);
                 
-                // TODO: change egrid in url
-
+                String newUrl = Window.Location.getProtocol() + "//" + Window.Location.getHost() 
+                    + Window.Location.getPath() + "?egrid=" + egrid;
+                updateURLWithoutReloading(newUrl);
+                
                 Extract extract = result.getExtract();
                 RealEstateDPR realEstate = extract.getRealEstate();
                 String number = realEstate.getNumber();
@@ -626,6 +630,8 @@ public class AppEntryPoint implements EntryPoint {
                             link.setFontSize(BODY_FONT_SIZE);
                             link.setTextColor(Color.BLACK);
                             link.setBorder("0px");
+//                            link.setIconPosition(IconPosition.RIGHT);
+//                            link.setIconType(IconType.EXPAND_MORE);
                             aParent.add(link);
                            
                             header.add(aParent);
@@ -719,48 +725,40 @@ public class AppEntryPoint implements EntryPoint {
                             }
                             
                             {
-                                int j = 0;
                                 for (Restriction restriction : theme.getRestrictions()) {
-                                    j++;
-                                    
                                     if (restriction.getAreaShare() != null) {
-                                        GWT.log("process areas");
-                                        MaterialRow informationRow = processRestrictionRow(restriction, GeometryType.POLYGON);
+                                        MaterialRow informationRow = processRestrictionRow(restriction,
+                                                GeometryType.POLYGON);
                                         body.add(informationRow);
                                     }
-                                    
+
                                     if (restriction.getLengthShare() != null) {
-                                        GWT.log("process lines");
-                                        MaterialRow informationRow = processRestrictionRow(restriction, GeometryType.LINE);
+                                        MaterialRow informationRow = processRestrictionRow(restriction,
+                                                GeometryType.LINE);
                                         body.add(informationRow);
                                     }
-                                    
+
                                     if (restriction.getNrOfPoints() != null) {
-                                        GWT.log("process points");
-                                        MaterialRow informationRow = processRestrictionRow(restriction, GeometryType.POINT);
+                                        MaterialRow informationRow = processRestrictionRow(restriction,
+                                                GeometryType.POINT);
                                         body.add(informationRow);
                                     }
-                                    
-                                    if (j == theme.getRestrictions().size()) {
-                                        MaterialRow fakeRow = new MaterialRow();
-                                        fakeRow.setBorderBottom("1px #bdbdbd solid");
-                                        body.add(fakeRow);
-                                  } 
-                                    
-                                    
                                 }
+                                MaterialRow fakeRow = new MaterialRow();
+                                fakeRow.setBorderBottom("1px #bdbdbd solid");
+                                body.add(fakeRow);
                             }
  
                             if (theme.getLegendAtWeb() != null) 
                             {
                                 MaterialRow legendRow = new MaterialRow();
                                 legendRow.setBorderTop("1px #bdbdbd solid");
-                                legendRow.setBorderBottom("1px #bdbdbd solid");
+//                                legendRow.setBorderBottom("1px #bdbdbd solid");
                                 legendRow.setMarginBottom(10);
     
                                 MaterialColumn legendColumn = new MaterialColumn();
                                 legendColumn.setPaddingTop(5);
-                                legendColumn.setPaddingBottom(5);
+                                legendColumn.setPaddingBottom(0);
                                 legendColumn.setPaddingLeft(0);
                                 legendColumn.setMarginRight(0);
                                 legendColumn.setGrid("s12");
@@ -769,7 +767,6 @@ public class AppEntryPoint implements EntryPoint {
                                 
                                 MaterialLink legendLink = new MaterialLink();
                                 legendLink.setText(messages.resultShowLegend());
-                                legendLink.setTarget("_blank");
                                 legendLink.setTextColor(Color.RED_DARKEN_2);
                                 legendLink.addStyleName("result-link");
                                 legendColumn.add(legendLink);
@@ -780,10 +777,28 @@ public class AppEntryPoint implements EntryPoint {
                                         legendUrl = theme.getLegendAtWeb().replace(entry.getKey(), entry.getValue());
                                     }                                
                                 }
-       
-                                legendLink.setHref(legendUrl);
+                                                                
                                 legendRow.add(legendColumn);
                                 body.add(legendRow);
+                                
+                                com.google.gwt.user.client.ui.Image legendImage = new com.google.gwt.user.client.ui.Image();
+                                legendImage.setUrl(theme.getLegendAtWeb());
+                                legendImage.setVisible(false);
+                                body.add(legendImage);
+                                
+                                MaterialRow fakeRow = new MaterialRow();
+                                fakeRow.setBorderBottom("1px #bdbdbd solid");
+                                body.add(fakeRow);
+                                
+                                legendLink.addClickHandler(event -> {                                    
+                                    if (legendImage.isVisible()) {
+                                        legendImage.setVisible(false);                                                                                
+                                        legendLink.setText(messages.resultShowLegend());   
+                                    } else {
+                                        legendImage.setVisible(true);                                        
+                                        legendLink.setText(messages.resultHideLegend());   
+                                    }
+                                });
                             }
                             
                             {
@@ -861,28 +876,74 @@ public class AppEntryPoint implements EntryPoint {
                                     row.add(lawLink);
                                     body.add(row);
                                 }
+                                MaterialRow fakeRow = new MaterialRow();
+                                fakeRow.setBorderBottom("1px #bdbdbd solid");
+                                body.add(fakeRow);
                             }
+                            
+                            {
+                                MaterialRow responsibleOfficeHeaderRow = new MaterialRow();
+                                responsibleOfficeHeaderRow.setMarginBottom(5);
+                                responsibleOfficeHeaderRow.setFontSize(BODY_FONT_SIZE);
+                                responsibleOfficeHeaderRow.setFontWeight(FontWeight.BOLD);
+                                responsibleOfficeHeaderRow.add(new Label(messages.responsibleOffice()));
+                                body.add(responsibleOfficeHeaderRow);   
+                                
+                                for (Office office : theme.getResponsibleOffice()) {
+                                    MaterialRow row = new MaterialRow();
+                                    row.setMarginBottom(0);
+                                    row.setFontSize(BODY_FONT_SIZE);
+    
+                                    MaterialLink officeLink = new MaterialLink();
+                                    officeLink.setText(office.getName());
+                                    officeLink.setHref(office.getOfficeAtWeb());
+                                    officeLink.setTarget("_blank");
+                                    officeLink.setTextColor(Color.RED_DARKEN_2);
+                                    officeLink.addStyleName("result-link");
+                                    row.add(officeLink);
+                                    body.add(row);
+
+                                }
+                            }
+
                             item.add(body);
                             collapsible.add(item);
-                        }               
-                        
+                        }     
+                                                
                         collapsible.addExpandHandler(event -> {                       
-                           String expandedLayerId = event.getTarget().getId();
-                           for (String layerId : concernedWmsLayers) {
-                               Image wmsLayer = (Image) getLayerById(layerId);
-                               if (layerId.equalsIgnoreCase(expandedLayerId)) {
-                                   wmsLayer.setVisible(true);
-                               } else {
-                                   wmsLayer.setVisible(false);
-                               }
-                           }
-                        });
-                        
-                        collapsible.addCollapseHandler(event -> {
-                           GWT.log("collaps "  +  event.getTarget().getId()); 
-                           Image wmsLayer = (Image) getLayerById(event.getTarget().getId());
-                           wmsLayer.setVisible(false);
-                        });
+                            String expandedLayerId = event.getTarget().getId();
+                            for (String layerId : concernedWmsLayers) {
+                                Image wmsLayer = (Image) getLayerById(layerId);
+                                if (layerId.equalsIgnoreCase(expandedLayerId)) {
+                                    wmsLayer.setVisible(true);
+                                } else {
+                                    wmsLayer.setVisible(false);
+                                }
+                            }
+//                            MaterialCollapsibleItem item = event.getTarget();
+//                            MaterialCollapsibleHeader header = item.getHeader();
+//                            List<Widget> children = header.getChildrenList();
+//                            for (Widget child : children) {
+//                                if (child instanceof gwt.material.design.client.ui.MaterialLink) {
+//                                    MaterialLink link = (MaterialLink) child;
+//                                    link.setIconType(IconType.EXPAND_LESS);
+//                                }
+//                            }
+                         });
+                         
+                         collapsible.addCollapseHandler(event -> {
+                            Image wmsLayer = (Image) getLayerById(event.getTarget().getId());
+                            wmsLayer.setVisible(false);
+//                            MaterialCollapsibleItem item = event.getTarget();
+//                            MaterialCollapsibleHeader header = item.getHeader();
+//                            List<Widget> children = header.getChildrenList();
+//                            for (Widget child : children) {
+//                                if (child instanceof gwt.material.design.client.ui.MaterialLink) {
+//                                    MaterialLink link = (MaterialLink) child;
+//                                    link.setIconType(IconType.EXPAND_MORE);
+//                                }
+//                            }
+                         });
                         
                         collapsible.open(1);
                         
@@ -1274,7 +1335,8 @@ public class AppEntryPoint implements EntryPoint {
             resetGui();
             //CH870679603216 (KbS ÖV)
             //CH857632820629 (Kappel)
-            sendEgridToServer("CH870679603216");
+            //CH807306583219 (Messen)
+            sendEgridToServer("CH807306583219");
         }
     }
 
@@ -1426,7 +1488,6 @@ public class AppEntryPoint implements EntryPoint {
     public final class MapSingleClickListener implements EventListener<MapBrowserEvent> {
         @Override
         public void onEvent(MapBrowserEvent event) {
-            MaterialLoader.loading(true);
             resetGui();
             
             Coordinate coordinate = event.getCoordinate();
@@ -1485,6 +1546,7 @@ public class AppEntryPoint implements EntryPoint {
                                         realEstateWindow.removeFromParent();
                                         GWT.log("get extract from click for (multiple result): " + realEstateRow.getId());                                
 
+                                        MaterialLoader.loading(true);
                                         sendEgridToServer(realEstateRow.getId());
                                     });
                                     
@@ -1519,6 +1581,7 @@ public class AppEntryPoint implements EntryPoint {
                                 egrid = features.get(0).get("egrid").toString().trim().replaceAll("^.|.$", "");
                                 GWT.log("get extract from click for (single result): " + egrid);  
                                 
+                                MaterialLoader.loading(true);
                                 sendEgridToServer(egrid);
                             }
                             return;
@@ -1655,4 +1718,8 @@ public class AppEntryPoint implements EntryPoint {
 
         return informationRow;
     }
+    
+    private static native void updateURLWithoutReloading(String newUrl) /*-{
+        $wnd.history.pushState(newUrl, "", newUrl);
+    }-*/;
 }

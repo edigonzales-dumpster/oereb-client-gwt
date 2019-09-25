@@ -17,7 +17,7 @@ public class ConcernedTheme extends AbstractTheme implements IsSerializable {
     
     private List<Document> hints;
     
-    private List<String> responsibleOffice;
+    private List<Office> responsibleOffice;
 
     public ReferenceWMS getReferenceWMS() {
         return referenceWMS;
@@ -67,11 +67,11 @@ public class ConcernedTheme extends AbstractTheme implements IsSerializable {
         this.hints = hints;
     }
 
-    public List<String> getResponsibleOffice() {
+    public List<Office> getResponsibleOffice() {
         return responsibleOffice;
     }
 
-    public void setResponsibleOffice(List<String> responsibleOffice) {
+    public void setResponsibleOffice(List<Office> responsibleOffice) {
         this.responsibleOffice = responsibleOffice;
     }
 }

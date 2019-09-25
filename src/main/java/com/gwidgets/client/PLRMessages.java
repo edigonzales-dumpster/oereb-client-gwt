@@ -48,6 +48,9 @@ public interface PLRMessages extends Messages {
     @DefaultMessage("Show full legend")
     String resultShowLegend();
 
+    @DefaultMessage("Hide full legend")
+    String resultHideLegend();
+
     @DefaultMessage("Legal provisions")
     String legalProvisions();
     

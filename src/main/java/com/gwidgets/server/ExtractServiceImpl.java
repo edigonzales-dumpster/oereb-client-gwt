@@ -197,7 +197,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                         restriction.setTypeCode(r.getTypeCode());
                         String encodedImage = Base64.encode(r.getSymbol());
                         encodedImage = "data:image/png;base64,"+encodedImage;
-                        restriction.setSymbol(encodedImage);
+                        restriction.setSymbol(encodedImage);                        
                         return restriction;
                     }).collect(Collectors.toMap(Restriction::getTypeCode, Function.identity()));
 //                    }).collect(Collectors.toMap(r -> {
@@ -253,6 +253,22 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                 restrictionsList.add(restrictionEntry.getValue());
             }
             
+            // Collect responsible offices
+            // Distinct by office url.
+            ArrayList<Office> officeList = (ArrayList<Office>) xmlRestrictions.stream()
+                    .filter(distinctByKey(r -> {
+                        String officeName = r.getResponsibleOffice().getOfficeAtWeb().getValue();
+                        return officeName;
+                    }))
+                    .map(r -> {
+                        Office office = new Office();
+                        office.setName(r.getResponsibleOffice().getName().getLocalisedText().get(0).getText());
+                        office.setOfficeAtWeb(r.getResponsibleOffice().getOfficeAtWeb().getValue());
+                        return office;
+                    }).collect(Collectors.toList());
+
+            logger.info("size of office: " + officeList.size());
+            
             // Get legal provisions and laws.
             List<Document> legalProvisionsList = new ArrayList<Document>();
             List<Document> lawsList = new ArrayList<Document>();
@@ -286,6 +302,14 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             // we need to distinct them.
             List<Document> distinctLegalProvisionsList = legalProvisionsList.stream()
                     .filter(distinctByKey(Document::getTextAtWeb)).collect(Collectors.toList());
+            
+//            distinctLegalProvisionsList.stream().forEach(d -> {
+//                logger.info(d.getAbbreviation());
+//            }); 
+//            List<Document> sortedLegalProvisionsList = new ArrayList<Document>();
+//            if (distinctLegalProvisionsList.size() > 1) {
+//                sortedLegalProvisionsList = distinctLegalProvisionsList.stream().sorted((d1, d2) -> d1.getAbbreviation().compareTo(d2.getAbbreviation())).collect(Collectors.toList());  
+//            }
 
             List<Document> distinctLawsList = lawsList.stream().filter(distinctByKey(Document::getTextAtWeb)).collect(Collectors.toList());
 
@@ -315,9 +339,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             referenceWMS.setImageFormat(imageFormat);
             referenceWMS.setLayerOpacity(layerOpacity);
             referenceWMS.setLayerIndex(layerIndex);
-//            referenceWMS.setLegendAtWeb(xmlRestrictions.get(0).getMap().getLegendAtWeb().getValue());
             
-            // Bundesthemen haben (teilweise) LegendeImWeb 
+            // Bundesthemen haben Stand heute keine LegendeImWeb 
             String legendAtWeb = null;
             if (xmlRestrictions.get(0).getMap().getLegendAtWeb() != null) {
                 legendAtWeb = xmlRestrictions.get(0).getMap().getLegendAtWeb().getValue();
@@ -334,6 +357,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             concernedTheme.setCode(xmlRestrictions.get(0).getTheme().getCode());
             concernedTheme.setName(xmlRestrictions.get(0).getTheme().getText().getText());
             concernedTheme.setSubtheme(xmlRestrictions.get(0).getSubTheme());
+            concernedTheme.setResponsibleOffice(officeList);
             
             concernedThemesList.add(concernedTheme);
         }
