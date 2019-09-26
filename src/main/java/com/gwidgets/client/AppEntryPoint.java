@@ -20,6 +20,7 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.HTML;
@@ -1655,7 +1656,17 @@ public class AppEntryPoint implements EntryPoint {
         helper.setVerticalAlign(VerticalAlign.MIDDLE);
         symbolColumn.add(helper);
 
-        com.google.gwt.user.client.ui.Image symbolImage = new com.google.gwt.user.client.ui.Image(restriction.getSymbol());
+        com.google.gwt.user.client.ui.Image symbolImage;
+        if (restriction.getSymbol() != null) {
+            symbolImage = new com.google.gwt.user.client.ui.Image(restriction.getSymbol());
+        } else {
+            // FIXME
+            // Temporary
+            if (restriction.getSymbolRef().contains("http://geo-t.so.ch/symbol/")) {
+                restriction.setSymbolRef(restriction.getSymbolRef().replace("http://geo-t.so.ch/symbol/", "https://geo-t.so.ch/api/oereb/v1/symbol/"));
+            }
+            symbolImage = new com.google.gwt.user.client.ui.Image(UriUtils.fromSafeConstant(restriction.getSymbolRef()));
+        }
         symbolImage.setWidth("30px");
         symbolImage.getElement().getStyle().setProperty("border", "1px solid black");
         symbolImage.getElement().getStyle().setProperty("verticalAlign", "middle");

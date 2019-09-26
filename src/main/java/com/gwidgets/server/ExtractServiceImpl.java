@@ -195,9 +195,13 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                         Restriction restriction = new Restriction();
                         restriction.setInformation(r.getInformation().getLocalisedText().get(0).getText());
                         restriction.setTypeCode(r.getTypeCode());
-                        String encodedImage = Base64.encode(r.getSymbol());
-                        encodedImage = "data:image/png;base64,"+encodedImage;
-                        restriction.setSymbol(encodedImage);                        
+                        if (r.getSymbol() != null) {
+                            String encodedImage = Base64.encode(r.getSymbol());
+                            encodedImage = "data:image/png;base64,"+encodedImage;
+                            restriction.setSymbol(encodedImage);                                                    
+                        } else if (r.getSymbolRef() != null) {
+                            restriction.setSymbolRef(r.getSymbolRef());
+                        }
                         return restriction;
                     }).collect(Collectors.toMap(Restriction::getTypeCode, Function.identity()));
 //                    }).collect(Collectors.toMap(r -> {

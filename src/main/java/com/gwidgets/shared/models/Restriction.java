@@ -7,6 +7,8 @@ public class Restriction implements IsSerializable {
     
     private String symbol;
     
+    private String symbolRef;
+    
     private String typeCode;
     
     private Integer areaShare;
@@ -31,6 +33,14 @@ public class Restriction implements IsSerializable {
 
     public void setSymbol(String symbol) {
         this.symbol = symbol;
+    }
+
+    public String getSymbolRef() {
+        return symbolRef;
+    }
+
+    public void setSymbolRef(String symbolRef) {
+        this.symbolRef = symbolRef;
     }
 
     public String getTypeCode() {
