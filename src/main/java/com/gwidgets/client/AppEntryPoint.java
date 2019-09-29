@@ -131,7 +131,7 @@ public class AppEntryPoint implements EntryPoint {
     private String OEREB_SERVICE_URL;
     private String SEARCH_SERVICE_URL;
     private String DATA_SERVICE_URL;
-    private HashMap<String, String> WMS_LAYER_MAPPINGS;
+    private HashMap<String, String> WMS_HOST_MAPPING;
 
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
     private NumberFormat fmtPercent = NumberFormat.getFormat("#0.0");
@@ -165,7 +165,7 @@ public class AppEntryPoint implements EntryPoint {
                 OEREB_SERVICE_URL = (String) result.getSettings().get("OEREB_SERVICE_URL");
                 SEARCH_SERVICE_URL = (String) result.getSettings().get("SEARCH_SERVICE_URL");
                 DATA_SERVICE_URL = (String) result.getSettings().get("DATA_SERVICE_URL");
-                WMS_LAYER_MAPPINGS = (HashMap<String, String>) result.getSettings().get("WMS_LAYER_MAPPINGS");
+                WMS_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("WMS_HOST_MAPPING");
                 init();
             }
         });
@@ -173,11 +173,13 @@ public class AppEntryPoint implements EntryPoint {
 
     private void init() {        
         GWT.log(OEREB_SERVICE_URL.toString());
-        GWT.log(WMS_LAYER_MAPPINGS.toString());
+        GWT.log(WMS_HOST_MAPPING.toString());
         
         GWT.log(GWT.getModuleBaseURL());
         GWT.log(GWT.getHostPageBaseURL());
         GWT.log(GWT.getModuleBaseForStaticFiles());
+        
+        //Window.alert(WMS_HOST_MAPPING.get("http://wms:80/wms/oereb"));
         
         // div for ol3 map
         Div mapDiv = new Div();
@@ -770,7 +772,7 @@ public class AppEntryPoint implements EntryPoint {
                                 legendColumn.add(legendLink);
                                 
                                 String legendUrl = theme.getLegendAtWeb();
-                                for (Entry<String, String> entry : WMS_LAYER_MAPPINGS.entrySet()) {
+                                for (Entry<String, String> entry : WMS_HOST_MAPPING.entrySet()) {
                                     if (theme.getLegendAtWeb().contains(entry.getKey())) {                                    
                                         legendUrl = theme.getLegendAtWeb().replace(entry.getKey(), entry.getValue());
                                     }                                
@@ -1609,8 +1611,8 @@ public class AppEntryPoint implements EntryPoint {
         ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
         
         String baseUrl = referenceWms.getBaseUrl();
-        if (WMS_LAYER_MAPPINGS.get(baseUrl) != null) {
-            baseUrl = WMS_LAYER_MAPPINGS.get(referenceWms.getBaseUrl());
+        if (WMS_HOST_MAPPING.get(baseUrl) != null) {
+            baseUrl = WMS_HOST_MAPPING.get(referenceWms.getBaseUrl());
         }
         
         imageWMSOptions.setUrl(baseUrl);

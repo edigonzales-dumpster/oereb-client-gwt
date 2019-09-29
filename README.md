@@ -25,4 +25,14 @@ TRAVIS_BUILD_NUMBER=9999 mvn package
 ```
 
 ## Running
+```
+docker run -p 8080:8080 sogis/oereb-client
+```
+
+### Behind a proxy
+Läuft auf den ersten Blick problemlos: `localhost:8282` -> `localhost/client/`. Wichtig ist der trailing slash. Ohne den funktioniert es nicht. Aus diesem Grund gibt es noch eine Weiterleitung (`redir`).
+
+Weiterführende Links:
+- https://randling.wordpress.com/2013/05/26/caching-gwt-files-with-nginx/
+- ...
 
