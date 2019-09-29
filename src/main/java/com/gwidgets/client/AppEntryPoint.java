@@ -132,6 +132,7 @@ public class AppEntryPoint implements EntryPoint {
     private String SEARCH_SERVICE_URL;
     private String DATA_SERVICE_URL;
     private HashMap<String, String> WMS_HOST_MAPPING;
+    private HashMap<String, String> OEREB_WEB_SERVICE_HOST_MAPPING;
 
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
     private NumberFormat fmtPercent = NumberFormat.getFormat("#0.0");
@@ -166,6 +167,7 @@ public class AppEntryPoint implements EntryPoint {
                 SEARCH_SERVICE_URL = (String) result.getSettings().get("SEARCH_SERVICE_URL");
                 DATA_SERVICE_URL = (String) result.getSettings().get("DATA_SERVICE_URL");
                 WMS_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("WMS_HOST_MAPPING");
+                OEREB_WEB_SERVICE_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("OEREB_WEB_SERVICE_HOST_MAPPING");
                 init();
             }
         });
@@ -174,6 +176,7 @@ public class AppEntryPoint implements EntryPoint {
     private void init() {        
         GWT.log(OEREB_SERVICE_URL.toString());
         GWT.log(WMS_HOST_MAPPING.toString());
+        GWT.log(OEREB_WEB_SERVICE_HOST_MAPPING.toString());
         
         GWT.log(GWT.getModuleBaseURL());
         GWT.log(GWT.getHostPageBaseURL());
@@ -435,8 +438,7 @@ public class AppEntryPoint implements EntryPoint {
                 // Wie schaffe ich es eine Sanduhr zu zeigen, die dann wieder verschwindet?
                 pdfButton.addClickHandler(event -> {
 //                    Window.open("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629_layer_ordering.pdf", "_target", "enabled");
-                    Window.open(OEREB_SERVICE_URL + "/reduced/pdf/geometry/" + egrid,
-                            "_blank", null);
+                    Window.open(OEREB_SERVICE_URL + "/reduced/pdf/geometry/" + egrid, "_blank", null);
                 });
 
                 resultDiv.add(buttonRow);

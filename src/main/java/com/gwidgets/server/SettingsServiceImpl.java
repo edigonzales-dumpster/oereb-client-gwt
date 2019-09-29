@@ -27,6 +27,9 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
     @Value("#{${app.wmsHostMapping}}")
     HashMap<String, String> wmsHostMapping;
 
+    @Value("#{${app.oerebWebServiceHostMapping}}")
+    HashMap<String, String> oerebWebServiceHostMapping;
+
     @Override
     public void init() throws ServletException {
          super.init();
@@ -41,6 +44,7 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
         settings.put("SEARCH_SERVICE_URL", searchServiceUrl);
         settings.put("DATA_SERVICE_URL", dataServiceUrl);
         settings.put("WMS_HOST_MAPPING", wmsHostMapping);
+        settings.put("OEREB_WEB_SERVICE_HOST_MAPPING", oerebWebServiceHostMapping);
         
         SettingsResponse response = new SettingsResponse();
         response.setSettings(settings);
