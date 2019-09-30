@@ -1,4 +1,4 @@
-package ch.so.agi.oerebclient;
+package ch.so.agi.oereb.webclient;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
