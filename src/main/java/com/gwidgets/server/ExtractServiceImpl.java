@@ -10,8 +10,10 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -61,9 +63,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractService {
     Logger logger = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
-    @Value("${app.oerebWebServiceUrl}")
-    private String oerebWebServiceUrl;
+    @Value("${app.oerebWebServiceUrlServer}")
+    private String oerebWebServiceUrlServer;
     
+    @Value("${app.oerebWebServiceUrlClient}")
+    private String oerebWebServiceUrlClient;
+
+    @Value("#{${app.wmsHostMapping}}")
+    HashMap<String, String> wmsHostMapping;
+
     @Autowired
     Jaxb2Marshaller marshaller;
     
@@ -102,14 +110,14 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
     @Override
     public ExtractResponse extractServer(String egrid) throws IllegalArgumentException, IOException {
         logger.info(egrid);
-        logger.info(oerebWebServiceUrl.toString()); 
+        logger.info(oerebWebServiceUrlServer.toString()); 
         logger.info(getRequestModuleBasePath());
         
 
         // TODO: handle empty file / no extract returned
         File xmlFile = Files.createTempFile("data_extract_", ".xml").toFile();
         
-        URL url = new URL(oerebWebServiceUrl + "/reduced/xml/geometry/" + egrid);
+        URL url = new URL(oerebWebServiceUrlServer + "/reduced/xml/geometry/" + egrid);
 //        URL url = new URL("https://geo-t.so.ch/api/oereb/v1/extract/" + "/reduced/xml/geometry/" + egrid);
 //        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH533287066291.xml");
 //        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH368132060914.xml");
@@ -193,14 +201,15 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     .filter(distinctByKey(RestrictionOnLandownershipType::getTypeCode))
                     .map(r -> {
                         Restriction restriction = new Restriction();
-                        restriction.setInformation(r.getInformation().getLocalisedText().get(0).getText());
+                        restriction.setInformation(r.getInformation().getLocalisedText().get(0).getText());                        
                         restriction.setTypeCode(r.getTypeCode());
                         if (r.getSymbol() != null) {
                             String encodedImage = Base64.encode(r.getSymbol());
                             encodedImage = "data:image/png;base64,"+encodedImage;
                             restriction.setSymbol(encodedImage);                                                    
                         } else if (r.getSymbolRef() != null) {
-                            restriction.setSymbolRef(r.getSymbolRef());
+                            String symbolRef = r.getSymbolRef().replace(oerebWebServiceUrlServer, oerebWebServiceUrlClient);
+                            restriction.setSymbolRef(symbolRef);
                         }
                         return restriction;
                     }).collect(Collectors.toMap(Restriction::getTypeCode, Function.identity()));
@@ -339,6 +348,13 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             double layerOpacity = xmlRestrictions.get(0).getMap().getLayerOpacity();
             int layerIndex = xmlRestrictions.get(0).getMap().getLayerIndex();
             String wmsUrl = xmlRestrictions.get(0).getMap().getReferenceWMS();
+            
+            // Replace wms host (or other parts of the url).
+            for (Entry<String, String> hostEntry : wmsHostMapping.entrySet()) {                
+                if (wmsUrl.contains(hostEntry.getKey())) {   
+                    wmsUrl = wmsUrl.replace(hostEntry.getKey(), hostEntry.getValue());
+                }                                
+            }
 
             UriComponents uriComponents = UriComponentsBuilder.fromUriString(wmsUrl).build();
             String schema = uriComponents.getScheme();
@@ -366,6 +382,12 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             String legendAtWeb = null;
             if (xmlRestrictions.get(0).getMap().getLegendAtWeb() != null) {
                 legendAtWeb = xmlRestrictions.get(0).getMap().getLegendAtWeb().getValue();
+                
+                for (Entry<String, String> hostEntry : wmsHostMapping.entrySet()) {
+                    if (legendAtWeb.contains(hostEntry.getKey())) {                                    
+                        legendAtWeb = legendAtWeb.replace(hostEntry.getKey(), hostEntry.getValue());
+                    }                                
+                }
             }             
                         
             // Finally we create the concerned theme with all
@@ -388,7 +410,9 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                 
         realEstate.setConcernedThemes(concernedThemesList);
         extract.setRealEstate(realEstate);
-        extract.setPdfLink(oerebWebServiceUrl + "/reduced/pdf/geometry/" + egrid);
+        
+        // TODO: not used?! does it make any sense?
+        extract.setPdfLink(oerebWebServiceUrlClient + "/reduced/pdf/geometry/" + egrid);
                
         Office plrCadastreAuthority = new Office();
         plrCadastreAuthority.setName(xmlExtract.getPLRCadastreAuthority().getName().getLocalisedText().get(0).getText());

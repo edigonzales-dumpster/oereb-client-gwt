@@ -125,14 +125,14 @@ public class AppEntryPoint implements EntryPoint {
     private String BACKGROUND_LAYER_ID = "ch.so.agi.hintergrundkarte_sw";
     private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer";
     private String REAL_ESTATE_VECTOR_FEATURE_ID = "real_estate_fid";
-    private String REAL_ESTATE_DATAPRODUCT_ID = "ch.so.agi.av.grundstuecke.rechtskraeftig";
-    private String ADDRESS_DATAPRODUCT_ID = "ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge";
+    private String REAL_ESTATE_DATAPRODUCT_ID = "ch.so.agi.av.grundstuecke.rechtskraeftig"; // TODO -> settings
+    private String ADDRESS_DATAPRODUCT_ID = "ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge"; // TODO -> settings
     
     private String OEREB_SERVICE_URL;
     private String SEARCH_SERVICE_URL;
     private String DATA_SERVICE_URL;
     private HashMap<String, String> WMS_HOST_MAPPING;
-    private HashMap<String, String> OEREB_WEB_SERVICE_HOST_MAPPING;
+//    private HashMap<String, String> OEREB_WEB_SERVICE_HOST_MAPPING;
 
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
     private NumberFormat fmtPercent = NumberFormat.getFormat("#0.0");
@@ -167,7 +167,7 @@ public class AppEntryPoint implements EntryPoint {
                 SEARCH_SERVICE_URL = (String) result.getSettings().get("SEARCH_SERVICE_URL");
                 DATA_SERVICE_URL = (String) result.getSettings().get("DATA_SERVICE_URL");
                 WMS_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("WMS_HOST_MAPPING");
-                OEREB_WEB_SERVICE_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("OEREB_WEB_SERVICE_HOST_MAPPING");
+//                OEREB_WEB_SERVICE_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("OEREB_WEB_SERVICE_HOST_MAPPING");
                 init();
             }
         });
@@ -176,7 +176,7 @@ public class AppEntryPoint implements EntryPoint {
     private void init() {        
         GWT.log(OEREB_SERVICE_URL.toString());
         GWT.log(WMS_HOST_MAPPING.toString());
-        GWT.log(OEREB_WEB_SERVICE_HOST_MAPPING.toString());
+//        GWT.log(OEREB_WEB_SERVICE_HOST_MAPPING.toString());
         
         GWT.log(GWT.getModuleBaseURL());
         GWT.log(GWT.getHostPageBaseURL());
@@ -774,17 +774,17 @@ public class AppEntryPoint implements EntryPoint {
                                 legendColumn.add(legendLink);
                                 
                                 String legendUrl = theme.getLegendAtWeb();
-                                for (Entry<String, String> entry : WMS_HOST_MAPPING.entrySet()) {
-                                    if (theme.getLegendAtWeb().contains(entry.getKey())) {                                    
-                                        legendUrl = theme.getLegendAtWeb().replace(entry.getKey(), entry.getValue());
-                                    }                                
-                                }
+//                                for (Entry<String, String> entry : WMS_HOST_MAPPING.entrySet()) {
+//                                    if (theme.getLegendAtWeb().contains(entry.getKey())) {                                    
+//                                        legendUrl = theme.getLegendAtWeb().replace(entry.getKey(), entry.getValue());
+//                                    }                                
+//                                }
                                                                 
                                 legendRow.add(legendColumn);
                                 body.add(legendRow);
                                 
                                 com.google.gwt.user.client.ui.Image legendImage = new com.google.gwt.user.client.ui.Image();
-                                legendImage.setUrl(theme.getLegendAtWeb());
+                                legendImage.setUrl(legendUrl);
                                 legendImage.setVisible(false);
                                 body.add(legendImage);
                                 
@@ -1613,9 +1613,9 @@ public class AppEntryPoint implements EntryPoint {
         ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
         
         String baseUrl = referenceWms.getBaseUrl();
-        if (WMS_HOST_MAPPING.get(baseUrl) != null) {
-            baseUrl = WMS_HOST_MAPPING.get(referenceWms.getBaseUrl());
-        }
+//        if (WMS_HOST_MAPPING.get(baseUrl) != null) {
+//            baseUrl = WMS_HOST_MAPPING.get(referenceWms.getBaseUrl());
+//        }
         
         imageWMSOptions.setUrl(baseUrl);
         imageWMSOptions.setParams(imageWMSParams);
@@ -1632,7 +1632,7 @@ public class AppEntryPoint implements EntryPoint {
         wmsLayer.setOpacity(referenceWms.getLayerOpacity());
         // It works for the Grundbuchplan but not for 
         // the Landeskarten. They are not transparent.
-//        wmsLayer.setZIndex(referenceWms.getLayerIndex());
+        wmsLayer.setZIndex(referenceWms.getLayerIndex());
 
         return wmsLayer;
     }
