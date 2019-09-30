@@ -132,7 +132,6 @@ public class AppEntryPoint implements EntryPoint {
     private String SEARCH_SERVICE_URL;
     private String DATA_SERVICE_URL;
     private HashMap<String, String> WMS_HOST_MAPPING;
-//    private HashMap<String, String> OEREB_WEB_SERVICE_HOST_MAPPING;
 
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
     private NumberFormat fmtPercent = NumberFormat.getFormat("#0.0");
@@ -176,7 +175,6 @@ public class AppEntryPoint implements EntryPoint {
     private void init() {        
         GWT.log(OEREB_SERVICE_URL.toString());
         GWT.log(WMS_HOST_MAPPING.toString());
-//        GWT.log(OEREB_WEB_SERVICE_HOST_MAPPING.toString());
         
         GWT.log(GWT.getModuleBaseURL());
         GWT.log(GWT.getHostPageBaseURL());
