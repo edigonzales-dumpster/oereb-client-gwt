@@ -18,6 +18,6 @@
     
     <source path="client" />
     <source path="shared" />
-    <entry-point class='com.gwidgets.client.AppEntryPoint' />
+    <entry-point class='ch.so.agi.oereb.webclient.client.AppEntryPoint' />
  
 </module>

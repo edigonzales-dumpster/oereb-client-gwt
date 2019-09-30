@@ -110,7 +110,7 @@
               <goal>compile</goal>
             </goals>
             <configuration>
-              <moduleName>com.gwidgets.module1</moduleName>
+              <moduleName>ch.so.agi.oereb.webclient.module1</moduleName>
               <failOnError>true</failOnError>
               <launcherDir>${project.build.directory}/classes/public</launcherDir>
               <webappDirectory>${project.build.directory}/classes/public</webappDirectory>
@@ -118,7 +118,7 @@
           </execution>
         </executions>
         <configuration>
-          <moduleName>com.gwidgets.module1</moduleName>
+          <moduleName>ch.so.agi.oereb.webclient.module1</moduleName>
           <failOnError>true</failOnError>
           <launcherDir>${project.build.directory}/classes/public</launcherDir>
           <webappDirectory>${project.build.directory}/classes/public</webappDirectory>
