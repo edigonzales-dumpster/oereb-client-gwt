@@ -210,6 +210,7 @@ public class AppEntryPoint implements EntryPoint {
         controlsCard.getElement().getStyle().setProperty("width", "500px");
         controlsCard.getElement().getStyle().setProperty("height", "200px");
         controlsCard.getElement().getStyle().setProperty("overflowY", "auto");
+        controlsCard.setMaxWidth("calc(100% - 30px)");
 
         controlsCardContent = new MaterialCardContent();
         controlsCardContent.getElement().getStyle().setProperty("padding", "15px");
@@ -218,7 +219,8 @@ public class AppEntryPoint implements EntryPoint {
 
         com.google.gwt.user.client.ui.Image plrImage = new com.google.gwt.user.client.ui.Image();
         plrImage.setUrl("https://geoview.bl.ch/main/oereb/logos/logo_oereb_small.png");
-        plrImage.setWidth("200px");
+//        plrImage.setWidth("200px");
+        plrImage.setWidth("80%");
 
         MaterialColumn plrLogoColumn = new MaterialColumn();
         plrLogoColumn.setGrid("s6");
@@ -230,7 +232,8 @@ public class AppEntryPoint implements EntryPoint {
 //        cantonImage.setUrl("https://so.ch/typo3conf/ext/sfptemplate/Resources/Public/Images/Logo.png");
         // TODO: does this work in production?
         cantonImage.setUrl(GWT.getHostPageBaseURL()+"Logo.png");
-        cantonImage.setWidth("200px");
+//        cantonImage.setWidth("200px");
+        cantonImage.setWidth("80%");
 
         MaterialColumn cantonLogoColumn = new MaterialColumn();
         cantonLogoColumn.setGrid("s6");
@@ -264,6 +267,9 @@ public class AppEntryPoint implements EntryPoint {
         controlsCardContent.add(searchRow);
 
         controlsCard.add(controlsCardContent);
+//        MaterialCardContent foo = new MaterialCardContent();
+//        foo.add(new Label("test"));
+//        controlsCard.add(foo);
 
         // A material card for the result.
         resultCard = new MaterialCard();
@@ -279,19 +285,34 @@ public class AppEntryPoint implements EntryPoint {
         resultCard.getElement().getStyle().setProperty("height", "calc(100% - 245px)");
         resultCard.getElement().getStyle().setProperty("overflowY", "auto");
         resultCard.getElement().getStyle().setProperty("visibility", "hidden");
+        resultCard.setMaxWidth("calc(100% - 30px)");
 
         resultCardContent = new MaterialCardContent();
-        resultCardContent.getElement().getStyle().setProperty("padding", "15px");
+        resultCardContent.getElement().getStyle().setProperty("paddingTop", "0px");
+        resultCardContent.getElement().getStyle().setProperty("paddingRight", "15px");
+        resultCardContent.getElement().getStyle().setProperty("paddingLeft", "15px");
+        resultCardContent.getElement().getStyle().setProperty("paddingBottom", "15px");
+//        resultCardContent.getElement().getStyle().setProperty("position", "relative");
+//
+//        Div hideResultDiv = new Div();
+//        hideResultDiv.setWidth("50px");
+//        hideResultDiv.setHeight("50px");
+//        hideResultDiv.getElement().getStyle().setProperty("position", "absolute");
+//        hideResultDiv.getElement().getStyle().setProperty("bottom", "0px");
+//        hideResultDiv.getElement().getStyle().setProperty("right", "0px");
+//        hideResultDiv.getElement().getStyle().setProperty("backgroundColor", "hotpink");
+//        resultCardContent.add(hideResultDiv);
+        
         resultCard.add(resultCardContent);
-
-//        Div fadeoutDiv = new Div();
-//        fadeoutDiv.getElement().getStyle().setProperty("position", "sticky");
-//        fadeoutDiv.getElement().getStyle().setProperty("bottom", "0");
-//        fadeoutDiv.getElement().getStyle().setProperty("width", "100%");
-//        fadeoutDiv.getElement().getStyle().setProperty("padding", "30px 0");
-//        fadeoutDiv.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%)");
-//        resultCard.add(fadeoutDiv);
-
+        
+        Div fadeoutBottomDiv = new Div();
+        fadeoutBottomDiv.getElement().getStyle().setProperty("position", "sticky");
+        fadeoutBottomDiv.getElement().getStyle().setProperty("bottom", "0");
+        fadeoutBottomDiv.getElement().getStyle().setProperty("width", "100%");
+        fadeoutBottomDiv.getElement().getStyle().setProperty("padding", "30px 0");
+        fadeoutBottomDiv.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%)");
+        resultCard.add(fadeoutBottomDiv);
+        
         // Add all the widgets to the body.
         RootPanel.get().add(dummyButton);
         RootPanel.get().add(mapDiv);
@@ -402,8 +423,16 @@ public class AppEntryPoint implements EntryPoint {
                 resultDiv = new Div();
 
                 MaterialRow buttonRow = new MaterialRow();
-                buttonRow.setMarginBottom(25);
+                buttonRow.setMarginBottom(5);
+                buttonRow.setBackgroundColor(Color.WHITE);
+                buttonRow.getElement().getStyle().setProperty("position", "sticky");
+                buttonRow.getElement().getStyle().setProperty("top", "0px");
+                buttonRow.getElement().getStyle().setProperty("paddingTop", "15px");
+                buttonRow.getElement().getStyle().setProperty("paddingBottom", "15px");
+                buttonRow.getElement().getStyle().setProperty("zIndex", "10");
+//                buttonRow.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 1) 70%, rgba(255, 255, 255, 0) 100%)");
 
+ 
                 MaterialColumn deleteExtractButtonColumn = new MaterialColumn();
                 deleteExtractButtonColumn.setPadding(0);
                 deleteExtractButtonColumn.setGrid("s6");
@@ -432,16 +461,19 @@ public class AppEntryPoint implements EntryPoint {
                 pdfButton.setTooltipPosition(Position.TOP);
                 pdfButtonColumn.add(pdfButton);
                 buttonRow.add(pdfButtonColumn);
-
+                
                 // TODO: 
                 // Request via spring controller? (nicht gwt rpc)
                 // Wie schaffe ich es eine Sanduhr zu zeigen, die dann wieder verschwindet?
                 pdfButton.addClickHandler(event -> {
+                    GWT.log("height: " + String.valueOf(buttonRow.getOffsetHeight()));
+
 //                    Window.open("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629_layer_ordering.pdf", "_target", "enabled");
                     Window.open(OEREB_SERVICE_URL + "/reduced/pdf/geometry/" + egrid, "_blank", null);
                 });
 
                 resultDiv.add(buttonRow);
+//                resultCardContent.add(buttonRow);
 
                 MaterialRow generalInfoRow = new MaterialRow();
                 generalInfoRow.getElement().getStyle().setProperty("marginBottom", "10px");
@@ -464,7 +496,7 @@ public class AppEntryPoint implements EntryPoint {
                 egridInfoRow.getElement().getStyle().setProperty("margin", "0px");
 
                 MaterialColumn egridInfoKeyColumn = new MaterialColumn();
-                egridInfoKeyColumn.setGrid("s3");
+                egridInfoKeyColumn.setGrid("s4");
                 egridInfoKeyColumn.getElement().getStyle().setProperty("margin", "0px");
                 egridInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
                 egridInfoKeyColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
@@ -473,7 +505,7 @@ public class AppEntryPoint implements EntryPoint {
                 egridInfoRow.add(egridInfoKeyColumn);
 
                 MaterialColumn egridInfoValueColumn = new MaterialColumn();
-                egridInfoValueColumn.setGrid("s9");
+                egridInfoValueColumn.setGrid("s8");
                 egridInfoValueColumn.getElement().getStyle().setProperty("margin", "0px");
                 egridInfoValueColumn.getElement().getStyle().setProperty("padding", "0px");
                 egridInfoValueColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
@@ -485,7 +517,7 @@ public class AppEntryPoint implements EntryPoint {
                 areaInfoRow.getElement().getStyle().setProperty("margin", "0px");
 
                 MaterialColumn areaInfoKeyColumn = new MaterialColumn();
-                areaInfoKeyColumn.setGrid("s3");
+                areaInfoKeyColumn.setGrid("s4");
                 areaInfoKeyColumn.getElement().getStyle().setProperty("margin", "0px");
                 areaInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
                 areaInfoKeyColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
@@ -494,7 +526,7 @@ public class AppEntryPoint implements EntryPoint {
                 areaInfoRow.add(areaInfoKeyColumn);
 
                 MaterialColumn areaInfoValueColumn = new MaterialColumn();
-                areaInfoValueColumn.setGrid("s9");
+                areaInfoValueColumn.setGrid("s8");
                 areaInfoValueColumn.getElement().getStyle().setProperty("margin", "0px");
                 areaInfoValueColumn.getElement().getStyle().setProperty("padding", "0px");
                 areaInfoValueColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
@@ -507,7 +539,7 @@ public class AppEntryPoint implements EntryPoint {
                 subunitInfoRow.getElement().getStyle().setProperty("margin", "0px");
                 
                 MaterialColumn subunitInfoKeyColumn = new MaterialColumn();
-                subunitInfoKeyColumn.setGrid("s3");
+                subunitInfoKeyColumn.setGrid("s4");
                 subunitInfoKeyColumn.getElement().getStyle().setProperty("margin", "0px");
                 subunitInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
                 subunitInfoKeyColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
@@ -516,7 +548,7 @@ public class AppEntryPoint implements EntryPoint {
                 subunitInfoRow.add(subunitInfoKeyColumn);
 
                 MaterialColumn subunitInfoValueColumn = new MaterialColumn();
-                subunitInfoValueColumn.setGrid("s9");
+                subunitInfoValueColumn.setGrid("s8");
                 subunitInfoValueColumn.getElement().getStyle().setProperty("margin", "0px");
                 subunitInfoValueColumn.getElement().getStyle().setProperty("padding", "0px");
                 subunitInfoValueColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
@@ -659,9 +691,9 @@ public class AppEntryPoint implements EntryPoint {
                             sliderRow.setMarginBottom(0);
 
                             MaterialColumn sliderRowLeft = new MaterialColumn();
-                            sliderRowLeft.setGrid("s2");
+                            sliderRowLeft.setGrid("s3");
                             MaterialColumn sliderRowRight = new MaterialColumn();
-                            sliderRowRight.setGrid("s10");
+                            sliderRowRight.setGrid("s9");
     
                             MaterialRange slider = new MaterialRange();
                             slider.setPadding(0);
