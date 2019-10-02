@@ -424,7 +424,7 @@ public class AppEntryPoint implements EntryPoint {
 
                 MaterialRow buttonRow = new MaterialRow();
                 buttonRow.setMarginBottom(5);
-                buttonRow.setBackgroundColor(Color.WHITE);
+                buttonRow.setBackgroundColor(Color.GREY_LIGHTEN_5);
                 buttonRow.getElement().getStyle().setProperty("position", "sticky");
                 buttonRow.getElement().getStyle().setProperty("top", "0px");
                 buttonRow.getElement().getStyle().setProperty("paddingTop", "15px");
@@ -443,11 +443,22 @@ public class AppEntryPoint implements EntryPoint {
                 deleteExtractButton.setTooltip(messages.resultCloseTooltip());
                 deleteExtractButton.setTooltipPosition(Position.TOP);
                 deleteExtractButtonColumn.add(deleteExtractButton);
-                buttonRow.add(deleteExtractButtonColumn);
+//                buttonRow.add(deleteExtractButtonColumn);
 
                 deleteExtractButton.addClickHandler(event -> {
                     resetGui();
                 });
+                
+                MaterialButton closeExtractButton = new MaterialButton();
+                closeExtractButton.setMarginLeft(10);
+                closeExtractButton.setIconType(IconType.REMOVE);
+                closeExtractButton.setType(ButtonType.FLOATING);
+                closeExtractButton.setTooltip("fubar");
+                closeExtractButton.setTooltipPosition(Position.TOP);
+                
+                deleteExtractButtonColumn.add(closeExtractButton);
+                buttonRow.add(deleteExtractButtonColumn);
+
                 
                 MaterialColumn pdfButtonColumn = new MaterialColumn();
                 pdfButtonColumn.setPadding(0);
