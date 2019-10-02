@@ -449,14 +449,14 @@ public class AppEntryPoint implements EntryPoint {
                     resetGui();
                 });
                 
-                MaterialButton closeExtractButton = new MaterialButton();
-                closeExtractButton.setMarginLeft(10);
-                closeExtractButton.setIconType(IconType.REMOVE);
-                closeExtractButton.setType(ButtonType.FLOATING);
-                closeExtractButton.setTooltip("fubar");
-                closeExtractButton.setTooltipPosition(Position.TOP);
+                MaterialButton minmaxExtractButton = new MaterialButton();
+                minmaxExtractButton.setMarginLeft(10);
+                minmaxExtractButton.setIconType(IconType.REMOVE);
+                minmaxExtractButton.setType(ButtonType.FLOATING);
+                minmaxExtractButton.setTooltip("fubar");
+                minmaxExtractButton.setTooltipPosition(Position.TOP);
                 
-                deleteExtractButtonColumn.add(closeExtractButton);
+                deleteExtractButtonColumn.add(minmaxExtractButton);
                 buttonRow.add(deleteExtractButtonColumn);
 
                 
