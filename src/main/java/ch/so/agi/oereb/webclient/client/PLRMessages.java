@@ -33,6 +33,12 @@ public interface PLRMessages extends Messages {
     @DefaultMessage("Close extract")
     String resultCloseTooltip();
     
+    @DefaultMessage("Minimize window")
+    String resultMinimizeTooltip();
+    
+    @DefaultMessage("Expand window")
+    String resultMaximizeTooltip();
+
     @DefaultMessage("Request extract as PDF")
     String resultPDFTooltip();
     

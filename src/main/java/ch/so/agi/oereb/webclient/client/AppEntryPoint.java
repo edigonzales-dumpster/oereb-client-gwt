@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsonUtils;
@@ -286,7 +287,7 @@ public class AppEntryPoint implements EntryPoint {
         resultCard.getElement().getStyle().setProperty("overflowY", "auto");
         resultCard.getElement().getStyle().setProperty("visibility", "hidden");
         resultCard.setMaxWidth("calc(100% - 30px)");
-
+      
         resultCardContent = new MaterialCardContent();
         resultCardContent.getElement().getStyle().setProperty("paddingTop", "0px");
         resultCardContent.getElement().getStyle().setProperty("paddingRight", "15px");
@@ -453,10 +454,20 @@ public class AppEntryPoint implements EntryPoint {
                 minmaxExtractButton.setMarginLeft(10);
                 minmaxExtractButton.setIconType(IconType.REMOVE);
                 minmaxExtractButton.setType(ButtonType.FLOATING);
-                minmaxExtractButton.setTooltip("fubar");
+                minmaxExtractButton.setTooltip(messages.resultMinimizeTooltip());
                 minmaxExtractButton.setTooltipPosition(Position.TOP);
-                
                 deleteExtractButtonColumn.add(minmaxExtractButton);
+                
+                minmaxExtractButton.addClickHandler(event -> {
+//                    resultCard.getElement().getStyle().setProperty("transition", "height 0.5s");
+                    
+                    GWT.log("height: " + String.valueOf(buttonRow.getOffsetHeight()));
+                    resultDiv.setVisibility(com.google.gwt.dom.client.Style.Visibility.HIDDEN);
+                    
+                    resultCard.getElement().getStyle().setProperty("overflowY", "hidden");
+                    resultCard.setHeight(String.valueOf(buttonRow.getOffsetHeight()) + "px");
+                });
+                
                 buttonRow.add(deleteExtractButtonColumn);
 
                 
@@ -483,8 +494,8 @@ public class AppEntryPoint implements EntryPoint {
                     Window.open(OEREB_SERVICE_URL + "/reduced/pdf/geometry/" + egrid, "_blank", null);
                 });
 
-                resultDiv.add(buttonRow);
-//                resultCardContent.add(buttonRow);
+//                resultDiv.add(buttonRow);
+                resultCardContent.add(buttonRow);
 
                 MaterialRow generalInfoRow = new MaterialRow();
                 generalInfoRow.getElement().getStyle().setProperty("marginBottom", "10px");
