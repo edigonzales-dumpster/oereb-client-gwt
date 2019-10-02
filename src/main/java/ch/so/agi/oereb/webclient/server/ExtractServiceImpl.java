@@ -117,7 +117,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         // TODO: handle empty file / no extract returned
         File xmlFile = Files.createTempFile("data_extract_", ".xml").toFile();
         
-        URL url = new URL(oerebWebServiceUrlServer + "/reduced/xml/geometry/" + egrid);
+        URL url = new URL(oerebWebServiceUrlServer + "/extract/reduced/xml/geometry/" + egrid);
 //        URL url = new URL("https://geo-t.so.ch/api/oereb/v1/extract/" + "/reduced/xml/geometry/" + egrid);
 //        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH533287066291.xml");
 //        URL url = new URL("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH368132060914.xml");
@@ -208,6 +208,9 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                             encodedImage = "data:image/png;base64,"+encodedImage;
                             restriction.setSymbol(encodedImage);                                                    
                         } else if (r.getSymbolRef() != null) {
+                            logger.info("oerebWebServiceUrlServer" + oerebWebServiceUrlServer);
+                            logger.info("oerebWebServiceUrlClient" + oerebWebServiceUrlClient);
+                            logger.info("r.getSymbolRef()" + r.getSymbolRef());
                             String symbolRef = r.getSymbolRef().replace(oerebWebServiceUrlServer, oerebWebServiceUrlClient);
                             restriction.setSymbolRef(symbolRef);
                         }
@@ -412,7 +415,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         extract.setRealEstate(realEstate);
         
         // TODO: not used?! does it make any sense?
-        extract.setPdfLink(oerebWebServiceUrlClient + "/reduced/pdf/geometry/" + egrid);
+        extract.setPdfLink(oerebWebServiceUrlClient + "/extract/reduced/pdf/geometry/" + egrid);
                
         Office plrCadastreAuthority = new Office();
         plrCadastreAuthority.setName(xmlExtract.getPLRCadastreAuthority().getName().getLocalisedText().get(0).getText());

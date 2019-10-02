@@ -143,6 +143,7 @@ public class AppEntryPoint implements EntryPoint {
     private Map map;
     private MaterialCard controlsCard;
     private MaterialCard resultCard;
+    private MaterialRow buttonRow;
     private MaterialCardContent controlsCardContent;
     private MaterialCardContent resultCardContent;
     private Div resultDiv;
@@ -420,10 +421,10 @@ public class AppEntryPoint implements EntryPoint {
                 
                 vlayer.setZIndex(1001);
                 map.addLayer(vlayer);
-
+                
                 resultDiv = new Div();
 
-                MaterialRow buttonRow = new MaterialRow();
+                buttonRow = new MaterialRow();
                 buttonRow.setMarginBottom(5);
                 buttonRow.setBackgroundColor(Color.GREY_LIGHTEN_5);
                 buttonRow.getElement().getStyle().setProperty("position", "sticky");
@@ -431,9 +432,8 @@ public class AppEntryPoint implements EntryPoint {
                 buttonRow.getElement().getStyle().setProperty("paddingTop", "15px");
                 buttonRow.getElement().getStyle().setProperty("paddingBottom", "15px");
                 buttonRow.getElement().getStyle().setProperty("zIndex", "10");
-//                buttonRow.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 1) 70%, rgba(255, 255, 255, 0) 100%)");
-
- 
+//                buttonRow.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 1) 70%, rgba(255, 255, 255, 0) 100%)"); 
+                
                 MaterialColumn deleteExtractButtonColumn = new MaterialColumn();
                 deleteExtractButtonColumn.setPadding(0);
                 deleteExtractButtonColumn.setGrid("s6");
@@ -443,8 +443,9 @@ public class AppEntryPoint implements EntryPoint {
                 deleteExtractButton.setType(ButtonType.FLOATING);
                 deleteExtractButton.setTooltip(messages.resultCloseTooltip());
                 deleteExtractButton.setTooltipPosition(Position.TOP);
+                deleteExtractButton.setBackgroundColor(Color.RED_LIGHTEN_1);
+                
                 deleteExtractButtonColumn.add(deleteExtractButton);
-//                buttonRow.add(deleteExtractButtonColumn);
 
                 deleteExtractButton.addClickHandler(event -> {
                     resetGui();
@@ -456,21 +457,30 @@ public class AppEntryPoint implements EntryPoint {
                 minmaxExtractButton.setType(ButtonType.FLOATING);
                 minmaxExtractButton.setTooltip(messages.resultMinimizeTooltip());
                 minmaxExtractButton.setTooltipPosition(Position.TOP);
+                minmaxExtractButton.setBackgroundColor(Color.RED_LIGHTEN_1);
                 deleteExtractButtonColumn.add(minmaxExtractButton);
                 
-                minmaxExtractButton.addClickHandler(event -> {
-//                    resultCard.getElement().getStyle().setProperty("transition", "height 0.5s");
-                    
-                    GWT.log("height: " + String.valueOf(buttonRow.getOffsetHeight()));
-                    resultDiv.setVisibility(com.google.gwt.dom.client.Style.Visibility.HIDDEN);
-                    
-                    resultCard.getElement().getStyle().setProperty("overflowY", "hidden");
-                    resultCard.setHeight(String.valueOf(buttonRow.getOffsetHeight()) + "px");
+                minmaxExtractButton.addClickHandler(event -> {                    
+                    if (resultCard.getOffsetHeight() > buttonRow.getOffsetHeight()) {
+                        minmaxExtractButton.setIconType(IconType.ADD);
+                        minmaxExtractButton.setTooltip(messages.resultMaximizeTooltip());
+                        
+                        resultCard.getElement().getStyle().setProperty("overflowY", "hidden");
+                        resultCard.setHeight(String.valueOf(buttonRow.getOffsetHeight()) + "px");
+                        resultDiv.setVisibility(com.google.gwt.dom.client.Style.Visibility.HIDDEN);
+
+                    } else {
+                        minmaxExtractButton.setIconType(IconType.REMOVE);
+                        minmaxExtractButton.setTooltip(messages.resultMinimizeTooltip());
+
+                        resultDiv.setVisibility(com.google.gwt.dom.client.Style.Visibility.VISIBLE);
+                        resultCard.getElement().getStyle().setProperty("overflowY", "auto");
+                        resultCard.getElement().getStyle().setProperty("height", "calc(100% - 245px)");
+                    }
                 });
                 
                 buttonRow.add(deleteExtractButtonColumn);
 
-                
                 MaterialColumn pdfButtonColumn = new MaterialColumn();
                 pdfButtonColumn.setPadding(0);
                 pdfButtonColumn.setGrid("s6");
@@ -481,6 +491,7 @@ public class AppEntryPoint implements EntryPoint {
                 pdfButton.setType(ButtonType.FLOATING);
                 pdfButton.setTooltip(messages.resultPDFTooltip());
                 pdfButton.setTooltipPosition(Position.TOP);
+                pdfButton.setBackgroundColor(Color.RED_LIGHTEN_1);                
                 pdfButtonColumn.add(pdfButton);
                 buttonRow.add(pdfButtonColumn);
                 
@@ -491,7 +502,7 @@ public class AppEntryPoint implements EntryPoint {
                     GWT.log("height: " + String.valueOf(buttonRow.getOffsetHeight()));
 
 //                    Window.open("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629_layer_ordering.pdf", "_target", "enabled");
-                    Window.open(OEREB_SERVICE_URL + "/reduced/pdf/geometry/" + egrid, "_blank", null);
+                    Window.open(OEREB_SERVICE_URL + "/extract/reduced/pdf/geometry/" + egrid, "_blank", null);
                 });
 
 //                resultDiv.add(buttonRow);
@@ -1227,6 +1238,8 @@ public class AppEntryPoint implements EntryPoint {
                 }
 
                 resultCardContent.add(resultDiv);
+                resultCard.getElement().getStyle().setProperty("height", "calc(100% - 245px)");
+                resultCard.getElement().getStyle().setProperty("overflowY", "auto");
                 resultCard.getElement().getStyle().setProperty("visibility", "visible");
             }
         });
@@ -1379,6 +1392,10 @@ public class AppEntryPoint implements EntryPoint {
         
         if (realEstateWindow != null) {
             realEstateWindow.removeFromParent();
+        }
+        
+        if (buttonRow != null) {
+            buttonRow.removeFromParent();
         }
 
         resultCard.getElement().getStyle().setProperty("visibility", "hidden");
