@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JsonUtils;
@@ -126,6 +125,7 @@ public class AppEntryPoint implements EntryPoint {
     
     private String ID_ATTR_NAME = "id";
     private String BACKGROUND_LAYER_ID = "ch.so.agi.hintergrundkarte_sw";
+    private String AVAILABILITY_LAYER_ID = "ch.SO.municipality_with_plr";
     private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer";
     private String REAL_ESTATE_VECTOR_FEATURE_ID = "real_estate_fid";
     private String REAL_ESTATE_DATAPRODUCT_ID = "ch.so.agi.av.grundstuecke.rechtskraeftig"; // TODO -> settings
@@ -134,6 +134,11 @@ public class AppEntryPoint implements EntryPoint {
     private String OEREB_SERVICE_URL;
     private String SEARCH_SERVICE_URL;
     private String DATA_SERVICE_URL;
+    private String AVAILABILITY_WMS_URL;
+    private String AVAILABILITY_WMS_LAYERS;
+    private String BACKGROUND_WMTS_URL;
+    private String BACKGROUND_WMTS_LAYER;
+    
     private HashMap<String, String> WMS_HOST_MAPPING;
 
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
@@ -169,6 +174,10 @@ public class AppEntryPoint implements EntryPoint {
                 OEREB_SERVICE_URL = (String) result.getSettings().get("OEREB_SERVICE_URL");
                 SEARCH_SERVICE_URL = (String) result.getSettings().get("SEARCH_SERVICE_URL");
                 DATA_SERVICE_URL = (String) result.getSettings().get("DATA_SERVICE_URL");
+                AVAILABILITY_WMS_URL = (String) result.getSettings().get("AVAILABILITY_WMS_URL");
+                AVAILABILITY_WMS_LAYERS = (String) result.getSettings().get("AVAILABILITY_WMS_LAYERS");
+                BACKGROUND_WMTS_URL = (String) result.getSettings().get("BACKGROUND_WMTS_URL");
+                BACKGROUND_WMTS_LAYER = (String) result.getSettings().get("BACKGROUND_WMTS_LAYER");
                 WMS_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("WMS_HOST_MAPPING");
 //                OEREB_WEB_SERVICE_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("OEREB_WEB_SERVICE_HOST_MAPPING");
                 init();
@@ -316,7 +325,7 @@ public class AppEntryPoint implements EntryPoint {
         resultCard.add(fadeoutBottomDiv);
         
         // Add all the widgets to the body.
-        RootPanel.get().add(dummyButton);
+        //RootPanel.get().add(dummyButton);
         RootPanel.get().add(mapDiv);
         RootPanel.get().add(controlsCard);
         RootPanel.get().add(resultCard);
@@ -1305,8 +1314,8 @@ public class AppEntryPoint implements EntryPoint {
         Projection projection = new Projection(projectionOptions);
 
         WmtsOptions wmtsOptions = OLFactory.createOptions();
-        wmtsOptions.setUrl("https://geo.so.ch/api/wmts/1.0.0/{Layer}/default/2056/{TileMatrix}/{TileRow}/{TileCol}");
-        wmtsOptions.setLayer("ch.so.agi.hintergrundkarte_sw");
+        wmtsOptions.setUrl(BACKGROUND_WMTS_URL);
+        wmtsOptions.setLayer(BACKGROUND_WMTS_LAYER);
         wmtsOptions.setRequestEncoding("REST");
         wmtsOptions.setFormat("image/png");
         wmtsOptions.setMatrixSet("EPSG:2056");
@@ -1323,7 +1332,28 @@ public class AppEntryPoint implements EntryPoint {
         Tile wmtsLayer = new Tile(wmtsLayerOptions);
         wmtsLayer.setOpacity(1.0);
         wmtsLayer.set(ID_ATTR_NAME, BACKGROUND_LAYER_ID);
+        
+        
+        ImageWmsParams imageWMSParams = OLFactory.createOptions();
+        GWT.log("AVAILABILITY_WMS_LAYERS " + AVAILABILITY_WMS_LAYERS);
+        imageWMSParams.setLayers(AVAILABILITY_WMS_LAYERS);
 
+        ImageWmsOptions imageWMSOptions = OLFactory.createOptions(); 
+        GWT.log("AVAILABILITY_WMS_URL " + AVAILABILITY_WMS_URL);
+        imageWMSOptions.setUrl(AVAILABILITY_WMS_URL);
+        imageWMSOptions.setParams(imageWMSParams);
+        imageWMSOptions.setRatio(1.5f);
+
+        ImageWms imageWMSSource = new ImageWms(imageWMSOptions);
+
+        LayerOptions layerOptions = OLFactory.createOptions();
+        layerOptions.setSource(imageWMSSource);
+
+        Image wmsLayer = new Image(layerOptions);
+        wmsLayer.set(ID_ATTR_NAME, AVAILABILITY_LAYER_ID);
+        wmsLayer.setVisible(true);
+        wmsLayer.setZIndex(1002);
+        
         ViewOptions viewOptions = OLFactory.createOptions();
         viewOptions.setProjection(projection);
         viewOptions.setResolutions(new double[] { 4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0,
@@ -1343,6 +1373,7 @@ public class AppEntryPoint implements EntryPoint {
         map = new Map(mapOptions);
 
         map.addLayer(wmtsLayer);
+        map.addLayer(wmsLayer);
 
         map.addSingleClickListener(new MapSingleClickListener());
     }

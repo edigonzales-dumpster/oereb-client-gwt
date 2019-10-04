@@ -25,8 +25,20 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
     @Value("${app.dataServiceUrl}")
     private String dataServiceUrl;
 
+    @Value("${app.backgroundWmtsUrl}")
+    private String backgroundWmtsUrl;
+
+    @Value("${app.backgroundWmtsLayer}")
+    private String backgroundWmtsLayer;
+
+    @Value("${app.availabilityWmsUrl}")
+    private String availabilityWmsUrl;
+
+    @Value("${app.availabilityWmsLayers}")
+    private String availabilityWmsLayers;
+
     @Value("#{${app.wmsHostMapping}}")
-    HashMap<String, String> wmsHostMapping;
+    private HashMap<String, String> wmsHostMapping;
 
     @Override
     public void init() throws ServletException {
@@ -42,7 +54,11 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
         settings.put("SEARCH_SERVICE_URL", searchServiceUrl);
         settings.put("DATA_SERVICE_URL", dataServiceUrl);
         settings.put("WMS_HOST_MAPPING", wmsHostMapping);
-        
+        settings.put("AVAILABILITY_WMS_URL", availabilityWmsUrl);
+        settings.put("AVAILABILITY_WMS_LAYERS", availabilityWmsLayers);
+        settings.put("BACKGROUND_WMTS_URL", backgroundWmtsUrl);
+        settings.put("BACKGROUND_WMTS_LAYER", backgroundWmtsLayer);
+
         SettingsResponse response = new SettingsResponse();
         response.setSettings(settings);
         
