@@ -1373,7 +1373,10 @@ public class AppEntryPoint implements EntryPoint {
         map = new Map(mapOptions);
 
         map.addLayer(wmtsLayer);
-        map.addLayer(wmsLayer);
+        
+        // FIXME 
+        // Either make a proper overview layer (db and wms) or delete code.
+        //map.addLayer(wmsLayer);
 
         map.addSingleClickListener(new MapSingleClickListener());
     }
