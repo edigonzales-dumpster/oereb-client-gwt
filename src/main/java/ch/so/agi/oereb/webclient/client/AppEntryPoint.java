@@ -1335,11 +1335,9 @@ public class AppEntryPoint implements EntryPoint {
         
         
         ImageWmsParams imageWMSParams = OLFactory.createOptions();
-        GWT.log("AVAILABILITY_WMS_LAYERS " + AVAILABILITY_WMS_LAYERS);
         imageWMSParams.setLayers(AVAILABILITY_WMS_LAYERS);
 
         ImageWmsOptions imageWMSOptions = OLFactory.createOptions(); 
-        GWT.log("AVAILABILITY_WMS_URL " + AVAILABILITY_WMS_URL);
         imageWMSOptions.setUrl(AVAILABILITY_WMS_URL);
         imageWMSOptions.setParams(imageWMSParams);
         imageWMSOptions.setRatio(1.5f);
