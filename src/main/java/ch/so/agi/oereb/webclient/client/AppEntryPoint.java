@@ -265,6 +265,7 @@ public class AppEntryPoint implements EntryPoint {
         controlsCardContent.add(logoRow);
 
         MaterialRow searchRow = new MaterialRow();
+        searchRow.setMarginBottom(2);
 
         SearchOracle searchOracle = new SearchOracle(SEARCH_SERVICE_URL);
         autocomplete = new MaterialAutoComplete(searchOracle);
@@ -787,7 +788,7 @@ public class AppEntryPoint implements EntryPoint {
                                 symbolColumn.setGrid("s1");
                                 symbolColumn.setTextAlign(TextAlign.RIGHT);
                                 symbolColumn.add(new HTML("&nbsp;"));
-    
+
                                 MaterialColumn shareColumn = new MaterialColumn();
                                 shareColumn.setTextAlign(TextAlign.RIGHT);                            
                                 shareColumn.setPadding(0);
@@ -1759,7 +1760,8 @@ public class AppEntryPoint implements EntryPoint {
         typeColumn.setPadding(0);
         typeColumn.setMarginRight(0);
         typeColumn.setFontSize(BODY_FONT_SIZE);
-        typeColumn.add(new Label(restriction.getInformation()));
+        Label lbl = new Label(restriction.getInformation());
+        typeColumn.add(lbl);
 
         MaterialColumn symbolColumn = new MaterialColumn();
         symbolColumn.setPadding(0);
