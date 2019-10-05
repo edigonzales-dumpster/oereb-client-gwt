@@ -92,6 +92,8 @@ import ol.control.Control;
 import ol.event.EventListener;
 import ol.format.Wkt;
 import ol.geom.Geometry;
+import ol.interaction.DefaultInteractionsOptions;
+import ol.interaction.Interaction;
 import ol.layer.Base;
 import ol.layer.Image;
 import ol.layer.LayerOptions;
@@ -123,6 +125,9 @@ public class AppEntryPoint implements EntryPoint {
     private String BODY_FONT_SIZE = "14px";
     private String SMALL_FONT_SIZE = "12px";
     
+    private String RESULT_CARD_TOP = "200px";
+    private String RESULT_CARD_HEIGHT = "calc(100% - 215px)";
+
     private String ID_ATTR_NAME = "id";
     private String BACKGROUND_LAYER_ID = "ch.so.agi.hintergrundkarte_sw";
     private String AVAILABILITY_LAYER_ID = "ch.SO.municipality_with_plr";
@@ -221,7 +226,7 @@ public class AppEntryPoint implements EntryPoint {
         controlsCard.getElement().getStyle().setProperty("top", "15px");
         controlsCard.getElement().getStyle().setProperty("left", "15px");
         controlsCard.getElement().getStyle().setProperty("width", "500px");
-        controlsCard.getElement().getStyle().setProperty("height", "200px");
+        controlsCard.getElement().getStyle().setProperty("height", "170px");
         controlsCard.getElement().getStyle().setProperty("overflowY", "auto");
         controlsCard.setMaxWidth("calc(100% - 30px)");
 
@@ -292,10 +297,10 @@ public class AppEntryPoint implements EntryPoint {
         resultCard.getElement().getStyle().setProperty("marginTop", "0px");
         resultCard.getElement().getStyle().setProperty("marginLeft", "0px");
         resultCard.getElement().getStyle().setProperty("marginBottom", "0px");
-        resultCard.getElement().getStyle().setProperty("top", "230px");
+        resultCard.getElement().getStyle().setProperty("top", RESULT_CARD_TOP);
         resultCard.getElement().getStyle().setProperty("left", "15px");
         resultCard.getElement().getStyle().setProperty("width", "500px");
-        resultCard.getElement().getStyle().setProperty("height", "calc(100% - 245px)");
+        resultCard.getElement().getStyle().setProperty("height", RESULT_CARD_HEIGHT);
         resultCard.getElement().getStyle().setProperty("overflowY", "auto");
         resultCard.getElement().getStyle().setProperty("visibility", "hidden");
         resultCard.setMaxWidth("calc(100% - 30px)");
@@ -486,7 +491,7 @@ public class AppEntryPoint implements EntryPoint {
 
                         resultDiv.setVisibility(com.google.gwt.dom.client.Style.Visibility.VISIBLE);
                         resultCard.getElement().getStyle().setProperty("overflowY", "auto");
-                        resultCard.getElement().getStyle().setProperty("height", "calc(100% - 245px)");
+                        resultCard.getElement().getStyle().setProperty("height", RESULT_CARD_HEIGHT);
                     }
                 });
                 
@@ -1249,7 +1254,7 @@ public class AppEntryPoint implements EntryPoint {
                 }
 
                 resultCardContent.add(resultDiv);
-                resultCard.getElement().getStyle().setProperty("height", "calc(100% - 245px)");
+                resultCard.getElement().getStyle().setProperty("height", RESULT_CARD_HEIGHT);
                 resultCard.getElement().getStyle().setProperty("overflowY", "auto");
                 resultCard.getElement().getStyle().setProperty("visibility", "visible");
             }
@@ -1359,7 +1364,6 @@ public class AppEntryPoint implements EntryPoint {
         viewOptions.setResolutions(new double[] { 4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0,
                 2.5, 1.0, 0.5, 0.25, 0.1 });
         View view = new View(viewOptions);
-
         Coordinate centerCoordinate = new Coordinate(2616491, 1240287);
 
         view.setCenter(centerCoordinate);
@@ -1369,7 +1373,11 @@ public class AppEntryPoint implements EntryPoint {
         mapOptions.setTarget(id);
         mapOptions.setView(view);
         mapOptions.setControls(new Collection<Control>());
-
+                
+        DefaultInteractionsOptions interactionOptions = new ol.interaction.DefaultInteractionsOptions();
+        interactionOptions.setPinchRotate(false);
+        mapOptions.setInteractions(Interaction.defaults(interactionOptions));
+        
         map = new Map(mapOptions);
 
         map.addLayer(wmtsLayer);
