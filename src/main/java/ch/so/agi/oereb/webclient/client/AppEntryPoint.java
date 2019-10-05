@@ -126,6 +126,8 @@ public class AppEntryPoint implements EntryPoint {
     private String ID_ATTR_NAME = "id";
     private String BACKGROUND_LAYER_ID = "ch.so.agi.hintergrundkarte_sw";
     private String AVAILABILITY_LAYER_ID = "ch.SO.municipality_with_plr";
+    private String RESTRICTION_VECTOR_LAYER_ID = "restriction_vector_layer";
+    private String RESTRICTION_VECTOR_FEATURE_ID = "restriction_fid";
     private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer";
     private String REAL_ESTATE_VECTOR_FEATURE_ID = "real_estate_fid";
     private String REAL_ESTATE_DATAPRODUCT_ID = "ch.so.agi.av.grundstuecke.rechtskraeftig"; // TODO -> settings
@@ -1767,17 +1769,22 @@ public class AppEntryPoint implements EntryPoint {
         if (restriction.getSymbol() != null) {
             symbolImage = new com.google.gwt.user.client.ui.Image(restriction.getSymbol());
         } else {
-            // FIXME
-            // Temporary
-            if (restriction.getSymbolRef().contains("http://geo-t.so.ch/symbol/")) {
-                restriction.setSymbolRef(restriction.getSymbolRef().replace("http://geo-t.so.ch/symbol/", "https://geo-t.so.ch/api/oereb/v1/symbol/"));
-            }
             symbolImage = new com.google.gwt.user.client.ui.Image(UriUtils.fromSafeConstant(restriction.getSymbolRef()));
         }
         symbolImage.setWidth("30px");
         symbolImage.getElement().getStyle().setProperty("border", "1px solid black");
         symbolImage.getElement().getStyle().setProperty("verticalAlign", "middle");
         symbolColumn.add(symbolImage);
+        
+        /*
+        symbolColumn.addMouseOverHandler(event -> {
+            GWT.log("mouse over symbol"); 
+         });
+        
+        symbolColumn.addMouseOutHandler(event -> {
+            GWT.log("mouse out symbol"); 
+         });
+        */
 
         MaterialColumn shareColumn = new MaterialColumn();
         shareColumn.setTextAlign(TextAlign.RIGHT);

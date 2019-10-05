@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,10 +29,12 @@ import javax.xml.transform.stream.StreamSource;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
+import ch.ehi.oereb.schemas.gml._3_2.SurfacePropertyTypeType;
 import ch.ehi.oereb.schemas.oereb._1_0.extract.GetExtractByIdResponse;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.DocumentBaseType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.DocumentType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.ExtractType;
+import ch.ehi.oereb.schemas.oereb._1_0.extractdata.GeometryType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RealEstateDPRType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RestrictionOnLandownershipType;
 import ch.so.agi.oereb.webclient.shared.ExtractResponse;
@@ -48,6 +51,10 @@ import ch.so.agi.oereb.webclient.shared.models.Restriction;
 import ch.so.agi.oereb.webclient.shared.models.ThemeWithoutData;
 
 import org.apache.xerces.impl.dv.util.Base64;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -208,9 +215,6 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                             encodedImage = "data:image/png;base64,"+encodedImage;
                             restriction.setSymbol(encodedImage);                                                    
                         } else if (r.getSymbolRef() != null) {
-                            logger.info("oerebWebServiceUrlServer" + oerebWebServiceUrlServer);
-                            logger.info("oerebWebServiceUrlClient" + oerebWebServiceUrlClient);
-                            logger.info("r.getSymbolRef()" + r.getSymbolRef());
                             String symbolRef = r.getSymbolRef().replace(oerebWebServiceUrlServer, oerebWebServiceUrlClient);
                             restriction.setSymbolRef(symbolRef);
                         }
@@ -239,11 +243,18 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     .filter(r -> r.getPartInPercent() != null)
                     .collect(Collectors.groupingBy(r -> r.getTypeCode(), Collectors.summingDouble(r -> r.getPartInPercent().doubleValue())));
 
+            /*
+            Map<String, List<List<GeometryType>>> geometryGroupedLists = xmlRestrictions.stream()
+                    .filter(r -> r.getGeometry() != null)
+                    .collect(Collectors.groupingBy(r -> r.getTypeCode(), Collectors.mapping(RestrictionOnLandownershipType::getGeometry, Collectors.toList())));
+            */
             
             logger.info("sumAreaShare: " + sumAreaShare.toString());
             logger.info("sumLengthShare: " + sumLengthShare.toString());
             logger.info("sumNrOfPoints: " + sumNrOfPoints.toString());
             logger.info("sumAreaPercentShare: " + sumAreaPercentShare.toString());
+            //logger.info("geometryLists: " + geometryGroupedLists.toString());
+
             
             // Assign the sum to the simplified restriction.
             // And add the restriction to the final restrictons list.
@@ -268,6 +279,37 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                 }
                 restrictionsList.add(restrictionEntry.getValue());
             }
+            
+            /*
+            ArrayList<Polygon> polygonList = new ArrayList<Polygon>();
+            for (Entry<String, List<List<GeometryType>>> geometryListsEntry : geometryGroupedLists.entrySet()) {
+                String typeCode = geometryListsEntry.getKey();
+                List<List<GeometryType>> geometryLists = geometryListsEntry.getValue();
+                for(List<GeometryType> geometryList : geometryLists) {
+                    
+
+                    Iterator<GeometryType> it = geometryList.iterator();
+                    while (it.hasNext()) {
+                        SurfacePropertyTypeType surface = it.next().getSurface();
+                        if (surface != null) {
+                            
+                            Polygon restrictionPolygon = new Gml32ToJts().convertSurface(surface);
+                            polygonList.add(restrictionPolygon);
+                        }
+                    }
+                }
+                
+                
+                PrecisionModel precisionModel = new PrecisionModel(1000);
+                GeometryFactory factory = new GeometryFactory(precisionModel);
+                
+                if (!polygonList.isEmpty()) {
+                    MultiPolygon restrictionMultiPolygon = factory.createMultiPolygon(polygonList.toArray(new Polygon[0]));                    
+                    restrictionsMap.get(typeCode).setMultiPointGeometry(restrictionMultiPolygon.toText());
+                }
+            }
+            */
+
             
             // Collect responsible offices
             // Distinct by office url.

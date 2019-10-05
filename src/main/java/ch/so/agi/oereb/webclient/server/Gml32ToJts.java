@@ -22,10 +22,58 @@ import ch.ehi.oereb.schemas.gml._3_2.MultiSurfaceTypeType;
 //import ch.ehi.oereb.schemas.gml._3_2.Polygon;
 import ch.ehi.oereb.schemas.gml._3_2.Pos;
 import ch.ehi.oereb.schemas.gml._3_2.SurfaceMember;
+import ch.ehi.oereb.schemas.gml._3_2.SurfacePropertyTypeType;
 
 public class Gml32ToJts {
     Logger logger = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
+    public Polygon convertSurface(SurfacePropertyTypeType surfacePropertyTypeType) {
+        PrecisionModel precisionModel = new PrecisionModel(1000);
+        GeometryFactory factory = new GeometryFactory(precisionModel);
+
+        ch.ehi.oereb.schemas.gml._3_2.Polygon gmlPolygon = (ch.ehi.oereb.schemas.gml._3_2.Polygon) surfacePropertyTypeType.getAbstractSurface();
+            
+        // exterior ring
+        ch.ehi.oereb.schemas.gml._3_2.LinearRing gmlLinearRing = (ch.ehi.oereb.schemas.gml._3_2.LinearRing) gmlPolygon.getValue().getExterior().getValue().getAbstractRing();
+        ArrayList<Coordinate> exteriorCoordinates = new ArrayList<Coordinate>();
+        for (int i=0; i<gmlLinearRing.getValue().getPosOrPointPropertyOrPointRep().size(); i++) {
+            Pos pos = (Pos) gmlLinearRing.getValue().getPosOrPointPropertyOrPointRep().get(i);                
+            double x = pos.getValue().getValue().get(0);
+            double y = pos.getValue().getValue().get(1);
+            Coordinate coordinate = new Coordinate(x, y);
+            exteriorCoordinates.add(coordinate);
+        }
+        
+        LinearRing exteriorRing = factory.createLinearRing(new CoordinateArraySequence((Coordinate[]) exteriorCoordinates.toArray(new Coordinate[0])));
+
+        // interior ring(s)
+        List<Interior> interiors = gmlPolygon.getValue().getInterior();
+        ArrayList<LinearRing> interiorRings = new ArrayList<LinearRing>();
+        for (Interior interior : interiors) {
+            ch.ehi.oereb.schemas.gml._3_2.LinearRing gmlInteriorRing = (ch.ehi.oereb.schemas.gml._3_2.LinearRing) interior.getValue().getAbstractRing();
+            ArrayList<Coordinate> interiorCoordinates = new ArrayList<Coordinate>();
+            for (int i=0; i<gmlInteriorRing.getValue().getPosOrPointPropertyOrPointRep().size(); i++) {
+                Pos pos = (Pos) gmlInteriorRing.getValue().getPosOrPointPropertyOrPointRep().get(i);
+                double x = pos.getValue().getValue().get(0);
+                double y = pos.getValue().getValue().get(1);
+                Coordinate coordinate = new Coordinate(x, y);
+                interiorCoordinates.add(coordinate);
+            }    
+            LinearRing interiorRing = factory.createLinearRing(new CoordinateArraySequence((Coordinate[]) interiorCoordinates.toArray(new Coordinate[0])));
+
+            // This is for you, Clemens:
+            if (interiorRing.equals(exteriorRing)) {
+                continue;
+            }
+            interiorRings.add(interiorRing);
+        }
+        
+        Polygon polygon = factory.createPolygon(exteriorRing, interiorRings.toArray(new LinearRing[0]));
+
+        return polygon;
+    }
+    
+    
     public MultiPolygon convertMultiSurface(MultiSurfacePropertyTypeType multiSurfacePropertyTypeType) {
         PrecisionModel precisionModel = new PrecisionModel(1000);
         GeometryFactory factory = new GeometryFactory(precisionModel);
@@ -43,13 +91,9 @@ public class Gml32ToJts {
             ch.ehi.oereb.schemas.gml._3_2.LinearRing gmlLinearRing = (ch.ehi.oereb.schemas.gml._3_2.LinearRing) gmlPolygon.getValue().getExterior().getValue().getAbstractRing();
             ArrayList<Coordinate> exteriorCoordinates = new ArrayList<Coordinate>();
             for (int i=0; i<gmlLinearRing.getValue().getPosOrPointPropertyOrPointRep().size(); i++) {
-                Pos pos = (Pos) gmlLinearRing.getValue().getPosOrPointPropertyOrPointRep().get(i);
-//                logger.info(pos.getValue().getValue().get(0).toString());
-//                logger.info(pos.getValue().getValue().get(1).toString());
-                
+                Pos pos = (Pos) gmlLinearRing.getValue().getPosOrPointPropertyOrPointRep().get(i);                
                 double x = pos.getValue().getValue().get(0);
                 double y = pos.getValue().getValue().get(1);
-                
                 Coordinate coordinate = new Coordinate(x, y);
                 exteriorCoordinates.add(coordinate);
             }
@@ -77,7 +121,7 @@ public class Gml32ToJts {
                 LinearRing interiorRing = factory.createLinearRing(new CoordinateArraySequence((Coordinate[]) interiorCoordinates.toArray(new Coordinate[0])));
                 logger.debug(interiorRing.toText());
 
-                // This is for you Clemens:
+                // This is for you, Clemens:
                 if (interiorRing.equals(exteriorRing)) {
                     continue;
                 }

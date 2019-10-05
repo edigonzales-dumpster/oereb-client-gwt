@@ -18,6 +18,12 @@ public class Restriction implements IsSerializable {
     private Integer nrOfPoints;
     
     private Double partInPercent;
+    
+    private String multiPolygonGeometry;
+    
+    private String multiLineStringGeometry;
+    
+    private String multiPointGeometry;
 
     public String getInformation() {
         return information;
@@ -81,6 +87,30 @@ public class Restriction implements IsSerializable {
 
     public void setPartInPercent(double partInPercent) {
         this.partInPercent = partInPercent;
+    }
+
+    public String getMultiPolygonGeometry() {
+        return multiPolygonGeometry;
+    }
+
+    public void setMultiPolygonGeometry(String multiPolygonGeometry) {
+        this.multiPolygonGeometry = multiPolygonGeometry;
+    }
+
+    public String getMultiLineStringGeometry() {
+        return multiLineStringGeometry;
+    }
+
+    public void setMultiLineStringGeometry(String multiLineStringGeometry) {
+        this.multiLineStringGeometry = multiLineStringGeometry;
+    }
+
+    public String getMultiPointGeometry() {
+        return multiPointGeometry;
+    }
+
+    public void setMultiPointGeometry(String multiPointGeometry) {
+        this.multiPointGeometry = multiPointGeometry;
     }
     
 }
