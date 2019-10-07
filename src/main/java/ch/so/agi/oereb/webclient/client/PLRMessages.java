@@ -68,4 +68,10 @@ public interface PLRMessages extends Messages {
     
     @DefaultMessage("Cadastre authority")
     String plrCadastreAuthority();
+    
+    @DefaultMessage("No real estate found with identifier {0}.")
+    String responseError204(String egrid);
+    
+    @DefaultMessage("An error occured.")
+    String responseError500();
 }

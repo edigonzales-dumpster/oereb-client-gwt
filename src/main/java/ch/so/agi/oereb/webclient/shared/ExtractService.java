@@ -10,5 +10,5 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("extract")
 public interface ExtractService extends RemoteService {
-    ExtractResponse extractServer(String egrid) throws IllegalArgumentException, IOException;
+    ExtractResponse extractServer(String egrid) throws ExtractServiceException;
 }

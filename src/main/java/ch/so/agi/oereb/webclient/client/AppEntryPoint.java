@@ -395,8 +395,18 @@ public class AppEntryPoint implements EntryPoint {
             @Override
             public void onFailure(Throwable caught) {
                 MaterialLoader.loading(false);
+
+                if (caught.getMessage().equalsIgnoreCase("204")) {
+                    MaterialToast.fireToast(messages.responseError204(egrid));
+                } else if (caught.getMessage().equalsIgnoreCase("500")) {
+                    MaterialToast.fireToast(messages.responseError500());
+                    MaterialToast.fireToast(caught.getMessage());                    
+                } else {
+                    MaterialToast.fireToast(messages.responseError500());                    
+                    MaterialToast.fireToast(caught.getMessage());                    
+                }
+                
                 GWT.log("error: " + caught.getMessage());
-                MaterialToast.fireToast(caught.getMessage());
             }
 
             @Override
