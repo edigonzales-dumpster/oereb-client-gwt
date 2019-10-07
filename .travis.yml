@@ -1,6 +1,9 @@
 services:
   - docker
 
+jdk:
+  - openjdk8
+
 env:
   global:
     - DOCKER_ACCOUNT=sogis
