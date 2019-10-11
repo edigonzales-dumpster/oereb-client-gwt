@@ -26,7 +26,7 @@ public class SearchController {
         logger.info(searchText);
                 
         RestTemplate restTemplate = new RestTemplate();
-        SearchServiceResponse searchServiceResponse = restTemplate.getForObject("https://geo.so.ch/api/search/v2/?filter=ch.so.agi.av.grundstuecke.rechtskraeftig,ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge&limit=10&searchtext=ch1", SearchServiceResponse.class);
+        SearchServiceResponse searchServiceResponse = restTemplate.getForObject("https://geo.so.ch/api/search/v2/?filter=ch.so.agi.av.grundstuecke.rechtskraeftig,ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge&limit=10&searchtext="+searchText, SearchServiceResponse.class);
         logger.info(searchServiceResponse.getResults().get(0).getFeature().getDisplay().toString());
         return searchServiceResponse.getResults();  
     }
