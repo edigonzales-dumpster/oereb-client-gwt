@@ -714,6 +714,7 @@ public class AppEntryPoint implements EntryPoint {
                             header.setHeight("45px"); // Firefox
                             
                             MaterialLink link = new MaterialLink();
+                            
                             Div aParent = new Div();
                             aParent.setBorder("0px");
                             aParent.setDisplay(Display.TABLE_CELL);
