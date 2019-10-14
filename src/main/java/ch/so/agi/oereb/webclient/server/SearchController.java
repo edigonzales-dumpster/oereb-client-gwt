@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -48,9 +50,8 @@ public class SearchController {
     
     @RequestMapping(value = "/search/{searchText}", produces = {MediaType.APPLICATION_JSON_VALUE}, method = RequestMethod.GET)
     public String searchByFTS(@PathVariable String searchText) throws IOException {
-        logger.info("searchText: " + searchText);
-        
-        URL url = new URL(searchServiceUrl+searchText);
+        String encodedSearchText = URLEncoder.encode(searchText, StandardCharsets.UTF_8.toString());        
+        URL url = new URL(searchServiceUrl+encodedSearchText);
         URLConnection request = url.openConnection();
         request.connect();
         
@@ -58,14 +59,8 @@ public class SearchController {
         return root.toString();  
     }
     
-    // http://localhost:8080/search/ch.so.agi.av.grundstuecke.rechtskraeftig/t_id/771899418
-    // -> https://geo.so.ch/api/data/v1/ch.so.agi.av.grundstuecke.rechtskraeftig/?filter=[[%22t_id%22,%22=%22,771899418]]
-    // http://localhost:8080/search/ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge/t_id/771029388
-    // -> https://geo.so.ch/api/data/v1/ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge/?filter=[["t_id","=","771029388"]]
-    // http://localhost:8080/search/ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge/t_id/771029417
-    // -> https://geo.so.ch/api/data/v1/ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge/?filter=[["t_id","=","771029417"]]
     @RequestMapping(value = "/search/{dataproductId}/{idFieldName}/{tid}", produces = {MediaType.APPLICATION_JSON_VALUE}, method = RequestMethod.GET)
-    public String searchById(@PathVariable String dataproductId, @PathVariable String idFieldName, @PathVariable String tid) throws IOException {
+    public String searchById(@PathVariable String dataproductId, @PathVariable String idFieldName, @PathVariable String tid) throws IOException {        
         JsonArray parcelsArray = new JsonArray();
         if (dataproductId.equalsIgnoreCase(dataProductParcel)) {
             URL url = new URL(dataServiceUrl + dataproductId + "/?filter=[[\""+idFieldName+"\",\"=\","+tid+"]]");
@@ -84,8 +79,10 @@ public class SearchController {
             Iterator<JsonElement> it = featureArray.iterator();
             while(it.hasNext()) {            
                 JsonElement ele = it.next();
-                logger.info(ele.getAsJsonObject().get("geometry").getAsJsonObject().get("coordinates").getAsJsonArray().toString());
                 coordinates = ele.getAsJsonObject().get("geometry").getAsJsonObject().get("coordinates").getAsJsonArray();
+            }
+            if (coordinates.size() == 0) {
+                return parcelsArray.toString();
             }
             String bbox = coordinates.get(0) + "," + coordinates.get(1) + "," + coordinates.get(0) + "," + coordinates.get(1); 
             
@@ -96,8 +93,6 @@ public class SearchController {
         return parcelsArray.toString();
     }
     
-    // http://localhost:8080/search/ch.so.agi.av.grundstuecke.rechtskraeftig/bbox/2600467.304,1215411.564,2600467.304,1215411.564
-    // -> https://geo.so.ch/api/data/v1/ch.so.agi.av.grundstuecke.rechtskraeftig/?bbox=2600467.304,1215411.564,2600467.304,1215411.564
     @RequestMapping(value = "/search/{dataproductId}/bbox/{bbox}", produces = {MediaType.APPLICATION_JSON_VALUE}, method = RequestMethod.GET)
     public String searchByBbox(@PathVariable String dataproductId, @PathVariable String bbox) throws IOException {
         JsonArray parcelsArray = getEgrid(new URL(dataServiceUrl + dataProductParcel + "/?bbox=" + bbox));
