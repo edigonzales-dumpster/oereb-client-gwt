@@ -55,7 +55,9 @@ public class SearchController {
         URLConnection request = url.openConnection();
         request.connect();
         
-        JsonElement root = JsonParser.parseReader(new InputStreamReader((InputStream) request.getContent()));                
+        JsonElement root = JsonParser.parseReader(new InputStreamReader((InputStream) request.getContent()));  
+//        JsonArray resultArray = root.getAsJsonObject().get("results").getAsJsonArray();
+        
         return root.toString();  
     }
     
