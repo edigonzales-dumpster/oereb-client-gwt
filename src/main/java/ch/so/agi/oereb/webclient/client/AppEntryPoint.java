@@ -131,7 +131,6 @@ public class AppEntryPoint implements EntryPoint {
 
     private String ID_ATTR_NAME = "id";
     private String BACKGROUND_LAYER_ID = "ch.so.agi.hintergrundkarte_sw";
-    private String AVAILABILITY_LAYER_ID = "ch.SO.municipality_with_plr";
     private String RESTRICTION_VECTOR_LAYER_ID = "restriction_vector_layer";
     private String RESTRICTION_VECTOR_FEATURE_ID = "restriction_fid";
     private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer";
@@ -143,8 +142,6 @@ public class AppEntryPoint implements EntryPoint {
     private String SEARCH_SERVICE_URL;
     private String SEARCH_SERVICE_PATH;
     private String DATA_SERVICE_URL;
-    private String AVAILABILITY_WMS_URL;
-    private String AVAILABILITY_WMS_LAYERS;
     private String BACKGROUND_WMTS_URL;
     private String BACKGROUND_WMTS_LAYER;
     
@@ -184,8 +181,6 @@ public class AppEntryPoint implements EntryPoint {
                 SEARCH_SERVICE_URL = (String) result.getSettings().get("SEARCH_SERVICE_URL");
                 SEARCH_SERVICE_PATH = (String) result.getSettings().get("SEARCH_SERVICE_PATH");
                 DATA_SERVICE_URL = (String) result.getSettings().get("DATA_SERVICE_URL");
-                AVAILABILITY_WMS_URL = (String) result.getSettings().get("AVAILABILITY_WMS_URL");
-                AVAILABILITY_WMS_LAYERS = (String) result.getSettings().get("AVAILABILITY_WMS_LAYERS");
                 BACKGROUND_WMTS_URL = (String) result.getSettings().get("BACKGROUND_WMTS_URL");
                 BACKGROUND_WMTS_LAYER = (String) result.getSettings().get("BACKGROUND_WMTS_LAYER");
                 WMS_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("WMS_HOST_MAPPING");
@@ -1311,26 +1306,7 @@ public class AppEntryPoint implements EntryPoint {
         Tile wmtsLayer = new Tile(wmtsLayerOptions);
         wmtsLayer.setOpacity(1.0);
         wmtsLayer.set(ID_ATTR_NAME, BACKGROUND_LAYER_ID);
-        
-        
-        ImageWmsParams imageWMSParams = OLFactory.createOptions();
-        imageWMSParams.setLayers(AVAILABILITY_WMS_LAYERS);
-
-        ImageWmsOptions imageWMSOptions = OLFactory.createOptions(); 
-        imageWMSOptions.setUrl(AVAILABILITY_WMS_URL);
-        imageWMSOptions.setParams(imageWMSParams);
-        imageWMSOptions.setRatio(1.5f);
-
-        ImageWms imageWMSSource = new ImageWms(imageWMSOptions);
-
-        LayerOptions layerOptions = OLFactory.createOptions();
-        layerOptions.setSource(imageWMSSource);
-
-        Image wmsLayer = new Image(layerOptions);
-        wmsLayer.set(ID_ATTR_NAME, AVAILABILITY_LAYER_ID);
-        wmsLayer.setVisible(true);
-        wmsLayer.setZIndex(1002);
-        
+                
         ViewOptions viewOptions = OLFactory.createOptions();
         viewOptions.setProjection(projection);
         viewOptions.setResolutions(new double[] { 4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0,
