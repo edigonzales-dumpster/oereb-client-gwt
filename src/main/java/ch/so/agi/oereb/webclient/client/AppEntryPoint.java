@@ -20,6 +20,7 @@ import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.i18n.client.NumberFormat;
 import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.jsonp.client.JsonpRequestBuilder;
 import com.google.gwt.safehtml.shared.UriUtils;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -130,7 +131,6 @@ public class AppEntryPoint implements EntryPoint {
 
     private String ID_ATTR_NAME = "id";
     private String BACKGROUND_LAYER_ID = "ch.so.agi.hintergrundkarte_sw";
-    private String AVAILABILITY_LAYER_ID = "ch.SO.municipality_with_plr";
     private String RESTRICTION_VECTOR_LAYER_ID = "restriction_vector_layer";
     private String RESTRICTION_VECTOR_FEATURE_ID = "restriction_fid";
     private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer";
@@ -140,9 +140,8 @@ public class AppEntryPoint implements EntryPoint {
     
     private String OEREB_SERVICE_URL;
     private String SEARCH_SERVICE_URL;
+    private String SEARCH_SERVICE_PATH;
     private String DATA_SERVICE_URL;
-    private String AVAILABILITY_WMS_URL;
-    private String AVAILABILITY_WMS_LAYERS;
     private String BACKGROUND_WMTS_URL;
     private String BACKGROUND_WMTS_LAYER;
     
@@ -180,9 +179,8 @@ public class AppEntryPoint implements EntryPoint {
             public void onSuccess(SettingsResponse result) {
                 OEREB_SERVICE_URL = (String) result.getSettings().get("OEREB_SERVICE_URL");
                 SEARCH_SERVICE_URL = (String) result.getSettings().get("SEARCH_SERVICE_URL");
+                SEARCH_SERVICE_PATH = (String) result.getSettings().get("SEARCH_SERVICE_PATH");
                 DATA_SERVICE_URL = (String) result.getSettings().get("DATA_SERVICE_URL");
-                AVAILABILITY_WMS_URL = (String) result.getSettings().get("AVAILABILITY_WMS_URL");
-                AVAILABILITY_WMS_LAYERS = (String) result.getSettings().get("AVAILABILITY_WMS_LAYERS");
                 BACKGROUND_WMTS_URL = (String) result.getSettings().get("BACKGROUND_WMTS_URL");
                 BACKGROUND_WMTS_LAYER = (String) result.getSettings().get("BACKGROUND_WMTS_LAYER");
                 WMS_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("WMS_HOST_MAPPING");
@@ -193,15 +191,10 @@ public class AppEntryPoint implements EntryPoint {
     }
 
     private void init() {        
-        GWT.log(OEREB_SERVICE_URL.toString());
-        GWT.log(WMS_HOST_MAPPING.toString());
-        
         GWT.log(GWT.getModuleBaseURL());
         GWT.log(GWT.getHostPageBaseURL());
         GWT.log(GWT.getModuleBaseForStaticFiles());
-        
-        //Window.alert(WMS_HOST_MAPPING.get("http://wms:80/wms/oereb"));
-        
+                
         // div for ol3 map
         Div mapDiv = new Div();
         mapDiv.setId("map");
@@ -267,7 +260,7 @@ public class AppEntryPoint implements EntryPoint {
         MaterialRow searchRow = new MaterialRow();
         searchRow.setMarginBottom(2);
 
-        SearchOracle searchOracle = new SearchOracle(SEARCH_SERVICE_URL);
+        SearchOracle searchOracle = new SearchOracle(SEARCH_SERVICE_PATH);
         autocomplete = new MaterialAutoComplete(searchOracle);
         autocomplete.setBorder("1px #455a64 solid");
         autocomplete.setPadding(5);
@@ -354,42 +347,6 @@ public class AppEntryPoint implements EntryPoint {
         }
     }
 
-    private ArrayList<JSONObject> parseRealEstateFeatures(JSONObject obj) {
-        JSONObject rootObj = obj.isObject();
-        JSONArray resultsArray = rootObj.get("features").isArray();
-
-        if (resultsArray.size() == 0) {
-            return null;
-        }
-
-        ArrayList<JSONObject> parcels = new ArrayList<JSONObject>();
-        for (int i = 0; i < resultsArray.size(); i++) {
-            JSONObject properties = resultsArray.get(i).isObject().get("properties").isObject();
-            parcels.add(properties);
-        }
-        return parcels;
-    }
-
-    private String getBboxFromPointFeature(JSONObject obj) {
-        JSONObject rootObj = obj.isObject();
-        JSONArray resultsArray = rootObj.get("features").isArray();
-
-        if (resultsArray.size() == 0) {
-            return null;
-        }
-
-        JSONObject geometry = resultsArray.get(0).isObject().get("geometry").isObject();
-        JSONArray coordinates = geometry.get("coordinates").isArray();
-        String bbox = coordinates.get(0) + "," + coordinates.get(1) + "," + coordinates.get(0) + ","
-                + coordinates.get(1);
-
-        return bbox;
-    }
-
-//  CH158782774974
-//  CH944982786913
-//  CH938278494529
-//  CH533287066291 (SO)
     private void sendEgridToServer(String egrid) {
         extractService.extractServer(egrid, new AsyncCallback<ExtractResponse>() {
             @Override
@@ -404,8 +361,7 @@ public class AppEntryPoint implements EntryPoint {
                 } else {
                     MaterialToast.fireToast(messages.responseError500());                    
                     MaterialToast.fireToast(caught.getMessage());                    
-                }
-                
+                }                
                 GWT.log("error: " + caught.getMessage());
             }
 
@@ -1351,26 +1307,7 @@ public class AppEntryPoint implements EntryPoint {
         Tile wmtsLayer = new Tile(wmtsLayerOptions);
         wmtsLayer.setOpacity(1.0);
         wmtsLayer.set(ID_ATTR_NAME, BACKGROUND_LAYER_ID);
-        
-        
-        ImageWmsParams imageWMSParams = OLFactory.createOptions();
-        imageWMSParams.setLayers(AVAILABILITY_WMS_LAYERS);
-
-        ImageWmsOptions imageWMSOptions = OLFactory.createOptions(); 
-        imageWMSOptions.setUrl(AVAILABILITY_WMS_URL);
-        imageWMSOptions.setParams(imageWMSParams);
-        imageWMSOptions.setRatio(1.5f);
-
-        ImageWms imageWMSSource = new ImageWms(imageWMSOptions);
-
-        LayerOptions layerOptions = OLFactory.createOptions();
-        layerOptions.setSource(imageWMSSource);
-
-        Image wmsLayer = new Image(layerOptions);
-        wmsLayer.set(ID_ATTR_NAME, AVAILABILITY_LAYER_ID);
-        wmsLayer.setVisible(true);
-        wmsLayer.setZIndex(1002);
-        
+                
         ViewOptions viewOptions = OLFactory.createOptions();
         viewOptions.setProjection(projection);
         viewOptions.setResolutions(new double[] { 4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0,
@@ -1479,136 +1416,61 @@ public class AppEntryPoint implements EntryPoint {
             SearchResult searchResult = searchSuggestion.getSearchResult();
 
             String dataproductId = searchResult.getDataproductId();
+            String idFieldName = searchResult.getIdFieldName();            
             String featureId = searchResult.getFeatureId();
-            String idFieldName = searchResult.getIdFieldName();
 
             // Remove the chip from the text field. Even if it is not visible.
             autocomplete.reset();
 
-            // We need to find out the egrid from either the real estate or the address. 
-            // This is done by using the data service extensively.
-            if (dataproductId.equalsIgnoreCase(REAL_ESTATE_DATAPRODUCT_ID)) {
-                RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, DATA_SERVICE_URL + dataproductId
-                        + "/?filter=[[\"" + idFieldName + "\",\"=\"," + featureId + "]]");
-                builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
+            String searchServiceUrl = GWT.getHostPageBaseURL() + SEARCH_SERVICE_PATH; 
+            String requestUrl = searchServiceUrl + dataproductId + "/" + idFieldName + "/" + featureId;
+            RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, requestUrl);    
+            try {
+                builder.sendRequest("", new RequestCallback() {
+                    @Override
+                    public void onResponseReceived(com.google.gwt.http.client.Request request,
+                            com.google.gwt.http.client.Response response) {
+                        int statusCode = response.getStatusCode();
+                        if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
+                            String responseBody = response.getText();
+                            JSONArray responseArray = new JSONArray(JsonUtils.safeEval(responseBody));
 
-                try {
-                    builder.sendRequest("", new RequestCallback() {
-                        @Override
-                        public void onResponseReceived(com.google.gwt.http.client.Request request,
-                                com.google.gwt.http.client.Response response) {
-                            int statusCode = response.getStatusCode();
-                            if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
-                                String responseBody = response.getText();
-                                JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
-                                ArrayList<JSONObject> features = parseRealEstateFeatures(responseObj);
-                                String egrid = features.get(0).get("egrid").toString().trim().replaceAll("^.|.$", "");
-
-                                sendEgridToServer(egrid);
+                            if (responseArray.size() == 0) {
+                                MaterialLoader.loading(false);
                                 return;
-                            } else {
-                                MaterialLoader.loading(false);
-                                GWT.log("error from request");
-                                GWT.log(String.valueOf(statusCode));
-                                GWT.log(response.getStatusText());
                             }
-                        }
 
-                        @Override
-                        public void onError(com.google.gwt.http.client.Request request, Throwable exception) {
-                            MaterialLoader.loading(false);
-                            GWT.log("error actually sending the request, never got sent");
-                        }
-                    });
-                } catch (Exception e) {
-                    MaterialLoader.loading(true);
-                    e.printStackTrace();
-                }
-            } else {
-                // Fetch the geometry of the address.
-                RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, DATA_SERVICE_URL + dataproductId
-                        + "/?filter=[[\"" + idFieldName + "\",\"=\"," + featureId + "]]");
-                builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
-
-                try {
-                    builder.sendRequest("", new RequestCallback() {
-                        @Override
-                        public void onResponseReceived(com.google.gwt.http.client.Request request,
-                                com.google.gwt.http.client.Response response) {
-                            int statusCode = response.getStatusCode();
-                            if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
-                                String responseBody = response.getText();
-                                JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
-                                String bbox = getBboxFromPointFeature(responseObj);
-
-                                // Get the real estate (egrid) with a bbox (= geometry of address) request.
-                                RequestBuilder builder = new RequestBuilder(RequestBuilder.GET,
-                                        DATA_SERVICE_URL + REAL_ESTATE_DATAPRODUCT_ID + "/?bbox=" + bbox);
-                                builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
-
-                                try {
-                                    builder.sendRequest("", new RequestCallback() {
-                                        @Override
-                                        public void onResponseReceived(com.google.gwt.http.client.Request request,
-                                                com.google.gwt.http.client.Response response) {
-                                            int statusCode = response.getStatusCode();
-                                            if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
-                                                String responseBody = response.getText();
-                                                JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
-
-                                                // Features can have multiple objects since we searched an adress.
-                                                // But we don't want to show a selection. Try to force the "Liegenschaft".
-                                                String egrid = "";
-                                                ArrayList<JSONObject> features = parseRealEstateFeatures(responseObj);
-                                                for (JSONObject feature : features) {
-                                                    egrid = feature.get("egrid").toString().trim().replaceAll("^.|.$", "");
-                                                    String type = feature.get("art_txt").toString().trim().replaceAll("^.|.$", "");
-                                                    if (type.equalsIgnoreCase("Liegenschaft")) {
-                                                        continue;
-                                                    }
-                                                }
-
-                                                // TODO egrid can be null or ""
-                                                GWT.log("get extract for (from address): " + egrid);
-                                                sendEgridToServer(egrid);
-                                                return;
-                                            } else {
-                                                MaterialLoader.loading(false);
-                                                GWT.log("error from request");
-                                                GWT.log(String.valueOf(statusCode));
-                                                GWT.log(response.getStatusText());
-                                            }
-                                        }
-
-                                        @Override
-                                        public void onError(com.google.gwt.http.client.Request request,
-                                                Throwable exception) {
-                                            MaterialLoader.loading(false);
-                                            GWT.log("error actually sending the request, never got sent");
-                                        }
-                                    });
-                                } catch (Exception e) {
-                                    MaterialLoader.loading(false);
-                                    e.printStackTrace();
+                            String egrid = null;
+                            for (int i = 0; i < responseArray.size(); i++) {
+                                JSONObject obj = responseArray.get(i).isObject();
+                                egrid = obj.get("egrid").isString().stringValue();
+                                
+                                // If there are multiple hits, we prefer the Liegenschaft.
+                                String type = obj.get("art").isString().stringValue();
+                                if (type.equalsIgnoreCase("Liegenschaft")) {
+                                    break;
                                 }
-                            } else {
-                                MaterialLoader.loading(false);
-                                GWT.log("error from request");
-                                GWT.log(String.valueOf(statusCode));
-                                GWT.log(response.getStatusText());
                             }
-                        }
-
-                        @Override
-                        public void onError(com.google.gwt.http.client.Request request, Throwable exception) {
+                            sendEgridToServer(egrid);
+                            return;
+                        } else {
                             MaterialLoader.loading(false);
-                            GWT.log("error actually sending the request, never got sent");
+                            GWT.log("error from request");
+                            GWT.log(String.valueOf(statusCode));
+                            GWT.log(response.getStatusText());
                         }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+                    }
+
+                    @Override
+                    public void onError(com.google.gwt.http.client.Request request, Throwable exception) {
+                        MaterialLoader.loading(false);
+                        GWT.log("error actually sending the request, never got sent");
+                    }
+                });
+            } catch (Exception e) {
+                MaterialLoader.loading(true);
+                e.printStackTrace();
+            }     
         }
     }
 
@@ -1620,10 +1482,10 @@ public class AppEntryPoint implements EntryPoint {
             Coordinate coordinate = event.getCoordinate();
             String bbox = coordinate.getX() + "," + coordinate.getY() + "," + coordinate.getX() + ","
                     + coordinate.getY();
-
-            RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, DATA_SERVICE_URL + REAL_ESTATE_DATAPRODUCT_ID + "/?bbox=" + bbox);
-            builder.setHeader("Content-Type", "application/x-www-form-urlencoded");
-
+            
+            String searchServiceUrl = GWT.getHostPageBaseURL() + SEARCH_SERVICE_PATH; 
+            String requestUrl = searchServiceUrl + REAL_ESTATE_DATAPRODUCT_ID + "/bbox/" + bbox;
+            RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, requestUrl);
             try {
                 builder.sendRequest("", new RequestCallback() {
                     @Override
@@ -1632,22 +1494,21 @@ public class AppEntryPoint implements EntryPoint {
                         int statusCode = response.getStatusCode();
                         if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
                             String responseBody = response.getText();
-                            JSONObject responseObj = new JSONObject(JsonUtils.safeEval(responseBody));
-                            ArrayList<JSONObject> features = parseRealEstateFeatures(responseObj);
+                            JSONArray responseArray = new JSONArray(JsonUtils.safeEval(responseBody));
 
                             String egrid;
-                            if (features.size() > 1) {
+                            if (responseArray.size() > 1) {
                                 if (realEstateWindow != null) {
                                     realEstateWindow.removeFromParent();
                                 }
-                                
+
                                 realEstateWindow = new MaterialWindow();
                                 realEstateWindow.setTitle("Grundstücke");
                                 realEstateWindow.setFontSize("16px");
                                 realEstateWindow.setMarginLeft(0);
                                 realEstateWindow.setMarginRight(0);
                                 realEstateWindow.setWidth("300px");
-                                realEstateWindow.setToolbarColor(Color.RED_LIGHTEN_1); 
+                                realEstateWindow.setToolbarColor(Color.RED_LIGHTEN_1);
 
                                 MaterialIcon maximizeIcon = realEstateWindow.getIconMaximize();
                                 maximizeIcon.getElement().getStyle().setProperty("visibility", "hidden");
@@ -1655,59 +1516,52 @@ public class AppEntryPoint implements EntryPoint {
                                 realEstateWindow.setMaximize(false);
                                 realEstateWindow.setTop(event.getPixel().getY());
                                 realEstateWindow.setLeft(event.getPixel().getX());
-                                
+
                                 MaterialPanel realEstatePanel = new MaterialPanel();
-                                
-                                for (JSONObject feature : features) {
-                                    String number = feature.get("nummer").toString().trim().replaceAll("^.|.$", "");
-                                    egrid = feature.get("egrid").toString().trim().replaceAll("^.|.$", "");
-                                    String type = feature.get("art_txt").toString().trim().replaceAll("^.|.$", "");
+
+                                for (int i = 0; i < responseArray.size(); i++) {
+                                    JSONObject obj = responseArray.get(i).isObject();                                    
+                                    String number = obj.get("nummer").isString().stringValue();
+                                    egrid = obj.get("egrid").isString().stringValue();
+                                    String type = obj.get("art").isString().stringValue();
 
                                     MaterialRow realEstateRow = new MaterialRow();
                                     realEstateRow.setId(egrid);
                                     realEstateRow.setMarginBottom(0);
                                     realEstateRow.setPadding(5);
-                                    realEstateRow.add(new Label("GB-Nr.: " + number + " (" + type.substring(type.lastIndexOf(".") + 1) + ")"));
-                                   
-                                    realEstateRow.addClickHandler(event -> {                                        
+                                    realEstateRow.add(new Label("GB-Nr.: " + number + " ("
+                                            + type.substring(type.lastIndexOf(".") + 1) + ")"));
+
+                                    realEstateRow.addClickHandler(event -> {
                                         realEstateWindow.removeFromParent();
-                                        GWT.log("get extract from click for (multiple result): " + realEstateRow.getId());                                
+                                        GWT.log("get extract from click for (multiple result): "
+                                                + realEstateRow.getId());
 
                                         MaterialLoader.loading(true);
                                         sendEgridToServer(realEstateRow.getId());
                                     });
-                                    
+
                                     realEstateRow.addMouseOverHandler(event -> {
                                         realEstateRow.setBackgroundColor(Color.GREY_LIGHTEN_3);
-                                        realEstateRow.getElement().getStyle().setCursor(Cursor.POINTER); 
+                                        realEstateRow.getElement().getStyle().setCursor(Cursor.POINTER);
                                     });
-                                    
+
                                     realEstateRow.addMouseOutHandler(event -> {
                                         realEstateRow.setBackgroundColor(Color.WHITE);
-                                        realEstateRow.getElement().getStyle().setCursor(Cursor.DEFAULT); 
+                                        realEstateRow.getElement().getStyle().setCursor(Cursor.DEFAULT);
                                     });
-                                    
+
                                     realEstatePanel.add(realEstateRow);
                                 }
-
+                                
                                 realEstateWindow.add(realEstatePanel);
                                 realEstateWindow.open();
+                            }
+                            
+                            else {
+                                egrid = responseArray.get(0).isObject().get("egrid").isString().stringValue();
+                                GWT.log("get extract from click for (single result): " + egrid);
 
-                                /*
-                                DivElement overlay = Document.get().createDivElement();
-                                overlay.setClassName("overlay-realestate-list");
-                                overlay.setInnerText("Created with GWT SDK " + GWT.getVersion());
-                                
-                                OverlayOptions overlayOptions = OLFactory.createOptions();
-                                overlayOptions.setElement(overlay);
-                                overlayOptions.setPosition(coordinate);
-                                overlayOptions.setOffset(OLFactory.createPixel(0, 0));
-                                map.addOverlay(new Overlay(overlayOptions));
-                                */
-                            } else {
-                                egrid = features.get(0).get("egrid").toString().trim().replaceAll("^.|.$", "");
-                                GWT.log("get extract from click for (single result): " + egrid);  
-                                
                                 MaterialLoader.loading(true);
                                 sendEgridToServer(egrid);
                             }

@@ -22,6 +22,9 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
     @Value("${app.searchServiceUrl}")
     private String searchServiceUrl;
     
+    @Value("${app.searchServicePath}")
+    private String searchServicePath;
+    
     @Value("${app.dataServiceUrl}")
     private String dataServiceUrl;
 
@@ -30,12 +33,6 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
 
     @Value("${app.backgroundWmtsLayer}")
     private String backgroundWmtsLayer;
-
-    @Value("${app.availabilityWmsUrl}")
-    private String availabilityWmsUrl;
-
-    @Value("${app.availabilityWmsLayers}")
-    private String availabilityWmsLayers;
 
     @Value("#{${app.wmsHostMapping}}")
     private HashMap<String, String> wmsHostMapping;
@@ -52,10 +49,9 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
         
         settings.put("OEREB_SERVICE_URL", oerebWebServiceUrl);
         settings.put("SEARCH_SERVICE_URL", searchServiceUrl);
+        settings.put("SEARCH_SERVICE_PATH", searchServicePath);
         settings.put("DATA_SERVICE_URL", dataServiceUrl);
         settings.put("WMS_HOST_MAPPING", wmsHostMapping);
-        settings.put("AVAILABILITY_WMS_URL", availabilityWmsUrl);
-        settings.put("AVAILABILITY_WMS_LAYERS", availabilityWmsLayers);
         settings.put("BACKGROUND_WMTS_URL", backgroundWmtsUrl);
         settings.put("BACKGROUND_WMTS_LAYER", backgroundWmtsLayer);
 
