@@ -115,7 +115,6 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             connection.setRequestMethod("GET");
             connection.setRequestProperty("Accept", "application/xml");
 
-            logger.info("Response status code: " + connection.getResponseCode());
             if (connection.getResponseCode() == 500) {
                 throw new ExtractServiceException("500");
             } else if (connection.getResponseCode() == 406) {
@@ -138,20 +137,26 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         Extract extract = new Extract();
         extract.setExtractIdentifier(xmlExtract.getExtractIdentifier());
 
-        ArrayList<ThemeWithoutData> themesWithoutData = xmlExtract.getThemeWithoutData().stream().map(theme -> {
-            ThemeWithoutData themeWithoutData = new ThemeWithoutData();
-            themeWithoutData.setCode(theme.getCode());
-            themeWithoutData.setName(theme.getText().getText());
-            return themeWithoutData;
-        }).collect(collectingAndThen(toList(), ArrayList<ThemeWithoutData>::new));
+        ArrayList<ThemeWithoutData> themesWithoutData = xmlExtract.getThemeWithoutData()
+                .stream()
+                .map(theme -> {
+                    ThemeWithoutData themeWithoutData = new ThemeWithoutData();
+                    themeWithoutData.setCode(theme.getCode());
+                    themeWithoutData.setName(theme.getText().getText());
+                    return themeWithoutData;
+                })
+                .collect(collectingAndThen(toList(), ArrayList<ThemeWithoutData>::new));
         themesWithoutData.sort(compare);
 
-        ArrayList<NotConcernedTheme> notConcernedThemes = xmlExtract.getNotConcernedTheme().stream().map(theme -> {
-            NotConcernedTheme notConcernedTheme = new NotConcernedTheme();
-            notConcernedTheme.setCode(theme.getCode());
-            notConcernedTheme.setName(theme.getText().getText());
-            return notConcernedTheme;
-        }).collect(collectingAndThen(toList(), ArrayList<NotConcernedTheme>::new));
+        ArrayList<NotConcernedTheme> notConcernedThemes = xmlExtract.getNotConcernedTheme()
+                .stream()
+                .map(theme -> {
+                    NotConcernedTheme notConcernedTheme = new NotConcernedTheme();
+                    notConcernedTheme.setCode(theme.getCode());
+                    notConcernedTheme.setName(theme.getText().getText());
+                    return notConcernedTheme;
+                })
+                .collect(collectingAndThen(toList(), ArrayList<NotConcernedTheme>::new));
         notConcernedThemes.sort(compare);
 
         RealEstateDPRType xmlRealEstate = xmlExtract.getRealEstate();
@@ -177,8 +182,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         logger.info("*********************************************");
 
         // We create one ConcernedTheme object per theme with all restrictions belonging
-        // to the same theme
-        // since this is the way we present the restriction in the GUI.
+        // to the same theme since this is the way we present the restriction in the GUI.
         ArrayList<ConcernedTheme> concernedThemesList = new ArrayList<ConcernedTheme>();
         for (Map.Entry<String, List<RestrictionOnLandownershipType>> entry : groupedXmlRestrictions.entrySet()) {
             logger.info("*********************************************");
@@ -195,7 +199,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             // FIXME: Auch hier besteht das Problem, dass 'nur' über den
             // TypeCode gruppiert wird. Das reicht nicht immer.
             Map<String, Restriction> restrictionsMap = xmlRestrictions.stream()
-                    .filter(distinctByKey(RestrictionOnLandownershipType::getTypeCode)).map(r -> {
+                    .filter(distinctByKey(RestrictionOnLandownershipType::getTypeCode))
+                    .map(r -> {
                         Restriction restriction = new Restriction();
                         restriction.setInformation(r.getInformation().getLocalisedText().get(0).getText());
                         restriction.setTypeCode(r.getTypeCode());
@@ -209,28 +214,31 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                             restriction.setSymbolRef(symbolRef);
                         }
                         return restriction;
-                    }).collect(Collectors.toMap(Restriction::getTypeCode, Function.identity()));
-//                    }).collect(Collectors.toMap(r -> {
-//                        return r.getTypeCode();
-//                      }, Function.identity()));
+                    })
+                    .collect(Collectors.toMap(Restriction::getTypeCode, Function.identity()));
 
             logger.info(restrictionsMap.toString());
 
             // Calculate sum of the shares for each type code.
-            Map<String, Integer> sumAreaShare = xmlRestrictions.stream().filter(r -> r.getAreaShare() != null)
+            Map<String, Integer> sumAreaShare = xmlRestrictions
+                    .stream()
+                    .filter(r -> r.getAreaShare() != null)
                     .collect(Collectors.groupingBy(r -> r.getTypeCode(), Collectors.summingInt(r -> r.getAreaShare())));
 
-            Map<String, Integer> sumLengthShare = xmlRestrictions.stream().filter(r -> r.getLengthShare() != null)
-                    .collect(Collectors.groupingBy(r -> r.getTypeCode(),
-                            Collectors.summingInt(r -> r.getLengthShare())));
+            Map<String, Integer> sumLengthShare = xmlRestrictions
+                    .stream()
+                    .filter(r -> r.getLengthShare() != null)
+                    .collect(Collectors.groupingBy(r -> r.getTypeCode(), Collectors.summingInt(r -> r.getLengthShare())));
 
-            Map<String, Integer> sumNrOfPoints = xmlRestrictions.stream().filter(r -> r.getNrOfPoints() != null)
-                    .collect(
-                            Collectors.groupingBy(r -> r.getTypeCode(), Collectors.summingInt(r -> r.getNrOfPoints())));
+            Map<String, Integer> sumNrOfPoints = xmlRestrictions
+                    .stream()
+                    .filter(r -> r.getNrOfPoints() != null)
+                    .collect( Collectors.groupingBy(r -> r.getTypeCode(), Collectors.summingInt(r -> r.getNrOfPoints())));
 
-            Map<String, Double> sumAreaPercentShare = xmlRestrictions.stream().filter(r -> r.getPartInPercent() != null)
-                    .collect(Collectors.groupingBy(r -> r.getTypeCode(),
-                            Collectors.summingDouble(r -> r.getPartInPercent().doubleValue())));
+            Map<String, Double> sumAreaPercentShare = xmlRestrictions
+                    .stream()
+                    .filter(r -> r.getPartInPercent() != null)
+                    .collect(Collectors.groupingBy(r -> r.getTypeCode(), Collectors.summingDouble(r -> r.getPartInPercent().doubleValue())));
 
             /*
              * Map<String, List<List<GeometryType>>> geometryGroupedLists =
@@ -298,17 +306,20 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
 
             // Collect responsible offices
             // Distinct by office url.
-            ArrayList<Office> officeList = (ArrayList<Office>) xmlRestrictions.stream().filter(distinctByKey(r -> {
-                String officeName = r.getResponsibleOffice().getOfficeAtWeb().getValue();
-                return officeName;
-            })).map(r -> {
-                Office office = new Office();
-                if (r.getResponsibleOffice().getName() != null) {
-                    office.setName(r.getResponsibleOffice().getName().getLocalisedText().get(0).getText());
-                }
-                office.setOfficeAtWeb(r.getResponsibleOffice().getOfficeAtWeb().getValue());
-                return office;
-            }).collect(Collectors.toList());
+            ArrayList<Office> officeList = (ArrayList<Office>) xmlRestrictions.stream()
+                    .filter(distinctByKey(r -> {
+                        String officeName = r.getResponsibleOffice().getOfficeAtWeb().getValue();
+                        return officeName;
+                    }))
+                    .map(r -> {
+                        Office office = new Office();
+                        if (r.getResponsibleOffice().getName() != null) {
+                            office.setName(r.getResponsibleOffice().getName().getLocalisedText().get(0).getText());
+                        }
+                        office.setOfficeAtWeb(r.getResponsibleOffice().getOfficeAtWeb().getValue());
+                        return office;
+                    })
+                    .collect(Collectors.toList());
 
             logger.info("size of office: " + officeList.size());
 
@@ -325,17 +336,14 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                         legalProvision.setTitle(xmlLegalProvision.getTitle().getLocalisedText().get(0).getText());
                     }
                     if (xmlLegalProvision.getOfficialTitle() != null) {
-                        legalProvision.setOfficialTitle(
-                                xmlLegalProvision.getOfficialTitle().getLocalisedText().get(0).getText());
+                        legalProvision.setOfficialTitle(xmlLegalProvision.getOfficialTitle().getLocalisedText().get(0).getText());
                     }
                     legalProvision.setOfficialNumber(xmlLegalProvision.getOfficialNumber());
                     if (xmlLegalProvision.getAbbreviation() != null) {
-                        legalProvision.setAbbreviation(
-                                xmlLegalProvision.getAbbreviation().getLocalisedText().get(0).getText());
+                        legalProvision.setAbbreviation(xmlLegalProvision.getAbbreviation().getLocalisedText().get(0).getText());
                     }
                     if (xmlLegalProvision.getTextAtWeb() != null) {
-                        legalProvision
-                                .setTextAtWeb(xmlLegalProvision.getTextAtWeb().getLocalisedText().get(0).getText());
+                        legalProvision.setTextAtWeb(xmlLegalProvision.getTextAtWeb().getLocalisedText().get(0).getText());
                     }
                     legalProvisionsList.add(legalProvision);
 
@@ -422,8 +430,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                 }
             }
 
-            // Finally we create the concerned theme with all
-            // the information.
+            // Finally we create the concerned theme with all information.
             ConcernedTheme concernedTheme = new ConcernedTheme();
             concernedTheme.setRestrictions(restrictionsList);
             concernedTheme.setLegalProvisions(distinctLegalProvisionsList);
@@ -437,7 +444,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
 
             concernedThemesList.add(concernedTheme);
         }
-
+        
+        // Sort according our order.
         concernedThemesList.sort(compare);
 
         realEstate.setConcernedThemes(concernedThemesList);
@@ -447,8 +455,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         extract.setPdfLink(oerebWebServiceUrlClient + "/extract/reduced/pdf/geometry/" + egrid);
 
         Office plrCadastreAuthority = new Office();
-        plrCadastreAuthority
-                .setName(xmlExtract.getPLRCadastreAuthority().getName().getLocalisedText().get(0).getText());
+        plrCadastreAuthority.setName(xmlExtract.getPLRCadastreAuthority().getName().getLocalisedText().get(0).getText());
         plrCadastreAuthority.setOfficeAtWeb(xmlExtract.getPLRCadastreAuthority().getOfficeAtWeb().getValue());
         plrCadastreAuthority.setStreet(xmlExtract.getPLRCadastreAuthority().getStreet());
         plrCadastreAuthority.setNumber(xmlExtract.getPLRCadastreAuthority().getNumber());
