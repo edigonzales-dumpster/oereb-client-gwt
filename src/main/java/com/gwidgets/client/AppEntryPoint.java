@@ -1,7 +1,9 @@
 package com.gwidgets.client;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.dominokit.domino.ui.forms.BasicFormElement;
 import org.dominokit.domino.ui.forms.LocalSuggestBoxStore;
@@ -20,16 +22,19 @@ import org.dominokit.domino.ui.keyboard.KeyboardEvents;
 import org.dominokit.domino.ui.labels.Label;
 import org.dominokit.domino.ui.utils.TextNode;
 import org.jboss.gwt.elemento.core.Elements;
+import org.jboss.gwt.elemento.core.EventType;
 import org.jboss.gwt.elemento.core.builder.*;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.dom.client.KeyUpHandler;
-
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 //import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
@@ -89,15 +94,15 @@ import proj4.Proj4;
 
 import elemental2.core.*;
 import elemental2.dom.*;
-
-
+import jsinterop.base.Js;
+import jsinterop.base.JsPropertyMap;
 
 public class AppEntryPoint implements EntryPoint {
     private final ExtractServiceAsync extractService = GWT.create(ExtractService.class);
     private final SettingsServiceAsync settingsService = GWT.create(SettingsService.class);
 
     private String SEARCH_SERVICE_URL;
-    private HashMap<String,String> WMS_LAYER_MAPPINGS;
+    private HashMap<String, String> WMS_LAYER_MAPPINGS;
     private String baseUrl = "https://geoview.bl.ch/main/wsgi/bl_fulltextsearch?limit=15&query=egr+";
 
     public void onModuleLoad() {
@@ -119,7 +124,7 @@ public class AppEntryPoint implements EntryPoint {
 
     private void init() {
         GWT.log(SEARCH_SERVICE_URL);
-        
+
 //        Document document = DomGlobal.document;
 //        
 //        HTMLInputElement inputElement = (HTMLInputElement) document.createElement("input");
@@ -131,7 +136,6 @@ public class AppEntryPoint implements EntryPoint {
 //        HTMLBodyElement body = DomGlobal.document.body;
 //        body.appendChild(inputElement);
 
-        
 //        Elements.body().add("Hello World!");
 //        
 //        
@@ -141,11 +145,9 @@ public class AppEntryPoint implements EntryPoint {
 ////        Label lbl = new Label("Hallo Welt.");
 //
 ////        RootPanel.get().add(lbl);
-        
+
         HTMLElement element = Elements.div().asElement();
-        
-        
-        
+
 //        element.appendChild(
 //                Card.create("LABELS")
 //                    .appendChild(
@@ -190,59 +192,106 @@ public class AppEntryPoint implements EntryPoint {
 //                    .appendChild(
 //                        Elements.h(6).textContent("Example heading ").add(Label.createDefault("New")))
 //                    .asElement());
-        
+
 //        HTMLElement element = Elements.div().asElement();
 
-        HTMLElement controlsCard = Card.create().setId("controls")
-                .setWidth("500px")
+        HTMLElement controlsCard = Card.create().setId("controls").setWidth("500px")
                 .appendChild(TextNode.of("Hallo Stefan.")).asElement();
         controlsCard.style.margin = CSSProperties.MarginUnionType.of("20px");
-        
-        
-        
-        LocalSuggestBoxStore localStore =
-                LocalSuggestBoxStore.create()
-                    .addSuggestion(SuggestItem.create("asdf", "adsf"))
-                    .addSuggestion(SuggestItem.create("Renee Mcintyre", "Renee Mcintyre"))
-                    .addSuggestion(SuggestItem.create("Casey Garza", "Casey Garza"));
 
-        BasicFormElement suggestBox = SuggestBox.create("Your friends", localStore).setHelperText("Type any letter and see suggestions");
-        KeyboardEvents.listenOn(suggestBox.getInputElement())
-        .onEnter(
-            (evt) -> {
-                GWT.log("adf");
-//              localStore.addSuggestion(SuggestItem.create(suggestBox.getValue()));
-//              friendNameBox.clear();
-            });
-
-        
-        SuggestBoxStore dynamicStore = (searchValue, suggestionsHandler) -> {
-            DomGlobal.fetch("https://restcountries.eu/rest/v2/all")
-                    .then(Response::text)
-                    .then(json -> {
-                        List<SuggestItem> suggestItems = new ArrayList<>();
-                        JsArray<JsPropertyMap<String>> randomNames = Js.cast(Global.JSON.parse(json));
-                        for (int i = 0; i < randomNames.length; i++) {
-                            JsPropertyMap<String> nameProperties = randomNames.getAt(i);
-                            if (nameProperties.get("name").toLowerCase().contains(searchValue.toLowerCase())) {
-                                SuggestItem suggestItem = SuggestItem.create(nameProperties.get("name"));
-                                suggestItems.add(suggestItem);
-                            }
-                        }
-                        suggestionsHandler.onSuggestionsReady(suggestItems);
-                        return null;
-                    });
-        };
+//        LocalSuggestBoxStore localStore =
+//                LocalSuggestBoxStore.create()
+//                    .addSuggestion(SuggestItem.create("asdf", "adsf"))
+//                    .addSuggestion(SuggestItem.create("Renee Mcintyre", "Renee Mcintyre"))
+//                    .addSuggestion(SuggestItem.create("Casey Garza", "Casey Garza"));
 //
-//        
-//        SuggestBox.create("Country", dynamicStore);
+//        BasicFormElement suggestBox = SuggestBox.create("Your friends", localStore).setHelperText("Type any letter and see suggestions");
+//        KeyboardEvents.listenOn(suggestBox.getInputElement())
+//        .onEnter(
+//            (evt) -> {
+//                GWT.log("adf");
+////              localStore.addSuggestion(SuggestItem.create(suggestBox.getValue()));
+////              friendNameBox.clear();
+//            });
+
+//        SuggestBoxStore dynamicStore = (searchValue, suggestionsHandler) -> {
+//            DomGlobal.fetch("https://restcountries.eu/rest/v2/all")
+//                    .then(Response::text)
+//                    .then(json -> {
+//                        List<SuggestItem> suggestItems = new ArrayList<>();
+//                        JsArray<JsPropertyMap<String>> randomNames = Js.cast(Global.JSON.parse(json));
+//                        for (int i = 0; i < randomNames.length; i++) {
+//                            JsPropertyMap<String> nameProperties = randomNames.getAt(i);
+//                            if (nameProperties.get("name").toLowerCase().contains(searchValue.toLowerCase())) {
+//                                SuggestItem suggestItem = SuggestItem.create(nameProperties.get("name"));
+//                                suggestItems.add(suggestItem);
+//                            }
+//                        }
+//                        suggestionsHandler.onSuggestionsReady(suggestItems);
+//                        return null;
+//                    });
+//        };
+
+        SuggestBoxStore<String> dynamicStore = new SuggestBoxStore<String>() {
+            @Override
+            public void filter(String searchValue, SuggestionsHandler<String> suggestionsHandler) {
+                DomGlobal.fetch(
+                        "https://geo.so.ch/api/search/v2/?filter=ch.so.agi.av.grundstuecke.rechtskraeftig,ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge&limit=10&searchtext="
+                                + searchValue.toLowerCase())
+                        .then(Response::text).then(json -> {
+                            List<SuggestItem<String>> suggestItems = new ArrayList<>();
+//                            GWT.log(Js.cast(Global.JSON.parse(json)).toString());
+//                            GWT.log(json.toString());
+                            
+                            JSONObject responseObj = new JSONObject(JsonUtils.safeEval(json));
+                            JSONObject rootObj = responseObj.isObject();
+                            JSONArray resultsArray = rootObj.get("results").isArray();
+                            
+                            for (int i = 0; i < resultsArray.size(); i++) {
+                                JSONObject properties = resultsArray.get(i).isObject().get("feature").isObject();
+                                
+                                SuggestItem suggestItem = SuggestItem.create(properties.get("dataproduct_id").isString().stringValue().trim(), properties.get("display").isString().stringValue().trim());
+                                suggestItems.add(suggestItem);
+                                        //                                searchResult.setDisplay(properties.get("display").isString().stringValue().trim());
+//                                searchResult.setDataproductId(properties.get("dataproduct_id").isString().stringValue().trim());
+
+                            }
+                            GWT.log(resultsArray.toString());
+//                            JsArray<JsPropertyMap<String>> randomNames = Js.cast(Global.JSON.parse(json));
+//                            for (int i = 0; i < randomNames.length; i++) {
+//                                JsPropertyMap<String> nameProperties = randomNames.getAt(i);
+//                                GWT.log(nameProperties.toString());
+//                                SuggestItem suggestItem = SuggestItem.create(nameProperties.get("name"));
+//                                suggestItems.add(suggestItem);
+//
+////                        if (nameProperties.get("name").toLowerCase().contains(searchValue.toLowerCase())) {
+////                            SuggestItem suggestItem = SuggestItem.create(nameProperties.get("name"));
+////                            suggestItems.add(suggestItem);
+////                        }
+//                            }
+                            suggestionsHandler.onSuggestionsReady(suggestItems);
+                            return null;
+                        });
+
+            }
+
+            @Override
+            public void find(String searchValue, Consumer<SuggestItem<String>> handler) {
+                // TODO Auto-generated method stub
+
+            }
+        };
+
         
+//        
+        BasicFormElement suggestBox = SuggestBox.create("Country", dynamicStore);
+//        EventType.bind(suggestBox.asElement(), EventType.click, event -> DomGlobal.alert("Clicked"));        
         
         Elements.body().style("background-color: DEEPSKYBLUE;");
         Elements.body().add(controlsCard);
-        
+
         Elements.body().add(suggestBox.asElement());
-        
+
         // div for ol3 map
 //        Div mapDiv = new Div();
 //        mapDiv.setId("map");
@@ -343,7 +392,6 @@ public class AppEntryPoint implements EntryPoint {
 //        
 //        card1.getElement().getStyle().setProperty("overflowY", "scroll");
 
-        
 //        Div fadeoutDiv = new Div();
 //        fadeoutDiv.getElement().getStyle().setProperty("position", "sticky");
 //        fadeoutDiv.getElement().getStyle().setProperty("bottom", "0");
@@ -351,9 +399,7 @@ public class AppEntryPoint implements EntryPoint {
 //        fadeoutDiv.getElement().getStyle().setProperty("padding", "30px 0");
 //        fadeoutDiv.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%)");
 //        card1.add(fadeoutDiv);
-        
-        
-        
+
 //        RootPanel.get().add(mapDiv);
 //        RootPanel.get().add(card1);
 //
@@ -453,8 +499,6 @@ public class AppEntryPoint implements EntryPoint {
 //
 //        // add layers
 //        map.addLayer(wmtsLayer);
-
-
 
 //      ImageWmsParams imageWMSParams = OLFactory.createOptions();
 //      imageWMSParams.setLayers("ch.swisstopo.geologie-geotechnik-gk500-gesteinsklassierung,ch.bafu.schutzgebiete-paerke_nationaler_bedeutung");
