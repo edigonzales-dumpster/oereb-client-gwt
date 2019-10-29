@@ -174,8 +174,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         realEstate.setNotConcernedThemes(notConcernedThemes);
 
         // Create a map with all restrictions grouped by theme text.
-        Map<String, List<RestrictionOnLandownershipType>> groupedXmlRestrictions = xmlRealEstate
-                .getRestrictionOnLandownership().stream()
+        Map<String, List<RestrictionOnLandownershipType>> groupedXmlRestrictions = xmlRealEstate.getRestrictionOnLandownership()
+                .stream()
                 .collect(Collectors.groupingBy(r -> r.getTheme().getText().getText()));
 
         logger.info("*********************************************");
@@ -198,7 +198,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
             // Afterwards will add more information to the restriction.
             // FIXME: Auch hier besteht das Problem, dass 'nur' über den
             // TypeCode gruppiert wird. Das reicht nicht immer.
-            Map<String, Restriction> restrictionsMap = xmlRestrictions.stream()
+            Map<String, Restriction> restrictionsMap = xmlRestrictions
+                    .stream()
                     .filter(distinctByKey(RestrictionOnLandownershipType::getTypeCode))
                     .map(r -> {
                         Restriction restriction = new Restriction();
@@ -444,8 +445,6 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
 
             concernedThemesList.add(concernedTheme);
         }
-        
-        // Sort according our order.
         concernedThemesList.sort(compare);
 
         realEstate.setConcernedThemes(concernedThemesList);
