@@ -135,12 +135,11 @@ public class AppEntryPoint implements EntryPoint {
     private String RESTRICTION_VECTOR_FEATURE_ID = "restriction_fid";
     private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer";
     private String REAL_ESTATE_VECTOR_FEATURE_ID = "real_estate_fid";
-    private String REAL_ESTATE_DATAPRODUCT_ID = "ch.so.agi.av.grundstuecke.rechtskraeftig"; // TODO -> settings
-    private String ADDRESS_DATAPRODUCT_ID = "ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge"; // TODO -> settings
     
     private String OEREB_SERVICE_URL;
-    private String SEARCH_SERVICE_URL;
     private String SEARCH_SERVICE_PATH;
+    private String REAL_ESTATE_DATAPRODUCT_ID;
+    private String ADDRESS_DATAPRODUCT_ID;    
     private String DATA_SERVICE_URL;
     private String BACKGROUND_WMTS_URL;
     private String BACKGROUND_WMTS_LAYER;
@@ -167,7 +166,6 @@ public class AppEntryPoint implements EntryPoint {
     private ArrayList<String> concernedWmsLayers = new ArrayList<String>();
     
     public void onModuleLoad() {
-        // Get the settings from the server with an async call.
         settingsService.settingsServer(new AsyncCallback<SettingsResponse>() {
             @Override
             public void onFailure(Throwable caught) {
@@ -178,8 +176,9 @@ public class AppEntryPoint implements EntryPoint {
             @Override
             public void onSuccess(SettingsResponse result) {
                 OEREB_SERVICE_URL = (String) result.getSettings().get("OEREB_SERVICE_URL");
-                SEARCH_SERVICE_URL = (String) result.getSettings().get("SEARCH_SERVICE_URL");
                 SEARCH_SERVICE_PATH = (String) result.getSettings().get("SEARCH_SERVICE_PATH");
+                REAL_ESTATE_DATAPRODUCT_ID = (String) result.getSettings().get("REAL_ESTATE_DATAPRODUCT_ID");
+                ADDRESS_DATAPRODUCT_ID = (String) result.getSettings().get("ADDRESS_DATAPRODUCT_ID");
                 DATA_SERVICE_URL = (String) result.getSettings().get("DATA_SERVICE_URL");
                 BACKGROUND_WMTS_URL = (String) result.getSettings().get("BACKGROUND_WMTS_URL");
                 BACKGROUND_WMTS_LAYER = (String) result.getSettings().get("BACKGROUND_WMTS_LAYER");
@@ -1480,8 +1479,7 @@ public class AppEntryPoint implements EntryPoint {
             resetGui();
             
             Coordinate coordinate = event.getCoordinate();
-            String bbox = coordinate.getX() + "," + coordinate.getY() + "," + coordinate.getX() + ","
-                    + coordinate.getY();
+            String bbox = coordinate.getX() + "," + coordinate.getY() + "," + coordinate.getX() + "," + coordinate.getY();
             
             String searchServiceUrl = GWT.getHostPageBaseURL() + SEARCH_SERVICE_PATH; 
             String requestUrl = searchServiceUrl + REAL_ESTATE_DATAPRODUCT_ID + "/bbox/" + bbox;
@@ -1489,8 +1487,7 @@ public class AppEntryPoint implements EntryPoint {
             try {
                 builder.sendRequest("", new RequestCallback() {
                     @Override
-                    public void onResponseReceived(com.google.gwt.http.client.Request request,
-                            com.google.gwt.http.client.Response response) {
+                    public void onResponseReceived(com.google.gwt.http.client.Request request, com.google.gwt.http.client.Response response) {
                         int statusCode = response.getStatusCode();
                         if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
                             String responseBody = response.getText();

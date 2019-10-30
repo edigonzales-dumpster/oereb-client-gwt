@@ -19,12 +19,15 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
     @Value("${app.oerebWebServiceUrlClient}")
     private String oerebWebServiceUrl;
 
-    @Value("${app.searchServiceUrl}")
-    private String searchServiceUrl;
-    
     @Value("${app.searchServicePath}")
     private String searchServicePath;
     
+    @Value("${app.realEstateDataproductId}")
+    private String realEstateDataproductId;
+
+    @Value("${app.addressDataproductId}")
+    private String addressDataproductId;
+
     @Value("${app.dataServiceUrl}")
     private String dataServiceUrl;
 
@@ -48,8 +51,9 @@ public class SettingsServiceImpl extends RemoteServiceServlet implements Setting
         HashMap<String,Object> settings = new HashMap<String,Object>();
         
         settings.put("OEREB_SERVICE_URL", oerebWebServiceUrl);
-        settings.put("SEARCH_SERVICE_URL", searchServiceUrl);
         settings.put("SEARCH_SERVICE_PATH", searchServicePath);
+        settings.put("REAL_ESTATE_DATAPRODUCT_ID", realEstateDataproductId);
+        settings.put("ADDRESS_DATAPRODUCT_ID", addressDataproductId);
         settings.put("DATA_SERVICE_URL", dataServiceUrl);
         settings.put("WMS_HOST_MAPPING", wmsHostMapping);
         settings.put("BACKGROUND_WMTS_URL", backgroundWmtsUrl);
