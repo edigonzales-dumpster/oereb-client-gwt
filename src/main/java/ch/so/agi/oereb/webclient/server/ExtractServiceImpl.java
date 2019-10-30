@@ -178,16 +178,16 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                 .stream()
                 .collect(Collectors.groupingBy(r -> r.getTheme().getText().getText()));
 
-        logger.info("*********************************************");
-        logger.info("*********************************************");
+        logger.debug("*********************************************");
+        logger.debug("*********************************************");
 
         // We create one ConcernedTheme object per theme with all restrictions belonging
         // to the same theme since this is the way we present the restriction in the GUI.
         ArrayList<ConcernedTheme> concernedThemesList = new ArrayList<ConcernedTheme>();
         for (Map.Entry<String, List<RestrictionOnLandownershipType>> entry : groupedXmlRestrictions.entrySet()) {
-            logger.info("*********************************************");
-            logger.info("ConcernedTheme: " + entry.getKey());
-            logger.info("---------------------------------------------");
+            logger.debug("*********************************************");
+            logger.debug("ConcernedTheme: " + entry.getKey());
+            logger.debug("---------------------------------------------");
 
             List<RestrictionOnLandownershipType> xmlRestrictions = entry.getValue();
 
@@ -218,7 +218,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     })
                     .collect(Collectors.toMap(Restriction::getTypeCode, Function.identity()));
 
-            logger.info(restrictionsMap.toString());
+            logger.debug(restrictionsMap.toString());
 
             // Calculate sum of the shares for each type code.
             Map<String, Integer> sumAreaShare = xmlRestrictions
@@ -249,10 +249,10 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
              * Collectors.toList())));
              */
 
-            logger.info("sumAreaShare: " + sumAreaShare.toString());
-            logger.info("sumLengthShare: " + sumLengthShare.toString());
-            logger.info("sumNrOfPoints: " + sumNrOfPoints.toString());
-            logger.info("sumAreaPercentShare: " + sumAreaPercentShare.toString());
+            logger.debug("sumAreaShare: " + sumAreaShare.toString());
+            logger.debug("sumLengthShare: " + sumLengthShare.toString());
+            logger.debug("sumNrOfPoints: " + sumNrOfPoints.toString());
+            logger.debug("sumAreaPercentShare: " + sumAreaPercentShare.toString());
             // logger.info("geometryLists: " + geometryGroupedLists.toString());
 
             // Assign the sum to the simplified restriction.
@@ -262,19 +262,19 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                 String typeCode = restrictionEntry.getKey();
                 if (sumAreaShare.get(typeCode) != null) {
                     restrictionEntry.getValue().setAreaShare(sumAreaShare.get(typeCode));
-                    logger.info(String.valueOf(restrictionEntry.getValue().getAreaShare()));
+                    logger.debug(String.valueOf(restrictionEntry.getValue().getAreaShare()));
                 }
                 if (sumLengthShare.get(typeCode) != null) {
                     restrictionEntry.getValue().setLengthShare(sumLengthShare.get(typeCode));
-                    logger.info(String.valueOf(restrictionEntry.getValue().getLengthShare()));
+                    logger.debug(String.valueOf(restrictionEntry.getValue().getLengthShare()));
                 }
                 if (sumNrOfPoints.get(typeCode) != null) {
                     restrictionEntry.getValue().setNrOfPoints(sumNrOfPoints.get(typeCode));
-                    logger.info(String.valueOf(restrictionEntry.getValue().getNrOfPoints()));
+                    logger.debug(String.valueOf(restrictionEntry.getValue().getNrOfPoints()));
                 }
                 if (sumAreaPercentShare.get(typeCode) != null) {
                     restrictionEntry.getValue().setPartInPercent(sumAreaPercentShare.get(typeCode));
-                    logger.info(String.valueOf(restrictionEntry.getValue().getPartInPercent()));
+                    logger.debug(String.valueOf(restrictionEntry.getValue().getPartInPercent()));
                 }
                 restrictionsList.add(restrictionEntry.getValue());
             }
@@ -322,7 +322,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
                     })
                     .collect(Collectors.toList());
 
-            logger.info("size of office: " + officeList.size());
+            logger.debug("size of office: " + officeList.size());
 
             // Get legal provisions and laws.
             List<Document> legalProvisionsList = new ArrayList<Document>();
@@ -464,7 +464,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
 
         ExtractResponse response = new ExtractResponse();
         response.setExtract(extract);
-
+        
         return response;
     }
 
