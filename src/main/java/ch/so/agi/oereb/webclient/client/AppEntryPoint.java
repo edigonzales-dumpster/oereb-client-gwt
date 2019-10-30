@@ -219,7 +219,7 @@ public class AppEntryPoint implements EntryPoint {
         searchCard.getElement().getStyle().setProperty("width", "500px");
         searchCard.getElement().getStyle().setProperty("height", "170px");
         searchCard.getElement().getStyle().setProperty("overflowY", "auto");
-        searchCard.setMaxWidth("calc(100% - 30px)");
+        searchCard.setMaxWidth("calc(100% - 30px)"); // -> global
 
         searchCardContent = new MaterialCardContent();
         searchCardContent.getElement().getStyle().setProperty("padding", "15px");
