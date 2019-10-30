@@ -45,7 +45,7 @@ public class SearchController {
     private ObjectMapper objectMapper;
 
     @RequestMapping(value = "/search/{searchText}", produces = {MediaType.APPLICATION_JSON_VALUE}, method = RequestMethod.GET)
-    public ResponseEntity<?> searchByFTS(@PathVariable String searchText) throws IOException {
+    public ResponseEntity<?> searchByText(@PathVariable String searchText) throws IOException {
         String encodedSearchText = URLEncoder.encode(searchText, StandardCharsets.UTF_8.toString());        
         URL url = new URL(searchServiceUrl+encodedSearchText);
         URLConnection request = url.openConnection();

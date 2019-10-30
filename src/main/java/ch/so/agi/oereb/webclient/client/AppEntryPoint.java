@@ -151,11 +151,11 @@ public class AppEntryPoint implements EntryPoint {
 
     private MaterialAutoComplete autocomplete;
     private Map map;
-    private MaterialCard controlsCard;
+    private MaterialCard searchCard;
     private MaterialCard resultCard;
-    private MaterialRow buttonRow;
-    private MaterialCardContent controlsCardContent;
+    private MaterialCardContent searchCardContent;
     private MaterialCardContent resultCardContent;
+    private MaterialRow buttonRow;    
     private Div resultDiv;
     private MaterialWindow realEstateWindow;
     private MaterialCollapsible collapsibleConcernedTheme;
@@ -183,7 +183,6 @@ public class AppEntryPoint implements EntryPoint {
                 BACKGROUND_WMTS_URL = (String) result.getSettings().get("BACKGROUND_WMTS_URL");
                 BACKGROUND_WMTS_LAYER = (String) result.getSettings().get("BACKGROUND_WMTS_LAYER");
                 WMS_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("WMS_HOST_MAPPING");
-//                OEREB_WEB_SERVICE_HOST_MAPPING = (HashMap<String, String>) result.getSettings().get("OEREB_WEB_SERVICE_HOST_MAPPING");
                 init();
             }
         });
@@ -197,7 +196,7 @@ public class AppEntryPoint implements EntryPoint {
         // div for ol3 map
         Div mapDiv = new Div();
         mapDiv.setId("map");
-        mapDiv.getElement().getStyle().setProperty("height", "100%");
+//        mapDiv.getElement().getStyle().setProperty("height", "100%");
 
         // Dummy button for testing with a hardcode egrid.
         MaterialButton dummyButton = new MaterialButton();
@@ -209,21 +208,21 @@ public class AppEntryPoint implements EntryPoint {
         dummyButton.getElement().getStyle().setProperty("right", "40px");
 
         // A material card for the search.
-        controlsCard = new MaterialCard();
-        controlsCard.setBackgroundColor(Color.GREY_LIGHTEN_5);
-        controlsCard.getElement().getStyle().setProperty("position", "absolute");
-        controlsCard.getElement().getStyle().setProperty("marginTop", "0px");
-        controlsCard.getElement().getStyle().setProperty("marginLeft", "0px");
-        controlsCard.getElement().getStyle().setProperty("marginBottom", "0px");
-        controlsCard.getElement().getStyle().setProperty("top", "15px");
-        controlsCard.getElement().getStyle().setProperty("left", "15px");
-        controlsCard.getElement().getStyle().setProperty("width", "500px");
-        controlsCard.getElement().getStyle().setProperty("height", "170px");
-        controlsCard.getElement().getStyle().setProperty("overflowY", "auto");
-        controlsCard.setMaxWidth("calc(100% - 30px)");
+        searchCard = new MaterialCard();
+        searchCard.setBackgroundColor(Color.GREY_LIGHTEN_5);
+        searchCard.getElement().getStyle().setProperty("position", "absolute");
+        searchCard.getElement().getStyle().setProperty("marginTop", "0px");
+        searchCard.getElement().getStyle().setProperty("marginLeft", "0px");
+        searchCard.getElement().getStyle().setProperty("marginBottom", "0px");
+        searchCard.getElement().getStyle().setProperty("top", "15px");
+        searchCard.getElement().getStyle().setProperty("left", "15px");
+        searchCard.getElement().getStyle().setProperty("width", "500px");
+        searchCard.getElement().getStyle().setProperty("height", "170px");
+        searchCard.getElement().getStyle().setProperty("overflowY", "auto");
+        searchCard.setMaxWidth("calc(100% - 30px)");
 
-        controlsCardContent = new MaterialCardContent();
-        controlsCardContent.getElement().getStyle().setProperty("padding", "15px");
+        searchCardContent = new MaterialCardContent();
+        searchCardContent.getElement().getStyle().setProperty("padding", "15px");
 
         MaterialRow logoRow = new MaterialRow();
 
@@ -236,13 +235,11 @@ public class AppEntryPoint implements EntryPoint {
         plrLogoColumn.setGrid("s6");
         plrLogoColumn.getElement().getStyle().setProperty("margin", "0px");
         plrLogoColumn.getElement().getStyle().setProperty("padding", "0px");
+        plrLogoColumn.getElement().getStyle().setProperty("textAlign", "left");        
         plrLogoColumn.add(plrImage);
 
         com.google.gwt.user.client.ui.Image cantonImage = new com.google.gwt.user.client.ui.Image();
-//        cantonImage.setUrl("https://so.ch/typo3conf/ext/sfptemplate/Resources/Public/Images/Logo.png");
-        // TODO: does this work in production?
         cantonImage.setUrl(GWT.getHostPageBaseURL()+"Logo.png");
-//        cantonImage.setWidth("200px");
         cantonImage.setWidth("80%");
 
         MaterialColumn cantonLogoColumn = new MaterialColumn();
@@ -254,7 +251,7 @@ public class AppEntryPoint implements EntryPoint {
 
         logoRow.add(plrLogoColumn);
         logoRow.add(cantonLogoColumn);
-        controlsCardContent.add(logoRow);
+        searchCardContent.add(logoRow);
 
         MaterialRow searchRow = new MaterialRow();
         searchRow.setMarginBottom(2);
@@ -275,9 +272,9 @@ public class AppEntryPoint implements EntryPoint {
         autocomplete.addValueChangeHandler(new SearchValueChangeHandler());
 
         searchRow.add(autocomplete);
-        controlsCardContent.add(searchRow);
+        searchCardContent.add(searchRow);
 
-        controlsCard.add(controlsCardContent);
+        searchCard.add(searchCardContent);
 //        MaterialCardContent foo = new MaterialCardContent();
 //        foo.add(new Label("test"));
 //        controlsCard.add(foo);
@@ -327,7 +324,7 @@ public class AppEntryPoint implements EntryPoint {
         // Add all the widgets to the body.
         //RootPanel.get().add(dummyButton);
         RootPanel.get().add(mapDiv);
-        RootPanel.get().add(controlsCard);
+        RootPanel.get().add(searchCard);
         RootPanel.get().add(resultCard);
 
         // Add click event to the dummy button.
@@ -1531,8 +1528,7 @@ public class AppEntryPoint implements EntryPoint {
 
                                     realEstateRow.addClickHandler(event -> {
                                         realEstateWindow.removeFromParent();
-                                        GWT.log("get extract from click for (multiple result): "
-                                                + realEstateRow.getId());
+                                        GWT.log("get extract from click for (multiple result): " + realEstateRow.getId());
 
                                         MaterialLoader.loading(true);
                                         sendEgridToServer(realEstateRow.getId());
