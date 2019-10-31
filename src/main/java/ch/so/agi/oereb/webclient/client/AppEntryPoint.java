@@ -121,12 +121,10 @@ public class AppEntryPoint implements EntryPoint {
     private final ExtractServiceAsync extractService = GWT.create(ExtractService.class);
     private final SettingsServiceAsync settingsService = GWT.create(SettingsService.class);
 
-    private String HEADER_FONT_SIZE = "18px";
     private String SUB_HEADER_FONT_SIZE = "16px";
     private String BODY_FONT_SIZE = "14px";
     private String SMALL_FONT_SIZE = "12px";
     
-    private String RESULT_CARD_TOP = "200px";
     private String RESULT_CARD_HEIGHT = "calc(100% - 215px)";
 
     private String ID_ATTR_NAME = "id";
@@ -155,7 +153,7 @@ public class AppEntryPoint implements EntryPoint {
     private MaterialCard resultCard;
     private MaterialCardContent searchCardContent;
     private MaterialCardContent resultCardContent;
-    private MaterialRow buttonRow;    
+    private MaterialRow resultButtonRow;    
     private Div resultDiv;
     private MaterialWindow realEstateWindow;
     private MaterialCollapsible collapsibleConcernedTheme;
@@ -188,54 +186,35 @@ public class AppEntryPoint implements EntryPoint {
         });
     }
 
-    private void init() {        
-        GWT.log(GWT.getModuleBaseURL());
-        GWT.log(GWT.getHostPageBaseURL());
-        GWT.log(GWT.getModuleBaseForStaticFiles());
-                
+    private void init() {                        
         // div for ol3 map
         Div mapDiv = new Div();
         mapDiv.setId("map");
-//        mapDiv.getElement().getStyle().setProperty("height", "100%");
 
         // Dummy button for testing with a hardcode egrid.
         MaterialButton dummyButton = new MaterialButton();
+        dummyButton.setId("dummyButton");
         dummyButton.setType(ButtonType.FLOATING);
         dummyButton.setSize(ButtonSize.LARGE);
         dummyButton.setIconType(IconType.HELP_OUTLINE);
-        dummyButton.getElement().getStyle().setProperty("position", "absolute");
-        dummyButton.getElement().getStyle().setProperty("top", "40px");
-        dummyButton.getElement().getStyle().setProperty("right", "40px");
+        dummyButton.addClickHandler(new DummyButtonClickHandler());
 
         // A material card for the search.
         searchCard = new MaterialCard();
-        searchCard.setBackgroundColor(Color.GREY_LIGHTEN_5);
-        searchCard.getElement().getStyle().setProperty("position", "absolute");
-        searchCard.getElement().getStyle().setProperty("marginTop", "0px");
-        searchCard.getElement().getStyle().setProperty("marginLeft", "0px");
-        searchCard.getElement().getStyle().setProperty("marginBottom", "0px");
-        searchCard.getElement().getStyle().setProperty("top", "15px");
-        searchCard.getElement().getStyle().setProperty("left", "15px");
-        searchCard.getElement().getStyle().setProperty("width", "500px");
-        searchCard.getElement().getStyle().setProperty("height", "170px");
-        searchCard.getElement().getStyle().setProperty("overflowY", "auto");
-        searchCard.setMaxWidth("calc(100% - 30px)"); // -> global
+        searchCard.setId("searchCard");
 
         searchCardContent = new MaterialCardContent();
-        searchCardContent.getElement().getStyle().setProperty("padding", "15px");
+        searchCardContent.setId("searchCardContent");
 
         MaterialRow logoRow = new MaterialRow();
 
         com.google.gwt.user.client.ui.Image plrImage = new com.google.gwt.user.client.ui.Image();
-        plrImage.setUrl("https://geoview.bl.ch/main/oereb/logos/logo_oereb_small.png");
-//        plrImage.setWidth("200px");
+        plrImage.setUrl(GWT.getHostPageBaseURL()+"logo_oereb_small.png");
         plrImage.setWidth("80%");
 
         MaterialColumn plrLogoColumn = new MaterialColumn();
+        plrLogoColumn.setId("plrLogoColumn");
         plrLogoColumn.setGrid("s6");
-        plrLogoColumn.getElement().getStyle().setProperty("margin", "0px");
-        plrLogoColumn.getElement().getStyle().setProperty("padding", "0px");
-        plrLogoColumn.getElement().getStyle().setProperty("textAlign", "left");        
         plrLogoColumn.add(plrImage);
 
         com.google.gwt.user.client.ui.Image cantonImage = new com.google.gwt.user.client.ui.Image();
@@ -243,10 +222,8 @@ public class AppEntryPoint implements EntryPoint {
         cantonImage.setWidth("80%");
 
         MaterialColumn cantonLogoColumn = new MaterialColumn();
+        cantonLogoColumn.setId("cantonLogoColumn");
         cantonLogoColumn.setGrid("s6");
-        cantonLogoColumn.getElement().getStyle().setProperty("margin", "0px");
-        cantonLogoColumn.getElement().getStyle().setProperty("padding", "0px");
-        cantonLogoColumn.getElement().getStyle().setProperty("textAlign", "right");
         cantonLogoColumn.add(cantonImage);
 
         logoRow.add(plrLogoColumn);
@@ -254,13 +231,11 @@ public class AppEntryPoint implements EntryPoint {
         searchCardContent.add(logoRow);
 
         MaterialRow searchRow = new MaterialRow();
-        searchRow.setMarginBottom(2);
+        searchRow.setId("searchRow");
 
         SearchOracle searchOracle = new SearchOracle(SEARCH_SERVICE_PATH);
         autocomplete = new MaterialAutoComplete(searchOracle);
-        autocomplete.setBorder("1px #455a64 solid");
-        autocomplete.setPadding(5);
-        autocomplete.setBorderRadius("10px");
+        autocomplete.setId("autocomplete");
         // It's not possible to get the object with AutocompleteType.TEXT
         // you only the the text then. But we definitely
         // need the object.
@@ -273,64 +248,25 @@ public class AppEntryPoint implements EntryPoint {
 
         searchRow.add(autocomplete);
         searchCardContent.add(searchRow);
-
         searchCard.add(searchCardContent);
-//        MaterialCardContent foo = new MaterialCardContent();
-//        foo.add(new Label("test"));
-//        controlsCard.add(foo);
 
         // A material card for the result.
         resultCard = new MaterialCard();
-        resultCard.setBackgroundColor(Color.GREY_LIGHTEN_5);
-        resultCard.getElement().getStyle().setProperty("transition", "height 0.5s");
-        resultCard.getElement().getStyle().setProperty("position", "absolute");
-        resultCard.getElement().getStyle().setProperty("marginTop", "0px");
-        resultCard.getElement().getStyle().setProperty("marginLeft", "0px");
-        resultCard.getElement().getStyle().setProperty("marginBottom", "0px");
-        resultCard.getElement().getStyle().setProperty("top", RESULT_CARD_TOP);
-        resultCard.getElement().getStyle().setProperty("left", "15px");
-        resultCard.getElement().getStyle().setProperty("width", "500px");
-        resultCard.getElement().getStyle().setProperty("height", RESULT_CARD_HEIGHT);
-        resultCard.getElement().getStyle().setProperty("overflowY", "auto");
-        resultCard.getElement().getStyle().setProperty("visibility", "hidden");
-        resultCard.setMaxWidth("calc(100% - 30px)");
+        resultCard.setId("resultCard");
       
         resultCardContent = new MaterialCardContent();
-        resultCardContent.getElement().getStyle().setProperty("paddingTop", "0px");
-        resultCardContent.getElement().getStyle().setProperty("paddingRight", "15px");
-        resultCardContent.getElement().getStyle().setProperty("paddingLeft", "15px");
-        resultCardContent.getElement().getStyle().setProperty("paddingBottom", "15px");
-//        resultCardContent.getElement().getStyle().setProperty("position", "relative");
-//
-//        Div hideResultDiv = new Div();
-//        hideResultDiv.setWidth("50px");
-//        hideResultDiv.setHeight("50px");
-//        hideResultDiv.getElement().getStyle().setProperty("position", "absolute");
-//        hideResultDiv.getElement().getStyle().setProperty("bottom", "0px");
-//        hideResultDiv.getElement().getStyle().setProperty("right", "0px");
-//        hideResultDiv.getElement().getStyle().setProperty("backgroundColor", "hotpink");
-//        resultCardContent.add(hideResultDiv);
-        
+        resultCardContent.setId("resultCardContent");
         resultCard.add(resultCardContent);
         
         Div fadeoutBottomDiv = new Div();
-        fadeoutBottomDiv.getElement().getStyle().setProperty("position", "sticky");
-        fadeoutBottomDiv.getElement().getStyle().setProperty("bottom", "0");
-        fadeoutBottomDiv.getElement().getStyle().setProperty("width", "100%");
-        fadeoutBottomDiv.getElement().getStyle().setProperty("padding", "30px 0");
-        fadeoutBottomDiv.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%)");
+        fadeoutBottomDiv.setId("fadeoutBottomDiv");
         resultCard.add(fadeoutBottomDiv);
         
-        // Add all the widgets to the body.
         //RootPanel.get().add(dummyButton);
         RootPanel.get().add(mapDiv);
         RootPanel.get().add(searchCard);
         RootPanel.get().add(resultCard);
 
-        // Add click event to the dummy button.
-        dummyButton.addClickHandler(new DummyButtonClickHandler());
-
-        // Initialize openlayers map with background wmts layer.
         initMap(mapDiv.getId());
         
         // If there is an egrid query parameter in the url,
@@ -403,26 +339,19 @@ public class AppEntryPoint implements EntryPoint {
                 
                 resultDiv = new Div();
 
-                buttonRow = new MaterialRow();
-                buttonRow.setMarginBottom(5);
-                buttonRow.setBackgroundColor(Color.GREY_LIGHTEN_5);
-                buttonRow.getElement().getStyle().setProperty("position", "sticky");
-                buttonRow.getElement().getStyle().setProperty("top", "0px");
-                buttonRow.getElement().getStyle().setProperty("paddingTop", "15px");
-                buttonRow.getElement().getStyle().setProperty("paddingBottom", "15px");
-                buttonRow.getElement().getStyle().setProperty("zIndex", "10");
-//                buttonRow.getElement().getStyle().setProperty("backgroundImage", "linear-gradient(rgba(255, 255, 255, 1) 70%, rgba(255, 255, 255, 0) 100%)"); 
+                resultButtonRow = new MaterialRow();
+                resultButtonRow.setId("resultButtonRow");
                 
                 MaterialColumn deleteExtractButtonColumn = new MaterialColumn();
-                deleteExtractButtonColumn.setPadding(0);
+                deleteExtractButtonColumn.setId("deleteExtractButtonColumn");
                 deleteExtractButtonColumn.setGrid("s6");
 
                 MaterialButton deleteExtractButton = new MaterialButton();
+                deleteExtractButton.setId("deleteExtractButton");
                 deleteExtractButton.setIconType(IconType.CLOSE);
                 deleteExtractButton.setType(ButtonType.FLOATING);
                 deleteExtractButton.setTooltip(messages.resultCloseTooltip());
                 deleteExtractButton.setTooltipPosition(Position.TOP);
-                deleteExtractButton.setBackgroundColor(Color.RED_LIGHTEN_1);
                 
                 deleteExtractButtonColumn.add(deleteExtractButton);
 
@@ -431,23 +360,22 @@ public class AppEntryPoint implements EntryPoint {
                 });
                 
                 MaterialButton minmaxExtractButton = new MaterialButton();
+                minmaxExtractButton.setId("minmaxExtractButton");
                 minmaxExtractButton.setMarginLeft(10);
                 minmaxExtractButton.setIconType(IconType.REMOVE);
                 minmaxExtractButton.setType(ButtonType.FLOATING);
                 minmaxExtractButton.setTooltip(messages.resultMinimizeTooltip());
                 minmaxExtractButton.setTooltipPosition(Position.TOP);
-                minmaxExtractButton.setBackgroundColor(Color.RED_LIGHTEN_1);
                 deleteExtractButtonColumn.add(minmaxExtractButton);
                 
                 minmaxExtractButton.addClickHandler(event -> {                    
-                    if (resultCard.getOffsetHeight() > buttonRow.getOffsetHeight()) {
+                    if (resultCard.getOffsetHeight() > resultButtonRow.getOffsetHeight()) {
                         minmaxExtractButton.setIconType(IconType.ADD);
                         minmaxExtractButton.setTooltip(messages.resultMaximizeTooltip());
                         
                         resultCard.getElement().getStyle().setProperty("overflowY", "hidden");
-                        resultCard.setHeight(String.valueOf(buttonRow.getOffsetHeight()) + "px");
+                        resultCard.setHeight(String.valueOf(resultButtonRow.getOffsetHeight()) + "px");
                         resultDiv.setVisibility(com.google.gwt.dom.client.Style.Visibility.HIDDEN);
-
                     } else {
                         minmaxExtractButton.setIconType(IconType.REMOVE);
                         minmaxExtractButton.setTooltip(messages.resultMinimizeTooltip());
@@ -458,44 +386,36 @@ public class AppEntryPoint implements EntryPoint {
                     }
                 });
                 
-                buttonRow.add(deleteExtractButtonColumn);
+                resultButtonRow.add(deleteExtractButtonColumn);
 
                 MaterialColumn pdfButtonColumn = new MaterialColumn();
-                pdfButtonColumn.setPadding(0);
+                pdfButtonColumn.setId("pdfButtonColumn");
                 pdfButtonColumn.setGrid("s6");
-                pdfButtonColumn.getElement().getStyle().setProperty("textAlign", "right");
 
                 MaterialButton pdfButton = new MaterialButton();
+                pdfButton.setId("pdfButton");
                 pdfButton.setIconType(IconType.INSERT_DRIVE_FILE);
                 pdfButton.setType(ButtonType.FLOATING);
                 pdfButton.setTooltip(messages.resultPDFTooltip());
                 pdfButton.setTooltipPosition(Position.TOP);
-                pdfButton.setBackgroundColor(Color.RED_LIGHTEN_1);                
                 pdfButtonColumn.add(pdfButton);
-                buttonRow.add(pdfButtonColumn);
+                resultButtonRow.add(pdfButtonColumn);
                 
                 // TODO: 
-                // Request via spring controller? (nicht gwt rpc)
-                // Wie schaffe ich es eine Sanduhr zu zeigen, die dann wieder verschwindet?
+                // - spring controller?
+                // - Sanduhr?
                 pdfButton.addClickHandler(event -> {
-                    GWT.log("height: " + String.valueOf(buttonRow.getOffsetHeight()));
-
-//                    Window.open("https://s3.eu-central-1.amazonaws.com/ch.so.agi.oereb-extract/CH857632820629_layer_ordering.pdf", "_target", "enabled");
-                    Window.open(OEREB_SERVICE_URL + "/extract/reduced/pdf/geometry/" + egrid, "_blank", null);
+                    Window.open(OEREB_SERVICE_URL + "extract/reduced/pdf/geometry/" + egrid, "_blank", null);
                 });
 
-//                resultDiv.add(buttonRow);
-                resultCardContent.add(buttonRow);
+                resultCardContent.add(resultButtonRow);
 
                 MaterialRow generalInfoRow = new MaterialRow();
-                generalInfoRow.getElement().getStyle().setProperty("marginBottom", "10px");
+                generalInfoRow.setId("generalInfoRow");
 
                 MaterialColumn generalInfoTitleColumn = new MaterialColumn();
+                generalInfoTitleColumn.addStyleName("headerInfoColumn");
                 generalInfoTitleColumn.setGrid("s12");
-                generalInfoTitleColumn.getElement().getStyle().setProperty("margin", "0px");
-                generalInfoTitleColumn.getElement().getStyle().setProperty("padding", "0px");
-                generalInfoTitleColumn.getElement().getStyle().setProperty("fontSize", HEADER_FONT_SIZE);
-                generalInfoTitleColumn.getElement().getStyle().setProperty("fontWeight", "700");
 
                 String lbl = messages.resultHeader(number, municipality);
                 if (!municipality.contains("(")) {
@@ -505,67 +425,47 @@ public class AppEntryPoint implements EntryPoint {
                 generalInfoRow.add(generalInfoTitleColumn);
 
                 MaterialRow egridInfoRow = new MaterialRow();
-                egridInfoRow.getElement().getStyle().setProperty("margin", "0px");
+                egridInfoRow.addStyleName("infoRow");
 
                 MaterialColumn egridInfoKeyColumn = new MaterialColumn();
+                egridInfoKeyColumn.addStyleName("infoKeyColumn");
                 egridInfoKeyColumn.setGrid("s4");
-                egridInfoKeyColumn.getElement().getStyle().setProperty("margin", "0px");
-                egridInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
-                egridInfoKeyColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
-                egridInfoKeyColumn.getElement().getStyle().setProperty("fontWeight", "700");
                 egridInfoKeyColumn.add(new Label("EGRID:"));
                 egridInfoRow.add(egridInfoKeyColumn);
 
                 MaterialColumn egridInfoValueColumn = new MaterialColumn();
+                egridInfoValueColumn.addStyleName("infoValueColumn");
                 egridInfoValueColumn.setGrid("s8");
-                egridInfoValueColumn.getElement().getStyle().setProperty("margin", "0px");
-                egridInfoValueColumn.getElement().getStyle().setProperty("padding", "0px");
-                egridInfoValueColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
-                egridInfoValueColumn.getElement().getStyle().setProperty("fontWeight", "400");
                 egridInfoValueColumn.add(new Label(egrid));
                 egridInfoRow.add(egridInfoValueColumn);
 
                 MaterialRow areaInfoRow = new MaterialRow();
-                areaInfoRow.getElement().getStyle().setProperty("margin", "0px");
+                areaInfoRow.addStyleName("infoRow");
 
                 MaterialColumn areaInfoKeyColumn = new MaterialColumn();
+                areaInfoKeyColumn.addStyleName("infoKeyColumn");
                 areaInfoKeyColumn.setGrid("s4");
-                areaInfoKeyColumn.getElement().getStyle().setProperty("margin", "0px");
-                areaInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
-                areaInfoKeyColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
-                areaInfoKeyColumn.getElement().getStyle().setProperty("fontWeight", "700");
                 areaInfoKeyColumn.add(new Label(messages.resultArea()+":"));
                 areaInfoRow.add(areaInfoKeyColumn);
 
                 MaterialColumn areaInfoValueColumn = new MaterialColumn();
+                areaInfoValueColumn.addStyleName("infoValueColumn");                
                 areaInfoValueColumn.setGrid("s8");
-                areaInfoValueColumn.getElement().getStyle().setProperty("margin", "0px");
-                areaInfoValueColumn.getElement().getStyle().setProperty("padding", "0px");
-                areaInfoValueColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
-                areaInfoValueColumn.getElement().getStyle().setProperty("fontWeight", "400");
-
                 areaInfoValueColumn.add(new HTML(fmtDefault.format(area) + " m<sup>2</sup>"));
                 areaInfoRow.add(areaInfoValueColumn);
                 
                 MaterialRow subunitInfoRow = new MaterialRow();
-                subunitInfoRow.getElement().getStyle().setProperty("margin", "0px");
+                subunitInfoRow.addStyleName("infoRow");                
                 
                 MaterialColumn subunitInfoKeyColumn = new MaterialColumn();
+                subunitInfoKeyColumn.addStyleName("infoKeyColumn");                
                 subunitInfoKeyColumn.setGrid("s4");
-                subunitInfoKeyColumn.getElement().getStyle().setProperty("margin", "0px");
-                subunitInfoKeyColumn.getElement().getStyle().setProperty("padding", "0px");
-                subunitInfoKeyColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
-                subunitInfoKeyColumn.getElement().getStyle().setProperty("fontWeight", "700");
                 subunitInfoKeyColumn.add(new Label(messages.resultSubunitOfLandRegister()+":"));
                 subunitInfoRow.add(subunitInfoKeyColumn);
 
                 MaterialColumn subunitInfoValueColumn = new MaterialColumn();
+                subunitInfoValueColumn.addStyleName("infoValueColumn");                                
                 subunitInfoValueColumn.setGrid("s8");
-                subunitInfoValueColumn.getElement().getStyle().setProperty("margin", "0px");
-                subunitInfoValueColumn.getElement().getStyle().setProperty("padding", "0px");
-                subunitInfoValueColumn.getElement().getStyle().setProperty("fontSize", SUB_HEADER_FONT_SIZE);
-                subunitInfoValueColumn.getElement().getStyle().setProperty("fontWeight", "400");
-
                 subunitInfoValueColumn.add(new Label(subunitOfLandRegister));
                 subunitInfoRow.add(subunitInfoValueColumn);
                 
@@ -574,13 +474,10 @@ public class AppEntryPoint implements EntryPoint {
                 resultDiv.add(areaInfoRow);
                 resultDiv.add(subunitInfoRow);
                                 
-                // TODO: rename everything except the global objects
                 {
                     collapsibleConcernedTheme = new MaterialCollapsible();
-                    collapsibleConcernedTheme.setBackgroundColor(Color.GREY_LIGHTEN_5);
-                    collapsibleConcernedTheme.setMarginTop(25);
+                    collapsibleConcernedTheme.addStyleName("topLevelCollapsible");
                     collapsibleConcernedTheme.setShadow(0);
-//                    collapsibleConcernedTheme.setBorderRadius("10px");
                     
                     collapsibleConcernedTheme.addExpandHandler(event -> {
                         collapsibleNotConcernedTheme.closeAll();
@@ -617,7 +514,6 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleThemesWithoutHeaderChip.setMargin(0);
                     collapsibleThemesWithoutHeaderChip.setText(String.valueOf(realEstate.getConcernedThemes().size()));
                     collapsibleThemesWithoutHeaderChip.setBackgroundColor(Color.GREY_LIGHTEN_1);
-//                    collapsibleThemesWithoutHeaderChip.setBackgroundColor(Color.RED_LIGHTEN_1);
                     collapsibleConcernedThemeColumnRight.add(collapsibleThemesWithoutHeaderChip);
 
                     collapsibleConcernedThemeHeaderRow.add(collapsibleConcernedThemeColumnLeft);
@@ -1381,8 +1277,8 @@ public class AppEntryPoint implements EntryPoint {
             realEstateWindow.removeFromParent();
         }
         
-        if (buttonRow != null) {
-            buttonRow.removeFromParent();
+        if (resultButtonRow != null) {
+            resultButtonRow.removeFromParent();
         }
 
         resultCard.getElement().getStyle().setProperty("visibility", "hidden");

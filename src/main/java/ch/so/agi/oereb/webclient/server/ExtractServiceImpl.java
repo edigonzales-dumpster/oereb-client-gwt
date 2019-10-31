@@ -108,7 +108,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         File xmlFile;
         try {
             xmlFile = Files.createTempFile("data_extract_", ".xml").toFile();
-            URL url = new URL(oerebWebServiceUrlServer + "/extract/reduced/xml/geometry/" + egrid);
+            URL url = new URL(oerebWebServiceUrlServer + "extract/reduced/xml/geometry/" + egrid);
             logger.info(url.toString());
 
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -451,7 +451,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         extract.setRealEstate(realEstate);
 
         // TODO: not used?! does it make any sense?
-        extract.setPdfLink(oerebWebServiceUrlClient + "/extract/reduced/pdf/geometry/" + egrid);
+        extract.setPdfLink(oerebWebServiceUrlClient + "extract/reduced/pdf/geometry/" + egrid);
 
         Office plrCadastreAuthority = new Office();
         plrCadastreAuthority.setName(xmlExtract.getPLRCadastreAuthority().getName().getLocalisedText().get(0).getText());
