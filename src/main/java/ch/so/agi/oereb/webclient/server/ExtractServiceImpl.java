@@ -36,6 +36,11 @@ import ch.ehi.oereb.schemas.oereb._1_0.extractdata.DocumentBaseType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.DocumentType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.ExtractType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.GeometryType;
+import ch.ehi.oereb.schemas.oereb._1_0.extractdata.LanguageCodeType;
+import ch.ehi.oereb.schemas.oereb._1_0.extractdata.LocalisedTextType;
+import ch.ehi.oereb.schemas.oereb._1_0.extractdata.LocalisedUriType;
+import ch.ehi.oereb.schemas.oereb._1_0.extractdata.MultilingualTextType;
+import ch.ehi.oereb.schemas.oereb._1_0.extractdata.MultilingualUriType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RealEstateDPRType;
 import ch.ehi.oereb.schemas.oereb._1_0.extractdata.RestrictionOnLandownershipType;
 import ch.so.agi.oereb.webclient.shared.ExtractServiceException;
@@ -53,6 +58,7 @@ import ch.so.agi.oereb.webclient.shared.models.Restriction;
 import ch.so.agi.oereb.webclient.shared.models.ThemeWithoutData;
 
 import org.apache.xerces.impl.dv.util.Base64;
+import org.eclipse.jetty.util.log.Log;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
@@ -83,6 +89,8 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
 
     @Autowired
     Jaxb2Marshaller marshaller;
+
+    private static final LanguageCodeType DE = LanguageCodeType.DE;
 
     private List<String> themesOrderingList = Stream.of(
             // "LandUsePlans",
@@ -172,7 +180,10 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         realEstate.setLimit(new Gml32ToJts().convertMultiSurface(xmlRealEstate.getLimit()).toText());
         realEstate.setThemesWithoutData(themesWithoutData);
         realEstate.setNotConcernedThemes(notConcernedThemes);
-
+        
+        // FIXME -> german
+        realEstate.setRealEstateType(xmlRealEstate.getType().value());
+        
         // Create a map with all restrictions grouped by theme text.
         Map<String, List<RestrictionOnLandownershipType>> groupedXmlRestrictions = xmlRealEstate.getRestrictionOnLandownership()
                 .stream()
@@ -454,7 +465,7 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
         extract.setPdfLink(oerebWebServiceUrlClient + "extract/reduced/pdf/geometry/" + egrid);
 
         Office plrCadastreAuthority = new Office();
-        plrCadastreAuthority.setName(xmlExtract.getPLRCadastreAuthority().getName().getLocalisedText().get(0).getText());
+        plrCadastreAuthority.setName(getLocalisedText(xmlExtract.getPLRCadastreAuthority().getName(), DE));
         plrCadastreAuthority.setOfficeAtWeb(xmlExtract.getPLRCadastreAuthority().getOfficeAtWeb().getValue());
         plrCadastreAuthority.setStreet(xmlExtract.getPLRCadastreAuthority().getStreet());
         plrCadastreAuthority.setNumber(xmlExtract.getPLRCadastreAuthority().getNumber());
@@ -464,6 +475,9 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
 
         ExtractResponse response = new ExtractResponse();
         response.setExtract(extract);
+        
+        ////////// FIXME
+        this.getLocalisedText(xmlExtract.getPLRCadastreAuthority().getName(), DE);
         
         return response;
     }
@@ -488,5 +502,27 @@ public class ExtractServiceImpl extends RemoteServiceServlet implements ExtractS
     private static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
         Map<Object, Boolean> map = new ConcurrentHashMap<>();
         return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
+    }
+    
+    private String getLocalisedText(MultilingualTextType multilingualTextType, LanguageCodeType languageCodeType) {
+        Iterator<LocalisedTextType> it = multilingualTextType.getLocalisedText().iterator();
+        while(it.hasNext()) {
+            LocalisedTextType textType = it.next();
+            if (textType.getLanguage().compareTo(languageCodeType) == 0) {
+                return textType.getText();
+            }
+        }
+        return null;
+    }
+    
+    private String getLocalisedText(MultilingualUriType multilingualUriType, LanguageCodeType languageCodeType) {
+        Iterator<LocalisedUriType> it = multilingualUriType.getLocalisedText().iterator();
+        while(it.hasNext()) {
+            LocalisedUriType textType = it.next();
+            if (textType.getLanguage().compareTo(languageCodeType) == 0) {
+                return textType.getText();
+            }
+        }
+        return null;
     }
 }

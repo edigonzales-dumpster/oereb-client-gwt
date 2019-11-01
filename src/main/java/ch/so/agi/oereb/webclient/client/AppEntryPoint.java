@@ -312,6 +312,7 @@ public class AppEntryPoint implements EntryPoint {
                 String canton = realEstate.getCanton();
                 String egrid = realEstate.getEgrid();
                 int area = realEstate.getLandRegistryArea();
+                String realEstateType = realEstate.getRealEstateType();
 
                 removePlrLayers();
                 
@@ -346,7 +347,9 @@ public class AppEntryPoint implements EntryPoint {
                 resultParcelColumn.setId("resultParcelColumn");
                 resultParcelColumn.setGrid("s9");
                 
-                String lblString = messages.resultHeader(number, "Lüsslingen-Nennigkofen");
+                // Liegenschaft Nr. ... 
+                // Baurecht Nr. ...
+                String lblString = messages.resultHeader(number, realEstateType);
                 if (!municipality.contains("(")) {
                     lblString += " (" + canton + ")";
                 }
