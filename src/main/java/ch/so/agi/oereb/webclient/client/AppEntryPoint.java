@@ -488,33 +488,27 @@ public class AppEntryPoint implements EntryPoint {
                     MaterialCollapsibleItem collapsibleConcernedThemeItem = new MaterialCollapsibleItem();
                     
                     MaterialCollapsibleHeader collapsibleConcernedThemeHeader = new MaterialCollapsibleHeader();
-                    collapsibleConcernedThemeHeader.setBackgroundColor(Color.GREY_LIGHTEN_3);
+                    collapsibleConcernedThemeHeader.addStyleName("collapsibleThemeHeader");
                     
                     MaterialRow collapsibleConcernedThemeHeaderRow = new MaterialRow();
-                    collapsibleConcernedThemeHeaderRow.setMarginBottom(0);
+                    collapsibleConcernedThemeHeaderRow.addStyleName("collapsibleThemeHeaderRow");
                     
                     MaterialColumn collapsibleConcernedThemeColumnLeft = new MaterialColumn();
+                    collapsibleConcernedThemeColumnLeft.addStyleName("collapsibleThemeColumnLeft");
                     collapsibleConcernedThemeColumnLeft.setGrid("s10");
-                    collapsibleConcernedThemeColumnLeft.setMargin(0);
-                    collapsibleConcernedThemeColumnLeft.setPadding(0);
                     MaterialColumn collapsibleConcernedThemeColumnRight = new MaterialColumn();
+                    collapsibleConcernedThemeColumnRight.addStyleName("collapsibleThemeColumnRight");
                     collapsibleConcernedThemeColumnRight.setGrid("s2");
-                    collapsibleConcernedThemeColumnRight.setTextAlign(TextAlign.RIGHT);
-                    collapsibleConcernedThemeColumnRight.setMargin(0);
-                    collapsibleConcernedThemeColumnRight.setPadding(0);
 
-                    MaterialLink collapsibleThemesWithoutHeaderLink = new MaterialLink();
-                    collapsibleThemesWithoutHeaderLink.setText(messages.concernedThemes());
-                    collapsibleThemesWithoutHeaderLink.setFontWeight(FontWeight.BOLD);
-                    collapsibleThemesWithoutHeaderLink.setFontSize(SUB_HEADER_FONT_SIZE);
-                    collapsibleThemesWithoutHeaderLink.setTextColor(Color.BLACK);
-                    collapsibleConcernedThemeColumnLeft.add(collapsibleThemesWithoutHeaderLink);
+                    MaterialLink collapsibleThemesHeaderLink = new MaterialLink();
+                    collapsibleThemesHeaderLink.addStyleName("collapsibleThemesHeaderLink");
+                    collapsibleThemesHeaderLink.setText(messages.concernedThemes());
+                    collapsibleConcernedThemeColumnLeft.add(collapsibleThemesHeaderLink);
                     
-                    MaterialChip collapsibleThemesWithoutHeaderChip = new MaterialChip();
-                    collapsibleThemesWithoutHeaderChip.setMargin(0);
-                    collapsibleThemesWithoutHeaderChip.setText(String.valueOf(realEstate.getConcernedThemes().size()));
-                    collapsibleThemesWithoutHeaderChip.setBackgroundColor(Color.GREY_LIGHTEN_1);
-                    collapsibleConcernedThemeColumnRight.add(collapsibleThemesWithoutHeaderChip);
+                    MaterialChip collapsibleThemesHeaderChip = new MaterialChip();
+                    collapsibleThemesHeaderChip.addStyleName("collapsibleThemesHeaderChip");
+                    collapsibleThemesHeaderChip.setText(String.valueOf(realEstate.getConcernedThemes().size()));                    
+                    collapsibleConcernedThemeColumnRight.add(collapsibleThemesHeaderChip);
 
                     collapsibleConcernedThemeHeaderRow.add(collapsibleConcernedThemeColumnLeft);
                     collapsibleConcernedThemeHeaderRow.add(collapsibleConcernedThemeColumnRight);
@@ -526,21 +520,18 @@ public class AppEntryPoint implements EntryPoint {
                         collapsibleConcernedThemeBody.setPadding(0);
                         
                         MaterialCollapsible collapsible = new MaterialCollapsible();
+                        collapsible.addStyleName("concernedThemeCollapsible");
                         collapsible.setAccordion(true);
                         int i=0;
     
                         for (ConcernedTheme theme : realEstate.getConcernedThemes()) {
                             i++;
                             
+                            collapsible.setShadow(0);
+
                             Image wmsLayer = createPlrWmsLayer(theme.getReferenceWMS());
                             map.addLayer(wmsLayer);
-    
-                            collapsible.setBackgroundColor(Color.GREY_LIGHTEN_3);
-                            collapsible.setMarginTop(0);
-                            collapsible.setMarginBottom(0);
-                            collapsible.setShadow(0);
-                            collapsible.setBorder("0px");
-    
+        
                             MaterialCollapsibleItem item = new MaterialCollapsibleItem();
                             
                             // Cannot use the code since all subthemes share
@@ -550,45 +541,29 @@ public class AppEntryPoint implements EntryPoint {
                             concernedWmsLayers.add(layerId);
                                                     
                             MaterialCollapsibleHeader header = new MaterialCollapsibleHeader();
-                            header.setBackgroundColor(Color.GREY_LIGHTEN_4);
-                            header.setLineHeight(18); // heuristic 
-                            header.setDisplay(Display.TABLE);
+                            header.addStyleName("collapsibleThemeLayerHeader");
                             if (i < realEstate.getConcernedThemes().size()) {
                                 header.setBorderBottom("1px solid #dddddd");
                             } else {
                                 header.setBorderBottom("0px solid #dddddd");
                             }
-                            header.setWidth("100%");
-                            header.setHeight("45px"); // Firefox
-                            
-                            MaterialLink link = new MaterialLink();
-                            
-                            Div aParent = new Div();
-                            aParent.setBorder("0px");
-                            aParent.setDisplay(Display.TABLE_CELL);
-                            aParent.setVerticalAlign(VerticalAlign.MIDDLE);
-                            
-                            link.setText(theme.getName());
-                            link.setFontWeight(FontWeight.BOLD);
-                            link.setFontSize(BODY_FONT_SIZE);
-                            link.setTextColor(Color.BLACK);
-                            link.setBorder("0px");
-//                            link.setIconPosition(IconPosition.RIGHT);
-//                            link.setIconType(IconType.EXPAND_MORE);
-                            aParent.add(link);
                            
+                            Div aParent = new Div();
+                            aParent.addStyleName("helperParent");
+
+                            MaterialLink link = new MaterialLink();
+                            link.addStyleName("collapsibleThemeLayerLink");                   
+                            link.setText(theme.getName());
+                           
+                            aParent.add(link);
                             header.add(aParent);
                             item.add(header);
                             
                             MaterialCollapsibleBody body = new MaterialCollapsibleBody();
+                            body.addStyleName("collapsibleThemeLayerBody");
                             body.addMouseOverHandler(event -> {
                                 body.getElement().getStyle().setCursor(Cursor.DEFAULT);
                             });
-                            body.setBackgroundColor(Color.WHITE);
-                            body.setPaddingLeft(15);
-                            body.setPaddingRight(15);
-                            body.setPaddingTop(5);
-                            body.setPaddingBottom(5);
                             if (i < realEstate.getConcernedThemes().size()) {
                                 body.setBorderBottom("1px solid #dddddd");
                             } else {
@@ -597,7 +572,7 @@ public class AppEntryPoint implements EntryPoint {
                             }                        
                             
                             MaterialRow sliderRow = new MaterialRow();
-                            sliderRow.setMarginBottom(0);
+                            sliderRow.addStyleName("opacitySliderRow");
 
                             MaterialColumn sliderRowLeft = new MaterialColumn();
                             sliderRowLeft.setGrid("s3");
@@ -605,7 +580,7 @@ public class AppEntryPoint implements EntryPoint {
                             sliderRowRight.setGrid("s9");
     
                             MaterialRange slider = new MaterialRange();
-                            slider.setPadding(0);
+                            slider.addStyleName("opacitySlider");
                             slider.setMin(0);
                             slider.setMax(100);
                             slider.setValue(Double.valueOf((theme.getReferenceWMS().getLayerOpacity() * 100)).intValue());
@@ -614,49 +589,34 @@ public class AppEntryPoint implements EntryPoint {
                                 wmsLayer.setOpacity(opacity);
                             });
                             sliderRowLeft.add(new Label(messages.resultOpacity() + ":"));
-                            sliderRowLeft.setFontSize(BODY_FONT_SIZE);
-                            sliderRowLeft.setPadding(0);
+                            sliderRowLeft.addStyleName("opacitySliderRowLeft");
                             
                             sliderRowRight.add(slider);
-    
                             sliderRow.add(sliderRowLeft);
                             sliderRow.add(sliderRowRight);
                             body.add(sliderRow);
                             
                             {
                                 MaterialRow informationHeaderRow = new MaterialRow();
-                                informationHeaderRow.setPaddingTop(10);
-                                informationHeaderRow.setPaddingBottom(0);
-                                informationHeaderRow.setPaddingLeft(0);
-                                informationHeaderRow.setPaddingRight(0);
-                                informationHeaderRow.setBorderBottom("1px #bdbdbd solid");
-                                informationHeaderRow.setMarginBottom(5);
-                                informationHeaderRow.setBorderTop("1px #bdbdbd solid");
-                                informationHeaderRow.setMarginTop(15);
+                                informationHeaderRow.addStyleName("layerInfoHeaderRow");
                                 
                                 MaterialColumn typeColumn = new MaterialColumn();
+                                typeColumn.addStyleName("layerTypeColumn");
                                 typeColumn.setGrid("s6");
-                                typeColumn.setPadding(0);
-                                typeColumn.setMarginRight(0);
-                                typeColumn.setFontSize(SMALL_FONT_SIZE);
                                 typeColumn.add(new Label(messages.resultType()));
                                 
                                 MaterialColumn symbolColumn = new MaterialColumn();
-                                symbolColumn.setPadding(0);
-                                symbolColumn.setMarginRight(0);
+                                symbolColumn.addStyleName("layerSymbolColumn");
                                 symbolColumn.setGrid("s1");
-                                symbolColumn.setTextAlign(TextAlign.RIGHT);
                                 symbolColumn.add(new HTML("&nbsp;"));
 
                                 MaterialColumn shareColumn = new MaterialColumn();
-                                shareColumn.setTextAlign(TextAlign.RIGHT);                            
-                                shareColumn.setPadding(0);
+                                shareColumn.addStyleName("layerShareColumn");
                                 shareColumn.setGrid("s3");
                                 shareColumn.add(new Label(messages.resultShare()));
         
                                 MaterialColumn sharePercentColumn = new MaterialColumn();
-                                sharePercentColumn.setTextAlign(TextAlign.RIGHT);
-                                sharePercentColumn.setPadding(0);
+                                sharePercentColumn.addStyleName("layerPercentColumn");
                                 sharePercentColumn.setGrid("s2");
                                 sharePercentColumn.add(new Label(messages.resultShareInPercent()));
         
@@ -670,20 +630,17 @@ public class AppEntryPoint implements EntryPoint {
                             {
                                 for (Restriction restriction : theme.getRestrictions()) {
                                     if (restriction.getAreaShare() != null) {
-                                        MaterialRow informationRow = processRestrictionRow(restriction,
-                                                GeometryType.POLYGON);
+                                        MaterialRow informationRow = processRestrictionRow(restriction, GeometryType.POLYGON);
                                         body.add(informationRow);
                                     }
 
                                     if (restriction.getLengthShare() != null) {
-                                        MaterialRow informationRow = processRestrictionRow(restriction,
-                                                GeometryType.LINE);
+                                        MaterialRow informationRow = processRestrictionRow(restriction, GeometryType.LINE);
                                         body.add(informationRow);
                                     }
 
                                     if (restriction.getNrOfPoints() != null) {
-                                        MaterialRow informationRow = processRestrictionRow(restriction,
-                                                GeometryType.POINT);
+                                        MaterialRow informationRow = processRestrictionRow(restriction, GeometryType.POINT);
                                         body.add(informationRow);
                                     }
                                 }
@@ -695,37 +652,22 @@ public class AppEntryPoint implements EntryPoint {
                             if (theme.getLegendAtWeb() != null) 
                             {
                                 MaterialRow legendRow = new MaterialRow();
-                                legendRow.setBorderTop("1px #bdbdbd solid");
-//                                legendRow.setBorderBottom("1px #bdbdbd solid");
-                                legendRow.setMarginBottom(10);
+                                legendRow.addStyleName("layerLegendRow");
     
                                 MaterialColumn legendColumn = new MaterialColumn();
-                                legendColumn.setPaddingTop(5);
-                                legendColumn.setPaddingBottom(0);
-                                legendColumn.setPaddingLeft(0);
-                                legendColumn.setMarginRight(0);
-                                legendColumn.setGrid("s12");
-                                legendColumn.setFontSize(BODY_FONT_SIZE);
-                                
+                                legendColumn.addStyleName("layerLegendColumn");
+                                legendColumn.setGrid("s12");                                
                                 
                                 MaterialLink legendLink = new MaterialLink();
+                                legendLink.addStyleName("resultLink");
                                 legendLink.setText(messages.resultShowLegend());
-                                legendLink.setTextColor(Color.RED_DARKEN_2);
-                                legendLink.addStyleName("result-link");
                                 legendColumn.add(legendLink);
-                                
-                                String legendUrl = theme.getLegendAtWeb();
-//                                for (Entry<String, String> entry : WMS_HOST_MAPPING.entrySet()) {
-//                                    if (theme.getLegendAtWeb().contains(entry.getKey())) {                                    
-//                                        legendUrl = theme.getLegendAtWeb().replace(entry.getKey(), entry.getValue());
-//                                    }                                
-//                                }
                                                                 
                                 legendRow.add(legendColumn);
                                 body.add(legendRow);
                                 
                                 com.google.gwt.user.client.ui.Image legendImage = new com.google.gwt.user.client.ui.Image();
-                                legendImage.setUrl(legendUrl);
+                                legendImage.setUrl(theme.getLegendAtWeb());
                                 legendImage.setVisible(false);
                                 body.add(legendImage);
                                 
@@ -746,16 +688,13 @@ public class AppEntryPoint implements EntryPoint {
                             
                             {
                                 MaterialRow legalProvisionsHeaderRow = new MaterialRow();
-                                legalProvisionsHeaderRow.setMarginBottom(5);
-                                legalProvisionsHeaderRow.setFontSize(BODY_FONT_SIZE);
-                                legalProvisionsHeaderRow.setFontWeight(FontWeight.BOLD);
+                                legalProvisionsHeaderRow.addStyleName("documentsHeaderRow");
                                 legalProvisionsHeaderRow.add(new Label(messages.legalProvisions()));
                                 body.add(legalProvisionsHeaderRow);
                                 
                                 for (ch.so.agi.oereb.webclient.shared.models.Document legalProvision : theme.getLegalProvisions()) {
                                     MaterialRow row = new MaterialRow();
-                                    row.setMarginBottom(0);
-                                    row.setFontSize(BODY_FONT_SIZE);
+                                    row.addStyleName("documentRow");
     
                                     MaterialLink legalProvisionLink = new MaterialLink();
                                     
@@ -766,14 +705,12 @@ public class AppEntryPoint implements EntryPoint {
                                     }
                                     legalProvisionLink.setHref(legalProvision.getTextAtWeb());
                                     legalProvisionLink.setTarget("_blank");
-                                    legalProvisionLink.setTextColor(Color.RED_DARKEN_2);
-                                    legalProvisionLink.addStyleName("result-link");
+                                    legalProvisionLink.addStyleName("resultLink");
                                     row.add(legalProvisionLink);
                                     body.add(row);
                                     
                                     MaterialRow additionalInfoRow = new MaterialRow();
-                                    additionalInfoRow.setMarginBottom(10);
-                                    additionalInfoRow.setFontSize(SMALL_FONT_SIZE); 
+                                    additionalInfoRow.addStyleName("documentAdditionalInfoRow");
                                     
                                     String labelText = legalProvision.getTitle();
                                     if (legalProvision.getOfficialNumber() != null) {
@@ -785,17 +722,13 @@ public class AppEntryPoint implements EntryPoint {
                                 }
                                 
                                 MaterialRow lawsHeaderRow = new MaterialRow();
-                                lawsHeaderRow.setMarginTop(15);
-                                lawsHeaderRow.setMarginBottom(5);
-                                lawsHeaderRow.setFontSize(BODY_FONT_SIZE);
-                                lawsHeaderRow.setFontWeight(FontWeight.BOLD);
+                                lawsHeaderRow.addStyleName("documentsHeaderRow");
                                 lawsHeaderRow.add(new Label(messages.laws()));
                                 body.add(lawsHeaderRow);
     
                                 for (ch.so.agi.oereb.webclient.shared.models.Document law : theme.getLaws()) {
                                     MaterialRow row = new MaterialRow();
-                                    row.setMarginBottom(10);
-                                    row.setFontSize(BODY_FONT_SIZE);
+                                    row.addStyleName("lawRow");
     
                                     MaterialLink lawLink = new MaterialLink();
                                    
@@ -814,41 +747,34 @@ public class AppEntryPoint implements EntryPoint {
                                     lawLink.setText(linkText);
                                     lawLink.setHref(law.getTextAtWeb());
                                     lawLink.setTarget("_blank");
-                                    lawLink.setTextColor(Color.RED_DARKEN_2);
-                                    lawLink.addStyleName("result-link");
+                                    lawLink.addStyleName("resultLink");
                                     row.add(lawLink);
                                     body.add(row);
                                 }
                                 MaterialRow fakeRow = new MaterialRow();
                                 fakeRow.setBorderBottom("1px #bdbdbd solid");
+                                fakeRow.setPaddingTop(5);
                                 body.add(fakeRow);
                             }
-                            
                             {
                                 MaterialRow responsibleOfficeHeaderRow = new MaterialRow();
-                                responsibleOfficeHeaderRow.setMarginBottom(5);
-                                responsibleOfficeHeaderRow.setFontSize(BODY_FONT_SIZE);
-                                responsibleOfficeHeaderRow.setFontWeight(FontWeight.BOLD);
+                                responsibleOfficeHeaderRow.addStyleName("documentsHeaderRow");
                                 responsibleOfficeHeaderRow.add(new Label(messages.responsibleOffice()));
                                 body.add(responsibleOfficeHeaderRow);   
                                 
                                 for (Office office : theme.getResponsibleOffice()) {
                                     MaterialRow row = new MaterialRow();
-                                    row.setMarginBottom(0);
-                                    row.setFontSize(BODY_FONT_SIZE);
+                                    row.addStyleName("documentRow");
     
                                     MaterialLink officeLink = new MaterialLink();
                                     officeLink.setText(office.getName());
                                     officeLink.setHref(office.getOfficeAtWeb());
                                     officeLink.setTarget("_blank");
-                                    officeLink.setTextColor(Color.RED_DARKEN_2);
-                                    officeLink.addStyleName("result-link");
+                                    officeLink.addStyleName("resultLink");
                                     row.add(officeLink);
                                     body.add(row);
-
                                 }
                             }
-
                             item.add(body);
                             collapsible.add(item);
                         }     
@@ -901,16 +827,14 @@ public class AppEntryPoint implements EntryPoint {
                     collapsibleConcernedTheme.add(collapsibleConcernedThemeItem);
 
                     if (realEstate.getConcernedThemes().size() > 0) {
-                        collapsibleConcernedTheme.open(1);;
+                        collapsibleConcernedTheme.open(1);
                     }
                     
                     resultDiv.add(collapsibleConcernedTheme);
                 }    
-
                 {
                     collapsibleNotConcernedTheme = new MaterialCollapsible();
-                    collapsibleNotConcernedTheme.setBackgroundColor(Color.GREY_LIGHTEN_5);
-                    collapsibleNotConcernedTheme.setMarginTop(25);
+                    collapsibleNotConcernedTheme.addStyleName("topLevelCollapsible");
                     collapsibleNotConcernedTheme.setShadow(0);
 
                      collapsibleNotConcernedTheme.addExpandHandler(event -> {
@@ -922,37 +846,30 @@ public class AppEntryPoint implements EntryPoint {
                     MaterialCollapsibleItem collapsibleNotConcernedThemeItem = new MaterialCollapsibleItem();
                     
                     MaterialCollapsibleHeader collapsibleNotConcernedThemeHeader = new MaterialCollapsibleHeader();
-                    collapsibleNotConcernedThemeHeader.setBackgroundColor(Color.GREY_LIGHTEN_3);
+                    collapsibleNotConcernedThemeHeader.addStyleName("collapsibleThemeHeader");
 
                     MaterialRow collapsibleNotConcernedThemeHeaderRow = new MaterialRow();
-                    collapsibleNotConcernedThemeHeaderRow.setMarginBottom(0);
+                    collapsibleNotConcernedThemeHeaderRow.addStyleName("collapsibleThemeHeaderRow");
 
                     MaterialColumn collapsibleNotConcernedThemeColumnLeft = new MaterialColumn();
+                    collapsibleNotConcernedThemeColumnLeft.addStyleName("collapsibleThemeColumnLeft");
                     collapsibleNotConcernedThemeColumnLeft.setGrid("s10");
-                    collapsibleNotConcernedThemeColumnLeft.setMargin(0);
-                    collapsibleNotConcernedThemeColumnLeft.setPadding(0);
                     MaterialColumn collapsibleNotConcernedThemeColumnRight = new MaterialColumn();
+                    collapsibleNotConcernedThemeColumnRight.addStyleName("collapsibleThemeColumnRight");
                     collapsibleNotConcernedThemeColumnRight.setGrid("s2");
-                    collapsibleNotConcernedThemeColumnRight.setTextAlign(TextAlign.RIGHT);
-                    collapsibleNotConcernedThemeColumnRight.setMargin(0);
-                    collapsibleNotConcernedThemeColumnRight.setPadding(0);
 
                     MaterialLink collapsibleNotConcernedHeaderLink = new MaterialLink();
+                    collapsibleNotConcernedHeaderLink.addStyleName("collapsibleThemesHeaderLink");
                     collapsibleNotConcernedHeaderLink.setText(messages.notConcernedThemes());
-                    collapsibleNotConcernedHeaderLink.setFontWeight(FontWeight.BOLD);
-                    collapsibleNotConcernedHeaderLink.setFontSize(SUB_HEADER_FONT_SIZE);
-                    collapsibleNotConcernedHeaderLink.setTextColor(Color.BLACK);
                     collapsibleNotConcernedThemeColumnLeft.add(collapsibleNotConcernedHeaderLink);
 
                     MaterialChip collapsibleNotConcernedHeaderChip = new MaterialChip();
-                    collapsibleNotConcernedHeaderChip.setMargin(0);
+                    collapsibleNotConcernedHeaderChip.addStyleName("collapsibleThemesHeaderChip");
                     collapsibleNotConcernedHeaderChip.setText(String.valueOf(realEstate.getNotConcernedThemes().size()));
-                    collapsibleNotConcernedHeaderChip.setBackgroundColor(Color.GREY_LIGHTEN_1);
                     collapsibleNotConcernedThemeColumnRight.add(collapsibleNotConcernedHeaderChip);
 
                     collapsibleNotConcernedThemeHeaderRow.add(collapsibleNotConcernedThemeColumnLeft);
                     collapsibleNotConcernedThemeHeaderRow.add(collapsibleNotConcernedThemeColumnRight);
-
                     collapsibleNotConcernedThemeHeader.add(collapsibleNotConcernedThemeHeaderRow);
                     
                     MaterialCollapsibleBody collapsibleBody = new MaterialCollapsibleBody();
@@ -965,7 +882,7 @@ public class AppEntryPoint implements EntryPoint {
                     for (NotConcernedTheme theme : realEstate.getNotConcernedThemes()) {
                         MaterialCollectionItem item = new MaterialCollectionItem();
                         MaterialLabel label = new MaterialLabel(theme.getName());
-                        label.setFontSize(BODY_FONT_SIZE);
+                        label.addStyleName("notConcernedThemesLabel");
                         item.add(label);
                         collection.add(item);
                     }
@@ -977,11 +894,9 @@ public class AppEntryPoint implements EntryPoint {
                     
                     resultDiv.add(collapsibleNotConcernedTheme);
                 }      
-                
                 {
                     collapsibleThemesWithoutData = new MaterialCollapsible();
-                    collapsibleThemesWithoutData.setBackgroundColor(Color.GREY_LIGHTEN_5);
-                    collapsibleThemesWithoutData.setMarginTop(25);
+                    collapsibleThemesWithoutData.addStyleName("topLevelCollapsible");
                     collapsibleThemesWithoutData.setShadow(0);
                     
                     collapsibleThemesWithoutData.addExpandHandler(event -> {
@@ -994,37 +909,31 @@ public class AppEntryPoint implements EntryPoint {
                     MaterialCollapsibleItem collapsibleThemesWithoutDataItem = new MaterialCollapsibleItem();
                     
                     MaterialCollapsibleHeader collapsibleThemesWithoutDataHeader = new MaterialCollapsibleHeader();
+                    collapsibleThemesWithoutDataHeader.addStyleName("collapsibleThemeHeader");
                     collapsibleThemesWithoutDataHeader.setBackgroundColor(Color.GREY_LIGHTEN_3);
 
                     MaterialRow collapsibleThemesWithoutDataHeaderRow = new MaterialRow();
-                    collapsibleThemesWithoutDataHeaderRow.setMarginBottom(0);
+                    collapsibleThemesWithoutDataHeaderRow.addStyleName("collapsibleThemeHeaderRow");
                     
                     MaterialColumn collapsibleThemesWithoutDataColumnLeft = new MaterialColumn();
+                    collapsibleThemesWithoutDataColumnLeft.addStyleName("collapsibleThemeColumnLeft");
                     collapsibleThemesWithoutDataColumnLeft.setGrid("s10");
-                    collapsibleThemesWithoutDataColumnLeft.setMargin(0);
-                    collapsibleThemesWithoutDataColumnLeft.setPadding(0);
                     MaterialColumn collapsibleThemesWithoutDataColumnRight = new MaterialColumn();
+                    collapsibleThemesWithoutDataColumnRight.addStyleName("collapsibleThemeColumnRight");
                     collapsibleThemesWithoutDataColumnRight.setGrid("s2");
-                    collapsibleThemesWithoutDataColumnRight.setTextAlign(TextAlign.RIGHT);
-                    collapsibleThemesWithoutDataColumnRight.setMargin(0);
-                    collapsibleThemesWithoutDataColumnRight.setPadding(0);
 
                     MaterialLink collapsibleThemesWithoutHeaderLink = new MaterialLink();
+                    collapsibleThemesWithoutHeaderLink.addStyleName("collapsibleThemesHeaderLink");
                     collapsibleThemesWithoutHeaderLink.setText(messages.themesWithoutData());
-                    collapsibleThemesWithoutHeaderLink.setFontWeight(FontWeight.BOLD);
-                    collapsibleThemesWithoutHeaderLink.setFontSize(SUB_HEADER_FONT_SIZE);
-                    collapsibleThemesWithoutHeaderLink.setTextColor(Color.BLACK);
                     collapsibleThemesWithoutDataColumnLeft.add(collapsibleThemesWithoutHeaderLink);
                     
                     MaterialChip collapsibleThemesWithoutHeaderChip = new MaterialChip();
-                    collapsibleThemesWithoutHeaderChip.setMargin(0);
+                    collapsibleThemesWithoutHeaderChip.addStyleName("collapsibleThemesHeaderChip");
                     collapsibleThemesWithoutHeaderChip.setText(String.valueOf(realEstate.getThemesWithoutData().size()));
-                    collapsibleThemesWithoutHeaderChip.setBackgroundColor(Color.GREY_LIGHTEN_1);
                     collapsibleThemesWithoutDataColumnRight.add(collapsibleThemesWithoutHeaderChip);
 
                     collapsibleThemesWithoutDataHeaderRow.add(collapsibleThemesWithoutDataColumnLeft);
                     collapsibleThemesWithoutDataHeaderRow.add(collapsibleThemesWithoutDataColumnRight);
-
                     collapsibleThemesWithoutDataHeader.add(collapsibleThemesWithoutDataHeaderRow);
                     
                     MaterialCollapsibleBody collapsibleBody = new MaterialCollapsibleBody();
@@ -1037,7 +946,7 @@ public class AppEntryPoint implements EntryPoint {
                     for (ThemeWithoutData theme : realEstate.getThemesWithoutData()) {
                         MaterialCollectionItem item = new MaterialCollectionItem();
                         MaterialLabel label = new MaterialLabel(theme.getName());
-                        label.setFontSize(BODY_FONT_SIZE);
+                        label.addStyleName("withoutDataThemesLabel");
                         item.add(label);
                         collection.add(item);
                     }
@@ -1049,11 +958,9 @@ public class AppEntryPoint implements EntryPoint {
 
                     resultDiv.add(collapsibleThemesWithoutData);
                 }
-                
                 {
                     collapsibleGeneralInformation = new MaterialCollapsible();
-                    collapsibleGeneralInformation.setBackgroundColor(Color.GREY_LIGHTEN_5);
-                    collapsibleGeneralInformation.setMarginTop(25);
+                    collapsibleGeneralInformation.addStyleName("topLevelCollapsible");
                     collapsibleGeneralInformation.setShadow(0);
                     
                     collapsibleGeneralInformation.addExpandHandler(event -> {
@@ -1065,18 +972,13 @@ public class AppEntryPoint implements EntryPoint {
                     MaterialCollapsibleItem collapsibleGeneralInformationItem = new MaterialCollapsibleItem();
                     
                     MaterialCollapsibleHeader collapsibleGeneralInformationHeader = new MaterialCollapsibleHeader();
-                    collapsibleGeneralInformationHeader.setBackgroundColor(Color.GREY_LIGHTEN_3);
+                    collapsibleGeneralInformationHeader.addStyleName("collapsibleThemeHeader");
                     
                     MaterialCollapsibleBody body = new MaterialCollapsibleBody();
+                    body.addStyleName("collapsibleGeneralInformationBody");
                     body.addMouseOverHandler(event -> {
                         body.getElement().getStyle().setCursor(Cursor.DEFAULT);
                     });                                        
-                    body.setBackgroundColor(Color.WHITE);
-                    body.setFontSize(BODY_FONT_SIZE);
-                    body.setPaddingLeft(15);
-                    body.setPaddingRight(15);
-                    body.setPaddingTop(5);
-                    body.setPaddingBottom(5);
                     
                     HTML infoHtml = new HTML();
                     
@@ -1089,18 +991,15 @@ public class AppEntryPoint implements EntryPoint {
                     body.add(infoHtml);
  
                     MaterialRow collapsibleGeneralInformationHeaderRow = new MaterialRow();
-                    collapsibleGeneralInformationHeaderRow.setMarginBottom(0);
+                    collapsibleGeneralInformationHeaderRow.addStyleName("collapsibleThemeHeaderRow");
                     
                     MaterialColumn collapsibleGeneralInformationColumnLeft = new MaterialColumn();
+                    collapsibleGeneralInformationColumnLeft.addStyleName("collapsibleThemeColumnLeft");
                     collapsibleGeneralInformationColumnLeft.setGrid("s10");
-                    collapsibleGeneralInformationColumnLeft.setMargin(0);
-                    collapsibleGeneralInformationColumnLeft.setPadding(0);
     
                     MaterialLink collapsibleThemesWithoutHeaderLink = new MaterialLink();
+                    collapsibleThemesWithoutHeaderLink.addStyleName("collapsibleThemesHeaderLink");
                     collapsibleThemesWithoutHeaderLink.setText(messages.generalInformation());
-                    collapsibleThemesWithoutHeaderLink.setFontWeight(FontWeight.BOLD);
-                    collapsibleThemesWithoutHeaderLink.setFontSize(SUB_HEADER_FONT_SIZE);
-                    collapsibleThemesWithoutHeaderLink.setTextColor(Color.BLACK);
                     collapsibleGeneralInformationColumnLeft.add(collapsibleThemesWithoutHeaderLink);
                 
                     collapsibleGeneralInformationHeaderRow.add(collapsibleGeneralInformationColumnLeft);
@@ -1498,8 +1397,6 @@ public class AppEntryPoint implements EntryPoint {
         wmsLayer.set(ID_ATTR_NAME, referenceWms.getLayers());
         wmsLayer.setVisible(false);
         wmsLayer.setOpacity(referenceWms.getLayerOpacity());
-        // It works for the Grundbuchplan but not for 
-        // the Landeskarten. They are not transparent.
         wmsLayer.setZIndex(referenceWms.getLayerIndex());
 
         return wmsLayer;

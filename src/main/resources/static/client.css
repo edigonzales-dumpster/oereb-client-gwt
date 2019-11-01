@@ -136,8 +136,228 @@
 	margin-top: 25px;	
 }
 
+.collapsibleThemeHeader {
+    background-color: #eeeeee !important; /* GREY_LIGHTEN_3 */
+}
+
+.collapsibleThemeHeaderRow {
+	margin-bottom: 0px !important;
+}
+
+.collapsibleThemeColumnLeft {
+	margin: 0px !important;
+	padding: 0px !important;
+}
+
+.collapsibleThemeColumnRight {
+    margin: 0px !important;
+    padding: 0px !important;
+    text-align: right;
+}
+
+.collapsibleThemesHeaderLink {
+	font-weight: 700;
+	font-size: 16px;
+	color: #000000 !important;
+}
+
+.collapsibleThemesHeaderChip {
+	margin: 0px;
+	background-color: #bdbdbd !important; /* GREY_LIGHTEN_1 */
+}
+
+.concernedThemeCollapsible {
+    background-color: #eeeeee !important; /* GREY_LIGHTEN_3 */
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    border: 0px !important;	
+}
+
+.collapsibleThemeLayerHeader {
+    background-color: #f5f5f5 !important; /* GREY_LIGHTEN_4 */
+    line-height: 18px;
+    display: table;
+    width: 100%;
+    height: 45px;	
+}
+
+.helperParent {
+	border: 0px;
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.collapsibleThemeLayerLink {
+	font-weight: bold;
+	font-size: 14px;
+	color: black; 
+	border: 0px;
+}
+
+a.collapsibleThemeLayerLink:hover {
+    font-weight: bold;
+    font-size: 14px;
+    color: #d32f2f; /* RED_DARKEN_2 */ 
+    border: 0px;
+}
+
+.collapsibleThemeLayerBody {
+    background-color: white !important;
+    padding: 5px 15px 5px 15px !important;	
+}
+
+.opacitySliderRow {
+	margin-bottom: 0px !important;
+}
+
+.opacitySlider {
+	padding: 0px !important;
+}
+
+.opacitySliderRowLeft {
+	font-size: 14px;
+	padding: 0px !important;	
+}
+
+.layerInfoHeaderRow {
+	padding: 10px 0px 0px 0px !important;
+	border-bottom: 1px #bdbdbd solid;
+	border-top: 1px #bdbdbd solid;
+	margin-top: 15px !important;
+	margin-bottom: 5px !important;	
+}
+      
+.layerTypeColumn {
+	padding: 0px !important;
+	margin-right: 0px !important;
+	font-size: 12px;
+}   
+
+.layerSymbolColumn {
+	padding: 0px !important;
+	margin-right: 0px !important;
+	text-align: right;	
+}
+
+.layerShareColumn {
+	text-align: right;
+	padding: 0px !imporant;	
+}
+                 
+.layerPercentColumn {
+	text-align: right;
+	padding: 0px !important;	
+}        
+
+.layerLegendRow {
+	border-top: 1px #bdbdbd solid;
+	margin-bottom: 10px !important;
+}         
+
+.layerLegendColumn {
+	padding-top: 5px !important;
+	padding-bottom: 0px !important;
+	padding-left: 0px !important;
+	margin-right: 0px !important;
+	font-size: 14px;
+}    
+
+.resultLink {
+    color: #d32f2f; /* RED_DARKEN_2 */ 
+}
+
+a.resultLink:hover {
+    color: #d32f2f; /* RED_DARKEN_2 */ 
+    text-decoration: underline !important;
+}  
+
+a.resultLink:visited {
+    color: #d32f2f; /* RED_DARKEN_2 */ 
+    text-decoration: underline !important;
+}    
+
+.documentsHeaderRow {
+	margin-bottom: 5px !important;
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.documentRow {
+	margin-bottom: 0px !important;
+	font-size: 14px;	
+}
+
+.lawRow {
+    margin-bottom: 5px !important;
+    font-size: 14px;    
+}
+
+.documentAdditionalInfoRow {
+	margin-bottom: 10px !important;
+	font-size: 12px;	
+}
+
+.notConcernedThemesLabel {
+	font-size: 14px;
+}
+
+.withoutDataThemesLabel {
+    font-size: 14px;
+}
+
+.collapsibleGeneralInformationBody {
+	background-color: white !importan;
+	font-size: 14px;
+	padding: 5px 15px 5px 15px !important;
+}
+
 #dummyButton {
     position: absolute;
     top: 40px;
     right: 40px;    
+}
+
+::placeholder {
+    color: #455a64 !important;
+    /*color: black !important;*/
+    font-size: 16px;
+}   
+.gwt-Label {
+    color: black;   
+}
+.gwt-HTML {
+    color: black;   
+}        
+ul.multiValueSuggestBox-list {
+    border-bottom: 0px solid #455a64 !important;
+    /*background-color: #eeeeee !important;*/
+    margin-bottom: 0px !important;
+}
+ul.multiValueSuggestBox-list li input {
+    width: 400px !important;
+}
+.multiValueSuggestBox-token {
+    background-color: #FF0000 !important;
+    visibility: hidden !important;
+    width: 0px !important;
+    height: 0px !important;
+    margin: 0px !important;
+    padding: 0px !imporant;
+}
+.card {
+    margin-bottom: 0px !important;
+    /*margin-top: 0px !important;*/
+}
+.range-field {
+    padding: 0px !important;
+}
+
+input[type=range] {
+    margin: 0px !important;
+}
+
+
+::-webkit-scrollbar {
+    width: 0px;  /* Remove scrollbar space */
+    background: transparent;  /* Optional: just make scrollbar invisible */
 }
