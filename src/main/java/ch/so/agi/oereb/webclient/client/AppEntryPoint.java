@@ -36,14 +36,14 @@ import ch.so.agi.oereb.webclient.shared.ExtractServiceAsync;
 import ch.so.agi.oereb.webclient.shared.SettingsResponse;
 import ch.so.agi.oereb.webclient.shared.SettingsService;
 import ch.so.agi.oereb.webclient.shared.SettingsServiceAsync;
-import ch.so.agi.oereb.webclient.shared.models.ConcernedTheme;
-import ch.so.agi.oereb.webclient.shared.models.Extract;
-import ch.so.agi.oereb.webclient.shared.models.NotConcernedTheme;
-import ch.so.agi.oereb.webclient.shared.models.Office;
-import ch.so.agi.oereb.webclient.shared.models.RealEstateDPR;
-import ch.so.agi.oereb.webclient.shared.models.ReferenceWMS;
-import ch.so.agi.oereb.webclient.shared.models.Restriction;
-import ch.so.agi.oereb.webclient.shared.models.ThemeWithoutData;
+import ch.so.agi.oereb.webclient.shared.models.plr.ConcernedTheme;
+import ch.so.agi.oereb.webclient.shared.models.plr.Extract;
+import ch.so.agi.oereb.webclient.shared.models.plr.NotConcernedTheme;
+import ch.so.agi.oereb.webclient.shared.models.plr.Office;
+import ch.so.agi.oereb.webclient.shared.models.plr.RealEstateDPR;
+import ch.so.agi.oereb.webclient.shared.models.plr.ReferenceWMS;
+import ch.so.agi.oereb.webclient.shared.models.plr.Restriction;
+import ch.so.agi.oereb.webclient.shared.models.plr.ThemeWithoutData;
 
 import com.google.gwt.user.client.ui.Widget;
 
@@ -57,6 +57,7 @@ import gwt.material.design.client.constants.IconPosition;
 import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.constants.Position;
 import gwt.material.design.client.constants.TextAlign;
+import gwt.material.design.client.constants.WavesType;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialCard;
 import gwt.material.design.client.ui.MaterialCardContent;
@@ -75,6 +76,8 @@ import gwt.material.design.client.ui.MaterialLoader;
 import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialRange;
 import gwt.material.design.client.ui.MaterialRow;
+import gwt.material.design.client.ui.MaterialTab;
+import gwt.material.design.client.ui.MaterialTabItem;
 import gwt.material.design.client.ui.MaterialToast;
 import gwt.material.design.client.ui.html.Div;
 import gwt.material.design.client.ui.html.Span;
@@ -304,7 +307,7 @@ public class AppEntryPoint implements EntryPoint {
                 String newUrl = Window.Location.getProtocol() + "//" + Window.Location.getHost() + Window.Location.getPath() + "?egrid=" + egrid;
                 updateURLWithoutReloading(newUrl);
                 
-                Extract extract = result.getExtract();
+                Extract extract = result.getPlrExtract();
                 RealEstateDPR realEstate = extract.getRealEstate();
                 String number = realEstate.getNumber();
                 String municipality = realEstate.getMunicipality();
@@ -317,10 +320,10 @@ public class AppEntryPoint implements EntryPoint {
                 removePlrLayers();
                 
                 // create the vector layer for highlighting the real estate
-                ol.layer.Vector vlayer = createRealEstateVectorLayer(result.getExtract().getRealEstate().getLimit());
+                ol.layer.Vector vlayer = createRealEstateVectorLayer(result.getPlrExtract().getRealEstate().getLimit());
 
                 // set new extent and center according the real estate
-                Geometry geometry = new Wkt().readGeometry(result.getExtract().getRealEstate().getLimit());
+                Geometry geometry = new Wkt().readGeometry(result.getPlrExtract().getRealEstate().getLimit());
                 Extent extent = geometry.getExtent();
 
                 View view = map.getView();
@@ -339,6 +342,7 @@ public class AppEntryPoint implements EntryPoint {
                 
                 resultDiv = new Div();
                 resultDiv.setId("resultDiv");
+                resultDiv.setBackgroundColor(Color.AMBER_LIGHTEN_3);
 
                 resultHeaderRow = new MaterialRow();
                 resultHeaderRow.setId("resultHeaderRow");
@@ -349,10 +353,7 @@ public class AppEntryPoint implements EntryPoint {
                 
                 // Liegenschaft Nr. ... 
                 // Baurecht Nr. ...
-                String lblString = messages.resultHeader(number, realEstateType);
-                if (!municipality.contains("(")) {
-                    lblString += " (" + canton + ")";
-                }
+                String lblString = messages.resultHeader(realEstateType, number);
                 Label lbl = new Label(lblString);
                 resultParcelColumn.add(lbl);
                 resultHeaderRow.add(resultParcelColumn);
@@ -399,11 +400,62 @@ public class AppEntryPoint implements EntryPoint {
                 });
                 resultButtonColumn.add(minmaxExtractButton);
 
-                
                 resultHeaderRow.add(resultButtonColumn);
+                resultCardContent.add(resultHeaderRow);
+                
+                MaterialRow tabRow = new MaterialRow();
+                tabRow.setId("tabRow");
+                tabRow.setMarginBottom(0);
+                tabRow.setMarginTop(15);
+                
+                MaterialColumn tabColumn = new MaterialColumn();
+                tabColumn.setId("tabColumn");
+                tabColumn.setGrid("s12");
+                tabColumn.setPadding(0);
+                
+                MaterialTab resultTab = new MaterialTab();
+                resultTab.setShadow(1);
+                resultTab.setBackgroundColor(Color.RED_LIGHTEN_1);
+                resultTab.setIndicatorColor(Color.WHITE);
+                
+                MaterialTabItem resultTabItemCadastre = new MaterialTabItem();
+                resultTabItemCadastre.setWaves(WavesType.LIGHT);
+                resultTabItemCadastre.setGrid("s4");
+                
+                MaterialLink resultTabLinkCadastre = new MaterialLink();
+                resultTabLinkCadastre.setText("Amtl. Vermessung");
+                resultTabLinkCadastre.setHref("#tab1");
+                resultTabLinkCadastre.setTextColor(Color.WHITE);
+                resultTabItemCadastre.add(resultTabLinkCadastre);
+                resultTab.add(resultTabItemCadastre);
+                
+                MaterialTabItem resultTabItemGrundbuch = new MaterialTabItem();
+                resultTabItemGrundbuch.setWaves(WavesType.LIGHT);
+                resultTabItemGrundbuch.setGrid("s4");
+
+                MaterialLink resultTabLinkGrundbuch = new MaterialLink();
+                resultTabLinkGrundbuch.setText("Grundbuch");
+                resultTabLinkGrundbuch.setHref("#tab2");
+                resultTabLinkGrundbuch.setTextColor(Color.WHITE);
+                resultTabItemGrundbuch.add(resultTabLinkGrundbuch);
+                resultTab.add(resultTabItemGrundbuch);
+
+                MaterialTabItem resultTabItemOereb = new MaterialTabItem();
+                resultTabItemOereb.setWaves(WavesType.LIGHT);
+                resultTabItemOereb.setGrid("s4");
+
+                MaterialLink resultTabLinkOereb = new MaterialLink();
+                resultTabLinkOereb.setText("OEREB");
+                resultTabLinkOereb.setHref("#tab3");
+                resultTabLinkOereb.setTextColor(Color.WHITE);
+                resultTabItemOereb.add(resultTabLinkOereb);
+                resultTab.add(resultTabItemOereb);
 
                 
-                resultCardContent.add(resultHeaderRow);
+                
+                tabColumn.add(resultTab);
+                tabRow.add(tabColumn);
+                resultDiv.add(tabRow);
                 
 //                MaterialColumn deleteExtractButtonColumn = new MaterialColumn();
 //                deleteExtractButtonColumn.setId("deleteExtractButtonColumn");

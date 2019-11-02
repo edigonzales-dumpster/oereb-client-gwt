@@ -18,8 +18,8 @@ public interface PLRMessages extends Messages {
     @DefaultMessage("Search: Real estates and addresses")
     String searchPlaceholder(); 
 
-    @DefaultMessage("Real estate {0} in {1}")
-    String resultHeader(String number, String municipality);
+    @DefaultMessage("{0} Nr {1}")
+    String resultHeader(String type, String number);
     
     @DefaultMessage("Area")
     String resultArea();

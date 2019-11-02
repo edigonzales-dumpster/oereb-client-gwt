@@ -1,6 +1,9 @@
-package ch.so.agi.oereb.webclient.shared.models;
+package ch.so.agi.oereb.webclient.shared.models.cadastralsurveying;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
+
+import ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Office;
+import ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.RealEstateDPR;
 
 public class Extract implements IsSerializable {
     String extractIdentifier; 
@@ -9,8 +12,8 @@ public class Extract implements IsSerializable {
 
     String pdfLink;
     
-    Office plrCadastreAuthority;
-    
+    Office cadastralSurveyingAuthority;
+
     public String getExtractIdentifier() {
         return extractIdentifier;
     }
@@ -35,11 +38,11 @@ public class Extract implements IsSerializable {
         this.pdfLink = pdfLink;
     }
 
-    public Office getPlrCadastreAuthority() {
-        return plrCadastreAuthority;
+    public Office getCadastralSurveyingAuthority() {
+        return cadastralSurveyingAuthority;
     }
 
-    public void setPlrCadastreAuthority(Office plrCadastreAuthority) {
-        this.plrCadastreAuthority = plrCadastreAuthority;
+    public void setCadastralSurveyingAuthority(Office cadastralSurveyingAuthority) {
+        this.cadastralSurveyingAuthority = cadastralSurveyingAuthority;
     }
 }

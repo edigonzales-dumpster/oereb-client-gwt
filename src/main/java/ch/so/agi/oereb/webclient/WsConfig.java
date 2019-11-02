@@ -19,7 +19,7 @@ public class WsConfig {
     @Bean
     public Jaxb2Marshaller createMarshaller() {
         Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-        marshaller.setPackagesToScan("ch.ehi.oereb.schemas");
+        marshaller.setPackagesToScan("ch.ehi.oereb.schemas", "ch.so.geo.schema");
         marshaller.setSupportJaxbElementClass(true);
         marshaller.setLazyInit(true);
         return marshaller;

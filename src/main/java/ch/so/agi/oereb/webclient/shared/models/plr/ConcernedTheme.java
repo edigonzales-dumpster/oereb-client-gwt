@@ -1,4 +1,4 @@
-package ch.so.agi.oereb.webclient.shared.models;
+package ch.so.agi.oereb.webclient.shared.models.plr;
 
 import java.util.List;
 

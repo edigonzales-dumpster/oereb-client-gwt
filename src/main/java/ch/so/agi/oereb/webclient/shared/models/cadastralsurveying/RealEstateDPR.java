@@ -1,7 +1,4 @@
-package ch.so.agi.oereb.webclient.shared.models;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
+package ch.so.agi.oereb.webclient.shared.models.cadastralsurveying;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -24,14 +21,9 @@ public class RealEstateDPR implements IsSerializable {
     
     private int landRegistryArea;
     
-    // Wkt representation
-    private String limit;
+    private Office surveyorOffice;
     
-    private ArrayList<ThemeWithoutData> themesWithoutData;
-    
-    private ArrayList<NotConcernedTheme> notConcernedThemes;
-    
-    private ArrayList<ConcernedTheme> concernedThemes;
+    private Office landRegisterOffice;
 
     public String getRealEstateType() {
         return realEstateType;
@@ -105,35 +97,20 @@ public class RealEstateDPR implements IsSerializable {
         this.landRegistryArea = landRegistryArea;
     }
 
-    public String getLimit() {
-        return limit;
+    public Office getSurveyorOffice() {
+        return surveyorOffice;
     }
 
-    public void setLimit(String limit) {
-        this.limit = limit;
+    public void setSurveyorOffice(Office surveyorOffice) {
+        this.surveyorOffice = surveyorOffice;
     }
 
-    public ArrayList<ThemeWithoutData> getThemesWithoutData() {
-        return themesWithoutData;
+    public Office getLandRegisterOffice() {
+        return landRegisterOffice;
     }
 
-    public void setThemesWithoutData(ArrayList<ThemeWithoutData> themesWithoutData) {
-        this.themesWithoutData = themesWithoutData;
+    public void setLandRegisterOffice(Office landRegisterOffice) {
+        this.landRegisterOffice = landRegisterOffice;
     }
 
-    public ArrayList<NotConcernedTheme> getNotConcernedThemes() {
-        return notConcernedThemes;
-    }
-
-    public void setNotConcernedThemes(ArrayList<NotConcernedTheme> notConcernedThemes) {
-        this.notConcernedThemes = notConcernedThemes;
-    }
-
-    public ArrayList<ConcernedTheme> getConcernedThemes() {
-        return concernedThemes;
-    }
-
-    public void setConcernedThemes(ArrayList<ConcernedTheme> concernedThemes) {
-        this.concernedThemes = concernedThemes;
-    }
 }
