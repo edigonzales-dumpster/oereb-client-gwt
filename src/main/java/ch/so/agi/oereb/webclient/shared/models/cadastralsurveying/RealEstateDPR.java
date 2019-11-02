@@ -1,5 +1,8 @@
 package ch.so.agi.oereb.webclient.shared.models.cadastralsurveying;
 
+import java.util.List;
+import java.util.Map;
+
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 public class RealEstateDPR implements IsSerializable {
@@ -24,6 +27,12 @@ public class RealEstateDPR implements IsSerializable {
     private Office surveyorOffice;
     
     private Office landRegisterOffice;
+    
+    private List<String> localNames;
+    
+    private Map<String, Integer> landCoverShares;
+    
+    private List<Building> buildings;
 
     public String getRealEstateType() {
         return realEstateType;
@@ -113,4 +122,27 @@ public class RealEstateDPR implements IsSerializable {
         this.landRegisterOffice = landRegisterOffice;
     }
 
+    public List<String> getLocalNames() {
+        return localNames;
+    }
+
+    public void setLocalNames(List<String> localNames) {
+        this.localNames = localNames;
+    }
+
+    public Map<String, Integer> getLandCoverShares() {
+        return landCoverShares;
+    }
+
+    public void setLandCoverShares(Map<String, Integer> landCoverShares) {
+        this.landCoverShares = landCoverShares;
+    }
+
+    public List<Building> getBuildings() {
+        return buildings;
+    }
+
+    public void setBuildings(List<Building> buildings) {
+        this.buildings = buildings;
+    }
 }

@@ -6,6 +6,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.xml.transform.stream.StreamSource;
 
@@ -18,11 +21,13 @@ import org.springframework.stereotype.Service;
 
 import ch.so.agi.oereb.webclient.shared.ExtractServiceException;
 import ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Address;
+import ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Building;
 import ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Extract;
 import ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Office;
 import ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.RealEstateDPR;
 import ch.so.geo.schema.agi.cadastralinfo._1_0.extract.CadastralExtract;
 import ch.so.geo.schema.agi.cadastralinfo._1_0.extract.GetExtractByIdResponse;
+import ch.so.geo.schema.agi.cadastralinfo._1_0.extract.LandCoverShareType;
 
 @Service
 public class CadastralSurveyingService {
@@ -106,6 +111,35 @@ public class CadastralSurveyingService {
         landRegisterOfficeAddress.setEmail(xmlLandRegisterOffice.getPostalAddress().getEmail());
         realEstate.setLandRegisterOffice(landRegisterOffice);
 
+        realEstate.setLocalNames(xmlRealEstateDPR.getLocalNames());
+        
+        Map<String, Integer> landCoverShares = xmlRealEstateDPR.getLandCoverShares()
+            .stream()
+            .collect(Collectors.toMap(LandCoverShareType::getType, LandCoverShareType::getArea));
+        realEstate.setLandCoverShares(landCoverShares);
+        
+        List<Building> buildings = xmlRealEstateDPR.getBuildings()
+            .stream()
+            .map(b -> {
+                Building building = new Building();
+                if(b.getEgid() != null) {
+                    building.setEgid(b.getEgid());
+                }
+                if (b.getEdid() != null) {
+                    building.setEdid(b.getEdid());
+                }
+                
+                Address address = new Address();
+                address.setStreet(b.getPostalAddress().getStreet());
+                address.setNumber(b.getPostalAddress().getNumber());
+                address.setPostalCode(b.getPostalAddress().getPostalCode());
+                address.setCity(b.getPostalAddress().getCity());
+                building.setPostalAddress(address);
+                
+                return building;
+            })
+            .collect(Collectors.toList());
+        realEstate.setBuildings(buildings);
         
         Extract extract = new Extract();
         extract.setRealEstate(realEstate);
