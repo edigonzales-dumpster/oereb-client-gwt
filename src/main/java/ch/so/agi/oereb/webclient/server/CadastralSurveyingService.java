@@ -69,8 +69,21 @@ public class CadastralSurveyingService {
         GetExtractByIdResponse obj = (GetExtractByIdResponse) marshaller.unmarshal(xmlSource);
         CadastralExtract xmlExtract = obj.getCadastralExtract();
         
-        logger.info(xmlExtract.getCreationDate().toString());
-
+        ch.so.geo.schema.agi.cadastralinfo._1_0.extract.Office resonsibleOffice = xmlExtract.getResponsibleOffice();
+        Office authorityOffice = new Office();
+        authorityOffice.setName(resonsibleOffice.getName());
+        Address authorityOfficeAddress = new Address();
+        authorityOfficeAddress.setLine1(resonsibleOffice.getPostalAddress().getLine1());
+        authorityOfficeAddress.setLine2(resonsibleOffice.getPostalAddress().getLine2());
+        authorityOfficeAddress.setStreet(resonsibleOffice.getPostalAddress().getStreet());
+        authorityOfficeAddress.setNumber(resonsibleOffice.getPostalAddress().getNumber());
+        authorityOfficeAddress.setPostalCode(resonsibleOffice.getPostalAddress().getPostalCode());
+        authorityOfficeAddress.setCity(resonsibleOffice.getPostalAddress().getCity());
+        authorityOfficeAddress.setPhone(resonsibleOffice.getPostalAddress().getPhone());
+        authorityOfficeAddress.setEmail(resonsibleOffice.getPostalAddress().getEmail());
+        authorityOfficeAddress.setWeb(resonsibleOffice.getPostalAddress().getWeb());
+        authorityOffice.setPostalAddress(authorityOfficeAddress);
+        
         ch.so.geo.schema.agi.cadastralinfo._1_0.extract.RealEstateDPR xmlRealEstateDPR = xmlExtract.getRealEstate();
         RealEstateDPR realEstate = new RealEstateDPR();
         realEstate.setEgrid(xmlRealEstateDPR.getEGRID());
@@ -89,11 +102,12 @@ public class CadastralSurveyingService {
         surveyorOfficeAddress.setLine2(xmlSurveyorOffice.getPostalAddress().getLine2());
         surveyorOfficeAddress.setStreet(xmlSurveyorOffice.getPostalAddress().getStreet());
         surveyorOfficeAddress.setNumber(xmlSurveyorOffice.getPostalAddress().getNumber());
-        surveyorOfficeAddress.setPostalCode(xmlSurveyorOffice.getPostalAddress().getCity());
+        surveyorOfficeAddress.setPostalCode(xmlSurveyorOffice.getPostalAddress().getPostalCode());
         surveyorOfficeAddress.setCity(xmlSurveyorOffice.getPostalAddress().getCity());
         surveyorOfficeAddress.setPhone(xmlSurveyorOffice.getPostalAddress().getPhone());
         surveyorOfficeAddress.setWeb(xmlSurveyorOffice.getPostalAddress().getWeb());
         surveyorOfficeAddress.setEmail(xmlSurveyorOffice.getPostalAddress().getEmail());
+        surveyorOffice.setPostalAddress(surveyorOfficeAddress);
         realEstate.setSurveyorOffice(surveyorOffice);
         
         ch.so.geo.schema.agi.cadastralinfo._1_0.extract.Office xmlLandRegisterOffice = xmlExtract.getRealEstate().getSurveyorOffice();
@@ -142,6 +156,7 @@ public class CadastralSurveyingService {
         realEstate.setBuildings(buildings);
         
         Extract extract = new Extract();
+        extract.setCadastralSurveyingAuthority(authorityOffice);
         extract.setRealEstate(realEstate);
 
         return extract;

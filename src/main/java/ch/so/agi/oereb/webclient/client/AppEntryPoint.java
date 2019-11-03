@@ -2,8 +2,10 @@ package ch.so.agi.oereb.webclient.client;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -36,6 +38,7 @@ import ch.so.agi.oereb.webclient.shared.ExtractServiceAsync;
 import ch.so.agi.oereb.webclient.shared.SettingsResponse;
 import ch.so.agi.oereb.webclient.shared.SettingsService;
 import ch.so.agi.oereb.webclient.shared.SettingsServiceAsync;
+import ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Address;
 import ch.so.agi.oereb.webclient.shared.models.plr.ConcernedTheme;
 import ch.so.agi.oereb.webclient.shared.models.plr.Extract;
 import ch.so.agi.oereb.webclient.shared.models.plr.NotConcernedTheme;
@@ -158,6 +161,8 @@ public class AppEntryPoint implements EntryPoint {
     private MaterialCardContent resultCardContent;
     private MaterialRow resultHeaderRow;    
     private Div resultDiv;
+    private MaterialColumn cadastralSurveyingResultColumn;
+    
     private MaterialWindow realEstateWindow;
     private MaterialCollapsible collapsibleConcernedTheme;
     private MaterialCollapsible collapsibleNotConcernedTheme;
@@ -212,8 +217,8 @@ public class AppEntryPoint implements EntryPoint {
         MaterialRow logoRow = new MaterialRow();
 
         com.google.gwt.user.client.ui.Image plrImage = new com.google.gwt.user.client.ui.Image();
-        plrImage.setUrl(GWT.getHostPageBaseURL()+"logo_oereb_small.png");
-        plrImage.setWidth("80%");
+        plrImage.setUrl(GWT.getHostPageBaseURL()+"grundstuecksinfo_logo.png");
+        plrImage.setWidth("60%");
 
         MaterialColumn plrLogoColumn = new MaterialColumn();
         plrLogoColumn.setId("plrLogoColumn");
@@ -342,7 +347,7 @@ public class AppEntryPoint implements EntryPoint {
                 
                 resultDiv = new Div();
                 resultDiv.setId("resultDiv");
-                resultDiv.setBackgroundColor(Color.AMBER_LIGHTEN_3);
+                resultDiv.setBackgroundColor(Color.WHITE);
 
                 resultHeaderRow = new MaterialRow();
                 resultHeaderRow.setId("resultHeaderRow");
@@ -351,9 +356,7 @@ public class AppEntryPoint implements EntryPoint {
                 resultParcelColumn.setId("resultParcelColumn");
                 resultParcelColumn.setGrid("s9");
                 
-                // Liegenschaft Nr. ... 
-                // Baurecht Nr. ...
-                String lblString = messages.resultHeader(realEstateType, number);
+                String lblString = messages.resultHeader(number);
                 Label lbl = new Label(lblString);
                 resultParcelColumn.add(lbl);
                 resultHeaderRow.add(resultParcelColumn);
@@ -405,58 +408,68 @@ public class AppEntryPoint implements EntryPoint {
                 
                 MaterialRow tabRow = new MaterialRow();
                 tabRow.setId("tabRow");
-                tabRow.setMarginBottom(0);
-                tabRow.setMarginTop(15);
                 
-                MaterialColumn tabColumn = new MaterialColumn();
-                tabColumn.setId("tabColumn");
-                tabColumn.setGrid("s12");
-                tabColumn.setPadding(0);
+                MaterialColumn tabHeaderColumn = new MaterialColumn();
+                tabHeaderColumn.setId("tabHeaderColumn");
+                tabHeaderColumn.setGrid("s12");
                 
                 MaterialTab resultTab = new MaterialTab();
+                resultTab.setId("resultTab");
                 resultTab.setShadow(1);
+                // #e8c432
+                // #aed634 
+                // #52b1a7
+                // #75a5d4
                 resultTab.setBackgroundColor(Color.RED_LIGHTEN_1);
                 resultTab.setIndicatorColor(Color.WHITE);
                 
-                MaterialTabItem resultTabItemCadastre = new MaterialTabItem();
-                resultTabItemCadastre.setWaves(WavesType.LIGHT);
-                resultTabItemCadastre.setGrid("s4");
+                MaterialTabItem cadastralSurveyingHeaderTabItem = new MaterialTabItem();
+                cadastralSurveyingHeaderTabItem.setWaves(WavesType.LIGHT);
+                cadastralSurveyingHeaderTabItem.setGrid("s4");
                 
-                MaterialLink resultTabLinkCadastre = new MaterialLink();
-                resultTabLinkCadastre.setText("Amtl. Vermessung");
-                resultTabLinkCadastre.setHref("#tab1");
-                resultTabLinkCadastre.setTextColor(Color.WHITE);
-                resultTabItemCadastre.add(resultTabLinkCadastre);
-                resultTab.add(resultTabItemCadastre);
+                MaterialLink cadastralSurveyingHeaderTabLink = new MaterialLink();
+                cadastralSurveyingHeaderTabLink.setText(messages.tabTitleCadastralSurveying());
+                cadastralSurveyingHeaderTabLink.setHref("#cadastralSurveyingResultColumn");
+                cadastralSurveyingHeaderTabLink.setTextColor(Color.WHITE);
+                cadastralSurveyingHeaderTabItem.add(cadastralSurveyingHeaderTabLink);
+                resultTab.add(cadastralSurveyingHeaderTabItem);
                 
-                MaterialTabItem resultTabItemGrundbuch = new MaterialTabItem();
-                resultTabItemGrundbuch.setWaves(WavesType.LIGHT);
-                resultTabItemGrundbuch.setGrid("s4");
+                MaterialTabItem grundbuchHeaderTabItem = new MaterialTabItem();
+                grundbuchHeaderTabItem.setWaves(WavesType.LIGHT);
+                grundbuchHeaderTabItem.setGrid("s4");
 
-                MaterialLink resultTabLinkGrundbuch = new MaterialLink();
-                resultTabLinkGrundbuch.setText("Grundbuch");
-                resultTabLinkGrundbuch.setHref("#tab2");
-                resultTabLinkGrundbuch.setTextColor(Color.WHITE);
-                resultTabItemGrundbuch.add(resultTabLinkGrundbuch);
-                resultTab.add(resultTabItemGrundbuch);
+                MaterialLink grundbuchHeaderTabLink = new MaterialLink();
+                grundbuchHeaderTabLink.setText(messages.tabTitleLandRegister());
+                grundbuchHeaderTabLink.setHref("#tab2");
+                grundbuchHeaderTabLink.setTextColor(Color.WHITE);
+                grundbuchHeaderTabItem.add(grundbuchHeaderTabLink);
+                resultTab.add(grundbuchHeaderTabItem);
 
-                MaterialTabItem resultTabItemOereb = new MaterialTabItem();
-                resultTabItemOereb.setWaves(WavesType.LIGHT);
-                resultTabItemOereb.setGrid("s4");
+                MaterialTabItem oerebHeaderTabItem = new MaterialTabItem();
+                oerebHeaderTabItem.setWaves(WavesType.LIGHT);
+                oerebHeaderTabItem.setGrid("s4");
 
-                MaterialLink resultTabLinkOereb = new MaterialLink();
-                resultTabLinkOereb.setText("OEREB");
-                resultTabLinkOereb.setHref("#tab3");
-                resultTabLinkOereb.setTextColor(Color.WHITE);
-                resultTabItemOereb.add(resultTabLinkOereb);
-                resultTab.add(resultTabItemOereb);
-
+                MaterialLink oerebHeaderTabLink = new MaterialLink();
+                oerebHeaderTabLink.setText(messages.tabTitlePlr());
+                oerebHeaderTabLink.setHref("#tab3");
+                oerebHeaderTabLink.setTextColor(Color.WHITE);
+                oerebHeaderTabItem.add(oerebHeaderTabLink);
+                resultTab.add(oerebHeaderTabItem);
                 
+                tabHeaderColumn.add(resultTab);
+                tabRow.add(tabHeaderColumn);
+
+                cadastralSurveyingResultColumn = new MaterialColumn();
+                cadastralSurveyingResultColumn.setId("cadastralSurveyingResultColumn");                
+                cadastralSurveyingResultColumn.addStyleName("resultColumn");
+                cadastralSurveyingResultColumn.setGrid("s12");
                 
-                tabColumn.add(resultTab);
-                tabRow.add(tabColumn);
+                addCadastralSurveyingContent(result.getCadastralSurveyingExtract());
+               
+                tabRow.add(cadastralSurveyingResultColumn);
+ 
                 resultDiv.add(tabRow);
-                
+
 //                MaterialColumn deleteExtractButtonColumn = new MaterialColumn();
 //                deleteExtractButtonColumn.setId("deleteExtractButtonColumn");
 //                deleteExtractButtonColumn.setGrid("s6");
@@ -1134,6 +1147,144 @@ public class AppEntryPoint implements EntryPoint {
             }
         });
     }
+    
+    private void addCadastralSurveyingContent(ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Extract extract) {
+        ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.RealEstateDPR realEstate = extract.getRealEstate();
+        String number = realEstate.getNumber();
+        String identnd = realEstate.getIdentND();
+        String egrid = realEstate.getEgrid();
+        int area = realEstate.getLandRegistryArea();
+        String type = realEstate.getRealEstateType();
+        String municipality = realEstate.getMunicipality();
+        String subunitOfLandRegister = realEstate.getSubunitOfLandRegister();
+        List<String> localNames = realEstate.getLocalNames().stream().sorted().collect(Collectors.toList());
+       
+//        addCadastralSurveyingContentKeyValue("Grundstück-Nr.:", new Label(number));
+        addCadastralSurveyingContentKeyValue("E-GRID:", new Label(egrid));
+        addCadastralSurveyingContentKeyValue("NBIdent:", new Label(identnd));
+        addCadastralSurveyingContentKeyValue("", new HTML("&nbsp;"));
+        
+        addCadastralSurveyingContentKeyValue("Grundstücksart:", new Label(type));
+        addCadastralSurveyingContentKeyValue("Grundstücksfläche:", new HTML(fmtDefault.format(area) + " m<sup>2</sup>"));
+        addCadastralSurveyingContentKeyValue("", new HTML("&nbsp;"));
+        
+        addCadastralSurveyingContentKeyValue("Gemeinde:", new Label(municipality));
+        addCadastralSurveyingContentKeyValue("Grundbuch:", new Label(subunitOfLandRegister));
+        addCadastralSurveyingContentKeyValue("", new HTML("&nbsp;"));
+        
+        addCadastralSurveyingContentKeyValue("Flurnamen:", new Label(String.join(", ", localNames)));
+        addCadastralSurveyingContentKeyValue("", new HTML("&nbsp;"));
+        
+        {
+            MaterialRow row = new MaterialRow();
+            row.addStyleName("cadastralSurveyingInfoRow");
+
+            MaterialColumn keyColumn = new MaterialColumn();
+            keyColumn.addStyleName("cadastralSurveyingInfoKeyColumn");
+            keyColumn.setGrid("s4");
+            keyColumn.add(new Label("Bodenbedeckung:"));
+            row.add(keyColumn);
+            
+            cadastralSurveyingResultColumn.add(row);
+            
+            java.util.Map<String, Integer> landCoverSharesUnsorted = realEstate.getLandCoverShares();
+            java.util.Map<String, Integer> landCoverShares = landCoverSharesUnsorted.entrySet()
+                .stream()
+                .sorted(java.util.Map.Entry.comparingByKey())
+                .collect(Collectors.toMap(java.util.Map.Entry::getKey, java.util.Map.Entry::getValue,
+                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+            
+            landCoverShares.forEach((k, v) -> {
+                MaterialRow landCoverShareRow = new MaterialRow();
+                landCoverShareRow.addStyleName("cadastralSurveyingInfoRow");
+                
+                MaterialColumn landCoverShareKeyColumn = new MaterialColumn();
+                landCoverShareKeyColumn.addStyleName("landCoverShareKeyColumn");
+                landCoverShareKeyColumn.setGrid("s6");
+                landCoverShareKeyColumn.add(new Label(k));
+                landCoverShareRow.add(landCoverShareKeyColumn);      
+                
+                MaterialColumn landCoverShareValueColumn = new MaterialColumn();
+                landCoverShareValueColumn.addStyleName("landCoverShareValueColumn");
+                landCoverShareValueColumn.setGrid("s3");
+                landCoverShareValueColumn.add(new HTML(fmtDefault.format(v) + " m<sup>2</sup>"));
+                landCoverShareRow.add(landCoverShareValueColumn);
+
+                cadastralSurveyingResultColumn.add(landCoverShareRow);
+            });
+            addCadastralSurveyingContentKeyValue("", new HTML("&nbsp;"));            
+        }
+        
+        {
+            MaterialRow row = new MaterialRow();
+            row.addStyleName("cadastralSurveyingInfoRow");
+            
+            ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Office surveyorOffice = realEstate.getSurveyorOffice();
+            Address surveyorAddress = surveyorOffice.getPostalAddress();
+            
+            StringBuilder htmlString =  new StringBuilder();
+            htmlString.append(surveyorOffice.getName() + "<br>");
+            htmlString.append(surveyorAddress.getLine1() + "<br>");
+            if (surveyorAddress.getLine2() != null) {
+                htmlString.append(surveyorAddress.getLine2() + "<br>");
+            }
+            htmlString.append(surveyorAddress.getStreet() + " " + surveyorAddress.getNumber() + "<br>" );
+            htmlString.append(surveyorAddress.getPostalCode() + " " + surveyorAddress.getCity() + "<br><br>");
+            htmlString.append(surveyorAddress.getPhone() + "<br>");
+            htmlString.append(makeEmailLink(surveyorAddress.getEmail()) + "<br>");
+            htmlString.append(makeHtmlLink(surveyorAddress.getWeb()));            
+            addCadastralSurveyingContentKeyValue("Nachführungsgeometer:", new HTML(htmlString.toString()));    
+            addCadastralSurveyingContentKeyValue("", new HTML("&nbsp;"));            
+        }
+        
+        {
+            MaterialRow row = new MaterialRow();
+            row.addStyleName("cadastralSurveyingInfoRow");
+
+            ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Office authorityOffice = extract.getCadastralSurveyingAuthority();
+            Address authorityAddress = authorityOffice.getPostalAddress();
+
+            String htmlString = authorityOffice.getName() + "<br>" 
+                    + authorityAddress.getStreet() + " " + authorityAddress.getNumber() + "<br>" 
+                    + authorityAddress.getPostalCode() + " " + authorityAddress.getCity() + "<br><br>"
+                    + authorityAddress.getPhone() + "<br>" 
+                    + makeEmailLink(authorityAddress.getEmail()) + "<br>"
+                    + makeHtmlLink(authorityAddress.getWeb());
+            
+            addCadastralSurveyingContentKeyValue("Vermessungsaufsicht:", new HTML(htmlString));            
+        }
+        
+    }
+    
+    private String makeHtmlLink(String text) {
+        String html = "<a class='resultLink' href='"+text+"' target='_blank'>"+text+"</a>";
+        return html;
+    }
+    
+    private String makeEmailLink(String text) {
+        String html = "<a class='resultLink' href='mailto:"+text+"'>"+text+"</a>";
+        return html;
+    }
+    
+    
+    private void addCadastralSurveyingContentKeyValue(String key, Label value) {
+        MaterialRow row = new MaterialRow();
+        row.addStyleName("cadastralSurveyingInfoRow");
+        
+        MaterialColumn keyColumn = new MaterialColumn();
+        keyColumn.addStyleName("cadastralSurveyingInfoKeyColumn");
+        keyColumn.setGrid("s5");
+        keyColumn.add(new Label(key));
+        row.add(keyColumn);
+        
+        MaterialColumn valueColumn = new MaterialColumn();
+        valueColumn.addStyleName("cadastralSurveyingInfoValueColumn");
+        valueColumn.setGrid("s7");
+        valueColumn.add(value);
+        row.add(valueColumn);
+
+        cadastralSurveyingResultColumn.add(row);
+    }
 
     private void removePlrLayers() {
         // I cannot iterate over map.getLayers() and
@@ -1495,9 +1646,6 @@ public class AppEntryPoint implements EntryPoint {
         ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
         
         String baseUrl = referenceWms.getBaseUrl();
-//        if (WMS_HOST_MAPPING.get(baseUrl) != null) {
-//            baseUrl = WMS_HOST_MAPPING.get(referenceWms.getBaseUrl());
-//        }
         
         imageWMSOptions.setUrl(baseUrl);
         imageWMSOptions.setParams(imageWMSParams);
