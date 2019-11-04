@@ -39,6 +39,7 @@ import ch.so.agi.oereb.webclient.shared.SettingsResponse;
 import ch.so.agi.oereb.webclient.shared.SettingsService;
 import ch.so.agi.oereb.webclient.shared.SettingsServiceAsync;
 import ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Address;
+import ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Building;
 import ch.so.agi.oereb.webclient.shared.models.plr.ConcernedTheme;
 import ch.so.agi.oereb.webclient.shared.models.plr.Extract;
 import ch.so.agi.oereb.webclient.shared.models.plr.NotConcernedTheme;
@@ -1173,19 +1174,37 @@ public class AppEntryPoint implements EntryPoint {
         addCadastralSurveyingContentKeyValue("", new HTML("&nbsp;"));
         
         addCadastralSurveyingContentKeyValue("Flurnamen:", new Label(String.join(", ", localNames)));
-        addCadastralSurveyingContentKeyValue("", new HTML("&nbsp;"));
+//        addCadastralSurveyingContentKeyValue("", new HTML("&nbsp;"));
         
         {
-            MaterialRow row = new MaterialRow();
-            row.addStyleName("cadastralSurveyingInfoRow");
+            MaterialRow informationHeaderRow = new MaterialRow();
+            informationHeaderRow.addStyleName("layerInfoHeaderRow");
 
             MaterialColumn keyColumn = new MaterialColumn();
             keyColumn.addStyleName("cadastralSurveyingInfoKeyColumn");
-            keyColumn.setGrid("s4");
+            keyColumn.setGrid("s12");
             keyColumn.add(new Label("Bodenbedeckung:"));
-            row.add(keyColumn);
-            
-            cadastralSurveyingResultColumn.add(row);
+            informationHeaderRow.add(keyColumn);
+
+            MaterialColumn typeColumn = new MaterialColumn();
+            typeColumn.addStyleName("layerTypeColumn");
+            typeColumn.setGrid("s6");
+            typeColumn.add(new Label(messages.resultType()));
+
+            MaterialColumn shareColumn = new MaterialColumn();
+            shareColumn.addStyleName("layerShareColumn");
+            shareColumn.setGrid("s4");
+            shareColumn.add(new Label(messages.resultShare()));
+
+            MaterialColumn sharePercentColumn = new MaterialColumn();
+            sharePercentColumn.addStyleName("layerPercentColumn");
+            sharePercentColumn.setGrid("s2");
+            sharePercentColumn.add(new Label(messages.resultShareInPercent()));
+
+            informationHeaderRow.add(typeColumn);
+            informationHeaderRow.add(shareColumn);
+            informationHeaderRow.add(sharePercentColumn);
+            cadastralSurveyingResultColumn.add(informationHeaderRow);
             
             java.util.Map<String, Integer> landCoverSharesUnsorted = realEstate.getLandCoverShares();
             java.util.Map<String, Integer> landCoverShares = landCoverSharesUnsorted.entrySet()
@@ -1206,15 +1225,91 @@ public class AppEntryPoint implements EntryPoint {
                 
                 MaterialColumn landCoverShareValueColumn = new MaterialColumn();
                 landCoverShareValueColumn.addStyleName("landCoverShareValueColumn");
-                landCoverShareValueColumn.setGrid("s3");
+                landCoverShareValueColumn.setGrid("s4");
                 landCoverShareValueColumn.add(new HTML(fmtDefault.format(v) + " m<sup>2</sup>"));
                 landCoverShareRow.add(landCoverShareValueColumn);
 
+                MaterialColumn landCoverPercentValueColumn = new MaterialColumn();
+                landCoverPercentValueColumn.addStyleName("landCoverShareValueColumn");
+                landCoverPercentValueColumn.setGrid("s2");
+                double percent = (new Double(v) / realEstate.getLandRegistryArea())*100.0;
+                landCoverPercentValueColumn.add(new HTML(fmtPercent.format(percent)));
+                landCoverShareRow.add(landCoverPercentValueColumn);
+
                 cadastralSurveyingResultColumn.add(landCoverShareRow);
             });
-            addCadastralSurveyingContentKeyValue("", new HTML("&nbsp;"));            
         }
         
+        {
+            MaterialRow informationHeaderRow = new MaterialRow();
+            informationHeaderRow.addStyleName("layerInfoHeaderRow");
+
+            MaterialColumn keyColumn = new MaterialColumn();
+            keyColumn.addStyleName("cadastralSurveyingInfoKeyColumn");
+            keyColumn.setGrid("s12");
+            keyColumn.add(new Label("Gebäude:"));
+            informationHeaderRow.add(keyColumn);
+
+            MaterialColumn addressColumn = new MaterialColumn();
+            addressColumn.addStyleName("layerTypeColumn");
+            addressColumn.setGrid("s7");
+            addressColumn.add(new Label("Adresse"));
+
+            MaterialColumn egidColumn = new MaterialColumn();
+            egidColumn.addStyleName("layerShareColumn");
+            egidColumn.setTextAlign(TextAlign.LEFT);
+            egidColumn.setGrid("s4");
+            egidColumn.add(new Label("EGID"));
+
+            MaterialColumn edidColumn = new MaterialColumn();
+            edidColumn.addStyleName("layerPercentColumn");
+            edidColumn.setTextAlign(TextAlign.LEFT);
+            edidColumn.setGrid("s1");
+            edidColumn.add(new Label("EDID"));
+
+            informationHeaderRow.add(addressColumn);
+            informationHeaderRow.add(egidColumn);
+            informationHeaderRow.add(edidColumn);
+            cadastralSurveyingResultColumn.add(informationHeaderRow);
+            
+            java.util.List<Building> buildings = realEstate.getBuildings();
+            
+            buildings.forEach(b -> {
+                Address address = b.getPostalAddress();
+                String addressHtmlString = address.getStreet() + " " + address.getNumber() + "<br>"
+                        + address.getPostalCode() + " " + address.getCity();
+                    
+                MaterialRow buildingRow = new MaterialRow();
+                buildingRow.addStyleName("cadastralSurveyingBuildingInfoRow");
+                
+                MaterialColumn addressCol = new MaterialColumn();
+                addressCol.addStyleName("landCoverShareKeyColumn");
+                addressCol.setGrid("s7");
+                addressCol.add(new HTML(addressHtmlString));
+                buildingRow.add(addressCol);  
+                
+                MaterialColumn egidCol = new MaterialColumn();
+                egidCol.addStyleName("landCoverShareKeyColumn");
+                egidCol.setGrid("s4");
+                egidCol.add(new Label(String.valueOf(b.getEgid())));
+                buildingRow.add(egidCol);  
+                
+                MaterialColumn edidCol = new MaterialColumn();
+                edidCol.addStyleName("landCoverShareKeyColumn");
+                edidCol.setGrid("s1");
+                edidCol.add(new Label(String.valueOf(b.getEdid())));
+                buildingRow.add(edidCol);  
+
+                cadastralSurveyingResultColumn.add(buildingRow);
+            });
+        }
+        
+        {
+            MaterialRow fakeRow = new MaterialRow();
+            fakeRow.setBorderBottom("1px #bdbdbd solid"); 
+            cadastralSurveyingResultColumn.add(fakeRow);            
+        }
+
         {
             MaterialRow row = new MaterialRow();
             row.addStyleName("cadastralSurveyingInfoRow");

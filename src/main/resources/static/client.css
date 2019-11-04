@@ -136,6 +136,11 @@ body {
 	margin: 0px !important;
 }
 
+.cadastralSurveyingBuildingInfoRow {
+    padding: 0px !important;
+    margin: 0px 0px 10px 0px !important;
+}
+
 .cadastralSurveyingInfoKeyColumn {
     padding: 0px !important;
     margin: 0px !important;
@@ -294,7 +299,7 @@ a.collapsibleThemeLayerLink:hover {
 
 .layerInfoHeaderRow {
 	padding: 10px 0px 0px 0px !important;
-	border-bottom: 1px #bdbdbd solid;
+	border-bottom: 0px #bdbdbd solid;
 	border-top: 1px #bdbdbd solid;
 	margin-top: 15px !important;
 	margin-bottom: 5px !important;	
@@ -314,7 +319,7 @@ a.collapsibleThemeLayerLink:hover {
 
 .layerShareColumn {
 	text-align: right;
-	padding: 0px !imporant;	
+	padding: 0px !important;	
 }
                  
 .layerPercentColumn {
