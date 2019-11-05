@@ -130,15 +130,21 @@ body {
     padding: 15px 0px 0px 0px !important;    
 }
 
-
-.cadastralSurveyingInfoRow {
-	padding: 0px !important;
-	margin: 0px !important;
+.fakeColumn {
+    padding: 0px !important;
+    border-bottom: 1px #bdbdbd solid;
 }
 
-.cadastralSurveyingBuildingInfoRow {
+.mt15 {
+    margin: 15px 0px 0px 0px !important;
+
+}
+
+.cadastralSurveyingInfoHeader {
     padding: 0px !important;
-    margin: 0px 0px 10px 0px !important;
+    margin: 15px 0px 0px 0px !important;
+    font-size: 14px;
+    font-weight: 700;
 }
 
 .cadastralSurveyingInfoKeyColumn {
@@ -155,6 +161,16 @@ body {
     font-weight: 400;
 }
 
+.cadastralSurveyingInfoHeaderSmall {
+    padding: 0px !important;
+    margin-right: 0px !important;
+    font-size: 12px;
+}   
+
+.textRight {
+	text-align: right !important;
+}
+
 .landCoverShareKeyColumn {
     padding: 0px !important;
     margin: 0px !important;
@@ -168,6 +184,20 @@ body {
     font-size: 14px;
     font-weight: 400;
     text-align: right;
+}
+
+/*
+.cadastralSurveyingBuildingInfoRow {
+    padding: 0px !important;
+    margin: 0px 0px 10px 0px !important;
+}
+*/
+
+.buildingColumn {
+    padding: 0px !important;
+    margin: 0px 0px 10px 0px !important;
+    font-size: 14px;
+    font-weight: 400;
 }
 
 /* */
