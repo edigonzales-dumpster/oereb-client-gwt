@@ -131,7 +131,7 @@ public class AppEntryPoint implements EntryPoint {
     private String SUB_HEADER_FONT_SIZE = "16px";
     private String BODY_FONT_SIZE = "14px";
     private String SMALL_FONT_SIZE = "12px";
-    
+
     private String RESULT_CARD_HEIGHT = "calc(100% - 215px)";
 
     private String ID_ATTR_NAME = "id";
@@ -140,15 +140,15 @@ public class AppEntryPoint implements EntryPoint {
     private String RESTRICTION_VECTOR_FEATURE_ID = "restriction_fid";
     private String REAL_ESTATE_VECTOR_LAYER_ID = "real_estate_vector_layer";
     private String REAL_ESTATE_VECTOR_FEATURE_ID = "real_estate_fid";
-    
+
     private String OEREB_SERVICE_URL;
     private String SEARCH_SERVICE_PATH;
     private String REAL_ESTATE_DATAPRODUCT_ID;
-    private String ADDRESS_DATAPRODUCT_ID;    
+    private String ADDRESS_DATAPRODUCT_ID;
     private String DATA_SERVICE_URL;
     private String BACKGROUND_WMTS_URL;
     private String BACKGROUND_WMTS_LAYER;
-    
+
     private HashMap<String, String> WMS_HOST_MAPPING;
 
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
@@ -160,18 +160,19 @@ public class AppEntryPoint implements EntryPoint {
     private MaterialCard resultCard;
     private MaterialCardContent searchCardContent;
     private MaterialCardContent resultCardContent;
-    private MaterialRow resultHeaderRow;    
+    private MaterialRow resultHeaderRow;
     private Div resultDiv;
     private MaterialColumn cadastralSurveyingResultColumn;
-    
+    private MaterialColumn plrResultColumn;
+
     private MaterialWindow realEstateWindow;
-    private MaterialCollapsible collapsibleConcernedTheme;
+    private MaterialCollapsible plrCollapsibleConcernedTheme;
     private MaterialCollapsible collapsibleNotConcernedTheme;
     private MaterialCollapsible collapsibleThemesWithoutData;
     private MaterialCollapsible collapsibleGeneralInformation;
 
     private ArrayList<String> concernedWmsLayers = new ArrayList<String>();
-    
+
     public void onModuleLoad() {
         settingsService.settingsServer(new AsyncCallback<SettingsResponse>() {
             @Override
@@ -195,7 +196,7 @@ public class AppEntryPoint implements EntryPoint {
         });
     }
 
-    private void init() {                        
+    private void init() {
         // div for ol3 map
         Div mapDiv = new Div();
         mapDiv.setId("map");
@@ -218,7 +219,7 @@ public class AppEntryPoint implements EntryPoint {
         MaterialRow logoRow = new MaterialRow();
 
         com.google.gwt.user.client.ui.Image plrImage = new com.google.gwt.user.client.ui.Image();
-        plrImage.setUrl(GWT.getHostPageBaseURL()+"grundstuecksinfo_logo.png");
+        plrImage.setUrl(GWT.getHostPageBaseURL() + "grundstuecksinfo_logo.png");
         plrImage.setWidth("60%");
 
         MaterialColumn plrLogoColumn = new MaterialColumn();
@@ -227,7 +228,7 @@ public class AppEntryPoint implements EntryPoint {
         plrLogoColumn.add(plrImage);
 
         com.google.gwt.user.client.ui.Image cantonImage = new com.google.gwt.user.client.ui.Image();
-        cantonImage.setUrl(GWT.getHostPageBaseURL()+"Logo.png");
+        cantonImage.setUrl(GWT.getHostPageBaseURL() + "Logo.png");
         cantonImage.setWidth("80%");
 
         MaterialColumn cantonLogoColumn = new MaterialColumn();
@@ -262,22 +263,22 @@ public class AppEntryPoint implements EntryPoint {
         // A material card for the result.
         resultCard = new MaterialCard();
         resultCard.setId("resultCard");
-      
+
         resultCardContent = new MaterialCardContent();
         resultCardContent.setId("resultCardContent");
         resultCard.add(resultCardContent);
-        
+
         Div fadeoutBottomDiv = new Div();
         fadeoutBottomDiv.setId("fadeoutBottomDiv");
         resultCard.add(fadeoutBottomDiv);
-        
-        //RootPanel.get().add(dummyButton);
+
+        // RootPanel.get().add(dummyButton);
         RootPanel.get().add(mapDiv);
         RootPanel.get().add(searchCard);
         RootPanel.get().add(resultCard);
 
         initMap(mapDiv.getId());
-        
+
         // If there is an egrid query parameter in the url,
         // we request the extract without further interaction.
         if (Window.Location.getParameter("egrid") != null) {
@@ -298,21 +299,22 @@ public class AppEntryPoint implements EntryPoint {
                     MaterialToast.fireToast(messages.responseError204(egrid));
                 } else if (caught.getMessage().equalsIgnoreCase("500")) {
                     MaterialToast.fireToast(messages.responseError500());
-                    MaterialToast.fireToast(caught.getMessage());                    
+                    MaterialToast.fireToast(caught.getMessage());
                 } else {
-                    MaterialToast.fireToast(messages.responseError500());                    
-                    MaterialToast.fireToast(caught.getMessage());                    
-                }                
+                    MaterialToast.fireToast(messages.responseError500());
+                    MaterialToast.fireToast(caught.getMessage());
+                }
                 GWT.log("error: " + caught.getMessage());
             }
 
             @Override
             public void onSuccess(ExtractResponse result) {
                 MaterialLoader.loading(false);
-                
-                String newUrl = Window.Location.getProtocol() + "//" + Window.Location.getHost() + Window.Location.getPath() + "?egrid=" + egrid;
+
+                String newUrl = Window.Location.getProtocol() + "//" + Window.Location.getHost()
+                        + Window.Location.getPath() + "?egrid=" + egrid;
                 updateURLWithoutReloading(newUrl);
-                
+
                 Extract extract = result.getPlrExtract();
                 RealEstateDPR realEstate = extract.getRealEstate();
                 String number = realEstate.getNumber();
@@ -324,7 +326,7 @@ public class AppEntryPoint implements EntryPoint {
                 String realEstateType = realEstate.getRealEstateType();
 
                 removePlrLayers();
-                
+
                 // create the vector layer for highlighting the real estate
                 ol.layer.Vector vlayer = createRealEstateVectorLayer(result.getPlrExtract().getRealEstate().getLimit());
 
@@ -341,14 +343,15 @@ public class AppEntryPoint implements EntryPoint {
 
                 // Das ist jetzt ziemlich heuristisch...
                 // 500 = Breite des Suchresultates
-                view.setCenter(new Coordinate(x-(resultCard.getWidth()*view.getResolution())/2, y));
-                
+                view.setCenter(new Coordinate(x - (resultCard.getWidth() * view.getResolution()) / 2, y));
+
                 vlayer.setZIndex(1001);
                 map.addLayer(vlayer);
-                
+
                 resultDiv = new Div();
                 resultDiv.setId("resultDiv");
-                resultDiv.setBackgroundColor(Color.WHITE);
+//                resultDiv.setBackgroundColor(Color.WHITE);
+                resultDiv.setBackgroundColor(Color.GREY_LIGHTEN_5);
 
                 resultHeaderRow = new MaterialRow();
                 resultHeaderRow.setId("resultHeaderRow");
@@ -356,7 +359,7 @@ public class AppEntryPoint implements EntryPoint {
                 MaterialColumn resultParcelColumn = new MaterialColumn();
                 resultParcelColumn.setId("resultParcelColumn");
                 resultParcelColumn.setGrid("s8");
-                
+
                 String lblString = messages.resultHeader(number);
                 Label lbl = new Label(lblString);
                 resultParcelColumn.add(lbl);
@@ -376,7 +379,7 @@ public class AppEntryPoint implements EntryPoint {
                     resetGui();
                 });
                 resultButtonColumn.add(deleteExtractButton);
-                
+
                 MaterialButton minmaxExtractButton = new MaterialButton();
                 minmaxExtractButton.setId("minmaxExtractButton");
                 minmaxExtractButton.setMarginLeft(10);
@@ -406,35 +409,35 @@ public class AppEntryPoint implements EntryPoint {
 
                 resultHeaderRow.add(resultButtonColumn);
                 resultCardContent.add(resultHeaderRow);
-                
+
                 MaterialRow tabRow = new MaterialRow();
                 tabRow.setId("tabRow");
-                
+
                 MaterialColumn tabHeaderColumn = new MaterialColumn();
                 tabHeaderColumn.setId("tabHeaderColumn");
                 tabHeaderColumn.setGrid("s12");
-                
+
                 MaterialTab resultTab = new MaterialTab();
                 resultTab.setId("resultTab");
                 resultTab.setShadow(1);
                 // #e8c432
-                // #aed634 
+                // #aed634
                 // #52b1a7
                 // #75a5d4
                 resultTab.setBackgroundColor(Color.RED_LIGHTEN_1);
                 resultTab.setIndicatorColor(Color.WHITE);
-                
+
                 MaterialTabItem cadastralSurveyingHeaderTabItem = new MaterialTabItem();
                 cadastralSurveyingHeaderTabItem.setWaves(WavesType.LIGHT);
                 cadastralSurveyingHeaderTabItem.setGrid("s4");
-                
+
                 MaterialLink cadastralSurveyingHeaderTabLink = new MaterialLink();
                 cadastralSurveyingHeaderTabLink.setText(messages.tabTitleCadastralSurveying());
                 cadastralSurveyingHeaderTabLink.setHref("#cadastralSurveyingResultColumn");
                 cadastralSurveyingHeaderTabLink.setTextColor(Color.WHITE);
                 cadastralSurveyingHeaderTabItem.add(cadastralSurveyingHeaderTabLink);
                 resultTab.add(cadastralSurveyingHeaderTabItem);
-                
+
                 MaterialTabItem grundbuchHeaderTabItem = new MaterialTabItem();
                 grundbuchHeaderTabItem.setWaves(WavesType.LIGHT);
                 grundbuchHeaderTabItem.setGrid("s4");
@@ -452,23 +455,28 @@ public class AppEntryPoint implements EntryPoint {
 
                 MaterialLink oerebHeaderTabLink = new MaterialLink();
                 oerebHeaderTabLink.setText(messages.tabTitlePlr());
-                oerebHeaderTabLink.setHref("#tab3");
+                oerebHeaderTabLink.setHref("#plrResultColumn");
                 oerebHeaderTabLink.setTextColor(Color.WHITE);
                 oerebHeaderTabItem.add(oerebHeaderTabLink);
                 resultTab.add(oerebHeaderTabItem);
-                
+
                 tabHeaderColumn.add(resultTab);
                 tabRow.add(tabHeaderColumn);
 
                 cadastralSurveyingResultColumn = new MaterialColumn();
-                cadastralSurveyingResultColumn.setId("cadastralSurveyingResultColumn");                
+                cadastralSurveyingResultColumn.setId("cadastralSurveyingResultColumn");
                 cadastralSurveyingResultColumn.addStyleName("resultColumn");
                 cadastralSurveyingResultColumn.setGrid("s12");
-                
                 addCadastralSurveyingContent(result.getCadastralSurveyingExtract());
-               
                 tabRow.add(cadastralSurveyingResultColumn);
- 
+
+                plrResultColumn = new MaterialColumn();
+                plrResultColumn.setId("plrResultColumn");
+                plrResultColumn.addStyleName("resultColumn");
+                plrResultColumn.setGrid("s12");
+                addPlrContent(result.getPlrExtract());
+                tabRow.add(plrResultColumn);
+
                 resultDiv.add(tabRow);
 
 //                MaterialColumn deleteExtractButtonColumn = new MaterialColumn();
@@ -1148,8 +1156,69 @@ public class AppEntryPoint implements EntryPoint {
             }
         });
     }
-    
-    private void addCadastralSurveyingContent(ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Extract extract) {
+
+    private void addPlrContent(ch.so.agi.oereb.webclient.shared.models.plr.Extract extract) {
+        {
+            plrCollapsibleConcernedTheme = new MaterialCollapsible();
+            plrCollapsibleConcernedTheme.addStyleName("plrTopLevelCollapsible");
+            plrCollapsibleConcernedTheme.setShadow(0);
+
+            plrCollapsibleConcernedTheme.addExpandHandler(event -> {
+//                collapsibleNotConcernedTheme.closeAll();
+//                collapsibleThemesWithoutData.closeAll();
+//                collapsibleGeneralInformation.closeAll();
+            });
+
+            MaterialCollapsibleItem collapsibleConcernedThemeItem = new MaterialCollapsibleItem();
+
+            MaterialCollapsibleHeader collapsibleConcernedThemeHeader = new MaterialCollapsibleHeader();
+            collapsibleConcernedThemeHeader.addStyleName("plrCollapsibleThemeHeader");
+
+            MaterialRow collapsibleConcernedThemeHeaderRow = new MaterialRow();
+            collapsibleConcernedThemeHeaderRow.addStyleName("collapsibleThemeHeaderRow");
+
+            MaterialColumn collapsibleConcernedThemeColumnLeft = new MaterialColumn();
+            collapsibleConcernedThemeColumnLeft.addStyleName("collapsibleThemeColumnLeft");
+            collapsibleConcernedThemeColumnLeft.setGrid("s10");
+            MaterialColumn collapsibleConcernedThemeColumnRight = new MaterialColumn();
+            collapsibleConcernedThemeColumnRight.addStyleName("collapsibleThemeColumnRight");
+            collapsibleConcernedThemeColumnRight.setGrid("s2");
+
+            MaterialLink collapsibleThemesHeaderLink = new MaterialLink();
+            collapsibleThemesHeaderLink.addStyleName("collapsibleThemesHeaderLink");
+            collapsibleThemesHeaderLink.setText(messages.concernedThemes());
+            collapsibleConcernedThemeColumnLeft.add(collapsibleThemesHeaderLink);
+
+            MaterialChip collapsibleThemesHeaderChip = new MaterialChip();
+            collapsibleThemesHeaderChip.addStyleName("collapsibleThemesHeaderChip");
+            collapsibleThemesHeaderChip.setText(String.valueOf(extract.getRealEstate().getConcernedThemes().size()));
+            collapsibleConcernedThemeColumnRight.add(collapsibleThemesHeaderChip);
+
+            collapsibleConcernedThemeHeaderRow.add(collapsibleConcernedThemeColumnLeft);
+            collapsibleConcernedThemeHeaderRow.add(collapsibleConcernedThemeColumnRight);
+
+            collapsibleConcernedThemeHeader.add(collapsibleConcernedThemeHeaderRow);
+
+            
+            
+            
+            collapsibleConcernedThemeItem.add(collapsibleConcernedThemeHeader);
+            if (extract.getRealEstate().getConcernedThemes().size() > 0) {
+//                collapsibleConcernedThemeItem.add(collapsibleConcernedThemeBody);
+            }
+
+            plrCollapsibleConcernedTheme.add(collapsibleConcernedThemeItem);
+
+            if (extract.getRealEstate().getConcernedThemes().size() > 0) {
+                plrCollapsibleConcernedTheme.open(1);
+            }
+
+            plrResultColumn.add(plrCollapsibleConcernedTheme);
+        }
+    }
+
+    private void addCadastralSurveyingContent(
+            ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Extract extract) {
         ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.RealEstateDPR realEstate = extract.getRealEstate();
         String number = realEstate.getNumber();
         String identnd = realEstate.getIdentND();
@@ -1159,32 +1228,33 @@ public class AppEntryPoint implements EntryPoint {
         String municipality = realEstate.getMunicipality();
         String subunitOfLandRegister = realEstate.getSubunitOfLandRegister();
         List<String> localNames = realEstate.getLocalNames().stream().sorted().collect(Collectors.toList());
-       
+
         addCadastralSurveyingContentKeyValue(new Label("E-GRID:"), new Label(egrid));
         addCadastralSurveyingContentKeyValue(new Label("NBIdent:"), new Label(identnd));
         addCadastralSurveyingContentKeyValue(new HTML("&nbsp;"), new HTML("&nbsp;"));
-        
+
         addCadastralSurveyingContentKeyValue(new Label("Grundstücksart:"), new Label(type));
-        addCadastralSurveyingContentKeyValue(new Label("Grundstücksfläche:"), new HTML(fmtDefault.format(area) + " m<sup>2</sup>"));
+        addCadastralSurveyingContentKeyValue(new Label("Grundstücksfläche:"),
+                new HTML(fmtDefault.format(area) + " m<sup>2</sup>"));
         addCadastralSurveyingContentKeyValue(new HTML("&nbsp;"), new HTML("&nbsp;"));
-        
+
         addCadastralSurveyingContentKeyValue(new Label("Gemeinde:"), new Label(municipality));
         addCadastralSurveyingContentKeyValue(new Label("Grundbuch:"), new Label(subunitOfLandRegister));
         addCadastralSurveyingContentKeyValue(new HTML("&nbsp;"), new HTML("&nbsp;"));
-        
+
         addCadastralSurveyingContentKeyValue(new Label("Flurnamen:"), new Label(String.join(", ", localNames)));
-        
+
         {
             MaterialColumn fakeColumn = new MaterialColumn();
             fakeColumn.addStyleName("fakeColumn mt15");
             fakeColumn.setGrid("s12");
-            cadastralSurveyingResultColumn.add(fakeColumn);            
+            cadastralSurveyingResultColumn.add(fakeColumn);
         }
-        
+
         {
             Div header = new Div();
             header.addStyleName("cadastralSurveyingInfoHeader");
-            header.setGrid("s12");                        
+            header.setGrid("s12");
             header.add(new Label("Bodenbedeckung"));
             cadastralSurveyingResultColumn.add(header);
 
@@ -1206,21 +1276,19 @@ public class AppEntryPoint implements EntryPoint {
             cadastralSurveyingResultColumn.add(typeColumn);
             cadastralSurveyingResultColumn.add(shareColumn);
             cadastralSurveyingResultColumn.add(sharePercentColumn);
-            
+
             java.util.Map<String, Integer> landCoverSharesUnsorted = realEstate.getLandCoverShares();
-            java.util.Map<String, Integer> landCoverShares = landCoverSharesUnsorted.entrySet()
-                .stream()
-                .sorted(java.util.Map.Entry.comparingByKey())
-                .collect(Collectors.toMap(java.util.Map.Entry::getKey, java.util.Map.Entry::getValue,
-                        (oldValue, newValue) -> oldValue, LinkedHashMap::new));
-            
-            landCoverShares.forEach((k, v) -> {                
+            java.util.Map<String, Integer> landCoverShares = landCoverSharesUnsorted.entrySet().stream()
+                    .sorted(java.util.Map.Entry.comparingByKey()).collect(Collectors.toMap(java.util.Map.Entry::getKey,
+                            java.util.Map.Entry::getValue, (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+
+            landCoverShares.forEach((k, v) -> {
                 MaterialColumn landCoverShareKeyColumn = new MaterialColumn();
                 landCoverShareKeyColumn.addStyleName("landCoverShareKeyColumn");
                 landCoverShareKeyColumn.setGrid("s6");
                 landCoverShareKeyColumn.add(new Label(k));
-                cadastralSurveyingResultColumn.add(landCoverShareKeyColumn);      
-                
+                cadastralSurveyingResultColumn.add(landCoverShareKeyColumn);
+
                 MaterialColumn landCoverShareValueColumn = new MaterialColumn();
                 landCoverShareValueColumn.addStyleName("landCoverShareValueColumn");
                 landCoverShareValueColumn.setGrid("s4");
@@ -1230,22 +1298,22 @@ public class AppEntryPoint implements EntryPoint {
                 MaterialColumn landCoverPercentValueColumn = new MaterialColumn();
                 landCoverPercentValueColumn.addStyleName("landCoverShareValueColumn");
                 landCoverPercentValueColumn.setGrid("s2");
-                double percent = (new Double(v) / realEstate.getLandRegistryArea())*100.0;
+                double percent = (new Double(v) / realEstate.getLandRegistryArea()) * 100.0;
                 landCoverPercentValueColumn.add(new HTML(fmtPercent.format(percent)));
                 cadastralSurveyingResultColumn.add(landCoverPercentValueColumn);
             });
         }
-        
+
         {
             MaterialColumn fakeColumn = new MaterialColumn();
             fakeColumn.addStyleName("fakeColumn mt15");
             fakeColumn.setGrid("s12");
-            cadastralSurveyingResultColumn.add(fakeColumn);            
-        }        
-        
+            cadastralSurveyingResultColumn.add(fakeColumn);
+        }
+
         {
             Div header = new Div();
-            header.setGrid("s12");            
+            header.setGrid("s12");
             header.addStyleName("cadastralSurveyingInfoHeader");
             header.add(new Label("Gebäude"));
             cadastralSurveyingResultColumn.add(header);
@@ -1270,99 +1338,98 @@ public class AppEntryPoint implements EntryPoint {
             cadastralSurveyingResultColumn.add(addressColumn);
             cadastralSurveyingResultColumn.add(egidColumn);
             cadastralSurveyingResultColumn.add(edidColumn);
-            
+
             java.util.List<Building> buildings = realEstate.getBuildings();
-            
+
             buildings.forEach(b -> {
                 Address address = b.getPostalAddress();
                 String addressHtmlString = address.getStreet() + " " + address.getNumber() + "<br>"
                         + address.getPostalCode() + " " + address.getCity();
-                
+
                 MaterialColumn addressCol = new MaterialColumn();
                 addressCol.addStyleName("buildingColumn");
                 addressCol.setGrid("s7");
                 addressCol.add(new HTML(addressHtmlString));
-                cadastralSurveyingResultColumn.add(addressCol);  
-                
+                cadastralSurveyingResultColumn.add(addressCol);
+
                 MaterialColumn egidCol = new MaterialColumn();
                 egidCol.addStyleName("buildingColumn");
                 egidCol.setGrid("s4");
                 egidCol.add(new Label(String.valueOf(b.getEgid())));
-                cadastralSurveyingResultColumn.add(egidCol);  
-                
+                cadastralSurveyingResultColumn.add(egidCol);
+
                 MaterialColumn edidCol = new MaterialColumn();
                 edidCol.addStyleName("buildingColumn");
                 edidCol.setGrid("s1");
                 edidCol.add(new Label(String.valueOf(b.getEdid())));
-                cadastralSurveyingResultColumn.add(edidCol);  
+                cadastralSurveyingResultColumn.add(edidCol);
             });
         }
-        
+
         {
             MaterialColumn fakeColumn = new MaterialColumn();
             fakeColumn.addStyleName("fakeColumn");
             fakeColumn.setGrid("s12");
             fakeColumn.setMarginTop(5);
             fakeColumn.setMarginBottom(15);
-            cadastralSurveyingResultColumn.add(fakeColumn);            
+            cadastralSurveyingResultColumn.add(fakeColumn);
         }
-        
-        {            
-            ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Office surveyorOffice = realEstate.getSurveyorOffice();
+
+        {
+            ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Office surveyorOffice = realEstate
+                    .getSurveyorOffice();
             Address surveyorAddress = surveyorOffice.getPostalAddress();
-            
-            StringBuilder htmlString =  new StringBuilder();
+
+            StringBuilder htmlString = new StringBuilder();
             htmlString.append(surveyorOffice.getName() + "<br>");
             htmlString.append(surveyorAddress.getLine1() + "<br>");
             if (surveyorAddress.getLine2() != null) {
                 htmlString.append(surveyorAddress.getLine2() + "<br>");
             }
-            htmlString.append(surveyorAddress.getStreet() + " " + surveyorAddress.getNumber() + "<br>" );
+            htmlString.append(surveyorAddress.getStreet() + " " + surveyorAddress.getNumber() + "<br>");
             htmlString.append(surveyorAddress.getPostalCode() + " " + surveyorAddress.getCity() + "<br><br>");
             htmlString.append(surveyorAddress.getPhone() + "<br>");
             htmlString.append(makeEmailLink(surveyorAddress.getEmail()) + "<br>");
-            htmlString.append(makeHtmlLink(surveyorAddress.getWeb()));            
-            addCadastralSurveyingContentKeyValue(new Label("Nachführungsgeometer:"), new HTML(htmlString.toString()));    
-            addCadastralSurveyingContentKeyValue(new HTML("&nbsp;"), new HTML("&nbsp;"));            
+            htmlString.append(makeHtmlLink(surveyorAddress.getWeb()));
+            addCadastralSurveyingContentKeyValue(new Label("Nachführungsgeometer:"), new HTML(htmlString.toString()));
+            addCadastralSurveyingContentKeyValue(new HTML("&nbsp;"), new HTML("&nbsp;"));
         }
-        
+
         {
-            ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Office authorityOffice = extract.getCadastralSurveyingAuthority();
+            ch.so.agi.oereb.webclient.shared.models.cadastralsurveying.Office authorityOffice = extract
+                    .getCadastralSurveyingAuthority();
             Address authorityAddress = authorityOffice.getPostalAddress();
 
-            String htmlString = authorityOffice.getName() + "<br>" 
-                    + authorityAddress.getStreet() + " " + authorityAddress.getNumber() + "<br>" 
-                    + authorityAddress.getPostalCode() + " " + authorityAddress.getCity() + "<br><br>"
-                    + authorityAddress.getPhone() + "<br>" 
-                    + makeEmailLink(authorityAddress.getEmail()) + "<br>"
-                    + makeHtmlLink(authorityAddress.getWeb());
-            
-            addCadastralSurveyingContentKeyValue(new Label("Vermessungsaufsicht:"), new HTML(htmlString));            
+            String htmlString = authorityOffice.getName() + "<br>" + authorityAddress.getStreet() + " "
+                    + authorityAddress.getNumber() + "<br>" + authorityAddress.getPostalCode() + " "
+                    + authorityAddress.getCity() + "<br><br>" + authorityAddress.getPhone() + "<br>"
+                    + makeEmailLink(authorityAddress.getEmail()) + "<br>" + makeHtmlLink(authorityAddress.getWeb());
+
+            addCadastralSurveyingContentKeyValue(new Label("Vermessungsaufsicht:"), new HTML(htmlString));
         }
-        
+
     }
-    
+
     private String makeHtmlLink(String text) {
-        String html = "<a class='resultLink' href='"+text+"' target='_blank'>"+text+"</a>";
+        String html = "<a class='resultLink' href='" + text + "' target='_blank'>" + text + "</a>";
         return html;
     }
-    
+
     private String makeEmailLink(String text) {
-        String html = "<a class='resultLink' href='mailto:"+text+"'>"+text+"</a>";
+        String html = "<a class='resultLink' href='mailto:" + text + "'>" + text + "</a>";
         return html;
     }
-    
-    
+
     private void addCadastralSurveyingContentKeyValue(Label key, Label value) {
         Div row = new Div();
         row.addStyleName("cadastralSurveyingInfoRow");
-        
+
         Div keyColumn = new Div();
         keyColumn.addStyleName("cadastralSurveyingInfoKeyColumn");
         keyColumn.setGrid("s5");
         keyColumn.add(key);
         cadastralSurveyingResultColumn.add(keyColumn);
-        
+
         Div valueColumn = new Div();
         valueColumn.addStyleName("cadastralSurveyingInfoValueColumn");
         valueColumn.setGrid("s7");
@@ -1382,10 +1449,9 @@ public class AppEntryPoint implements EntryPoint {
         // Remove vector layer
         Base vlayer = getLayerById(REAL_ESTATE_VECTOR_LAYER_ID);
         map.removeLayer(vlayer);
-        
-        
+
         // Empty concernedWmsLayers list.
-        concernedWmsLayers.clear();        
+        concernedWmsLayers.clear();
     }
 
     private ol.layer.Vector createRealEstateVectorLayer(String geometry) {
@@ -1448,7 +1514,7 @@ public class AppEntryPoint implements EntryPoint {
         Tile wmtsLayer = new Tile(wmtsLayerOptions);
         wmtsLayer.setOpacity(1.0);
         wmtsLayer.set(ID_ATTR_NAME, BACKGROUND_LAYER_ID);
-                
+
         ViewOptions viewOptions = OLFactory.createOptions();
         viewOptions.setProjection(projection);
         viewOptions.setResolutions(new double[] { 4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0,
@@ -1463,18 +1529,18 @@ public class AppEntryPoint implements EntryPoint {
         mapOptions.setTarget(id);
         mapOptions.setView(view);
         mapOptions.setControls(new Collection<Control>());
-                
+
         DefaultInteractionsOptions interactionOptions = new ol.interaction.DefaultInteractionsOptions();
         interactionOptions.setPinchRotate(false);
         mapOptions.setInteractions(Interaction.defaults(interactionOptions));
-        
+
         map = new Map(mapOptions);
 
         map.addLayer(wmtsLayer);
-        
-        // FIXME 
+
+        // FIXME
         // Either make a proper overview layer (db and wms) or delete code.
-        //map.addLayer(wmsLayer);
+        // map.addLayer(wmsLayer);
 
         map.addSingleClickListener(new MapSingleClickListener());
     }
@@ -1521,11 +1587,11 @@ public class AppEntryPoint implements EntryPoint {
         if (resultDiv != null) {
             resultCardContent.remove(resultDiv);
         }
-        
+
         if (realEstateWindow != null) {
             realEstateWindow.removeFromParent();
         }
-        
+
         if (resultHeaderRow != null) {
             resultHeaderRow.removeFromParent();
         }
@@ -1538,9 +1604,9 @@ public class AppEntryPoint implements EntryPoint {
         public void onClick(ClickEvent event) {
             MaterialLoader.loading(true);
             resetGui();
-            //CH870679603216 (KbS ÖV)
-            //CH857632820629 (Kappel)
-            //CH807306583219 (Messen)
+            // CH870679603216 (KbS ÖV)
+            // CH857632820629 (Kappel)
+            // CH807306583219 (Messen)
             sendEgridToServer("CH807306583219");
         }
     }
@@ -1557,15 +1623,15 @@ public class AppEntryPoint implements EntryPoint {
             SearchResult searchResult = searchSuggestion.getSearchResult();
 
             String dataproductId = searchResult.getDataproductId();
-            String idFieldName = searchResult.getIdFieldName();            
+            String idFieldName = searchResult.getIdFieldName();
             String featureId = searchResult.getFeatureId();
 
             // Remove the chip from the text field. Even if it is not visible.
             autocomplete.reset();
 
-            String searchServiceUrl = GWT.getHostPageBaseURL() + SEARCH_SERVICE_PATH; 
+            String searchServiceUrl = GWT.getHostPageBaseURL() + SEARCH_SERVICE_PATH;
             String requestUrl = searchServiceUrl + dataproductId + "/" + idFieldName + "/" + featureId;
-            RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, requestUrl);    
+            RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, requestUrl);
             try {
                 builder.sendRequest("", new RequestCallback() {
                     @Override
@@ -1585,7 +1651,7 @@ public class AppEntryPoint implements EntryPoint {
                             for (int i = 0; i < responseArray.size(); i++) {
                                 JSONObject obj = responseArray.get(i).isObject();
                                 egrid = obj.get("egrid").isString().stringValue();
-                                
+
                                 // If there are multiple hits, we prefer the Liegenschaft.
                                 String type = obj.get("art").isString().stringValue();
                                 if (type.equalsIgnoreCase("Liegenschaft")) {
@@ -1611,7 +1677,7 @@ public class AppEntryPoint implements EntryPoint {
             } catch (Exception e) {
                 MaterialLoader.loading(true);
                 e.printStackTrace();
-            }     
+            }
         }
     }
 
@@ -1619,17 +1685,19 @@ public class AppEntryPoint implements EntryPoint {
         @Override
         public void onEvent(MapBrowserEvent event) {
             resetGui();
-            
+
             Coordinate coordinate = event.getCoordinate();
-            String bbox = coordinate.getX() + "," + coordinate.getY() + "," + coordinate.getX() + "," + coordinate.getY();
-            
-            String searchServiceUrl = GWT.getHostPageBaseURL() + SEARCH_SERVICE_PATH; 
+            String bbox = coordinate.getX() + "," + coordinate.getY() + "," + coordinate.getX() + ","
+                    + coordinate.getY();
+
+            String searchServiceUrl = GWT.getHostPageBaseURL() + SEARCH_SERVICE_PATH;
             String requestUrl = searchServiceUrl + REAL_ESTATE_DATAPRODUCT_ID + "/bbox/" + bbox;
             RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, requestUrl);
             try {
                 builder.sendRequest("", new RequestCallback() {
                     @Override
-                    public void onResponseReceived(com.google.gwt.http.client.Request request, com.google.gwt.http.client.Response response) {
+                    public void onResponseReceived(com.google.gwt.http.client.Request request,
+                            com.google.gwt.http.client.Response response) {
                         int statusCode = response.getStatusCode();
                         if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
                             String responseBody = response.getText();
@@ -1659,7 +1727,7 @@ public class AppEntryPoint implements EntryPoint {
                                 MaterialPanel realEstatePanel = new MaterialPanel();
 
                                 for (int i = 0; i < responseArray.size(); i++) {
-                                    JSONObject obj = responseArray.get(i).isObject();                                    
+                                    JSONObject obj = responseArray.get(i).isObject();
                                     String number = obj.get("nummer").isString().stringValue();
                                     egrid = obj.get("egrid").isString().stringValue();
                                     String type = obj.get("art").isString().stringValue();
@@ -1673,7 +1741,8 @@ public class AppEntryPoint implements EntryPoint {
 
                                     realEstateRow.addClickHandler(event -> {
                                         realEstateWindow.removeFromParent();
-                                        GWT.log("get extract from click for (multiple result): " + realEstateRow.getId());
+                                        GWT.log("get extract from click for (multiple result): "
+                                                + realEstateRow.getId());
 
                                         MaterialLoader.loading(true);
                                         sendEgridToServer(realEstateRow.getId());
@@ -1691,11 +1760,11 @@ public class AppEntryPoint implements EntryPoint {
 
                                     realEstatePanel.add(realEstateRow);
                                 }
-                                
+
                                 realEstateWindow.add(realEstatePanel);
                                 realEstateWindow.open();
                             }
-                            
+
                             else {
                                 egrid = responseArray.get(0).isObject().get("egrid").isString().stringValue();
                                 GWT.log("get extract from click for (single result): " + egrid);
@@ -1715,22 +1784,23 @@ public class AppEntryPoint implements EntryPoint {
                     @Override
                     public void onError(com.google.gwt.http.client.Request request, Throwable exception) {
                         MaterialLoader.loading(false);
-                        GWT.log("error actually sending the request, never got sent");                    }
+                        GWT.log("error actually sending the request, never got sent");
+                    }
                 });
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
-    
+
     private Image createPlrWmsLayer(ReferenceWMS referenceWms) {
         ImageWmsParams imageWMSParams = OLFactory.createOptions();
         imageWMSParams.setLayers(referenceWms.getLayers());
 
         ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
-        
+
         String baseUrl = referenceWms.getBaseUrl();
-        
+
         imageWMSOptions.setUrl(baseUrl);
         imageWMSOptions.setParams(imageWMSParams);
         imageWMSOptions.setRatio(1.5f);
@@ -1748,7 +1818,7 @@ public class AppEntryPoint implements EntryPoint {
 
         return wmsLayer;
     }
-    
+
     private MaterialRow processRestrictionRow(Restriction restriction, GeometryType type) {
         MaterialRow informationRow = new MaterialRow();
         informationRow.setMarginBottom(10);
@@ -1777,29 +1847,26 @@ public class AppEntryPoint implements EntryPoint {
         if (restriction.getSymbol() != null) {
             symbolImage = new com.google.gwt.user.client.ui.Image(restriction.getSymbol());
         } else {
-            symbolImage = new com.google.gwt.user.client.ui.Image(UriUtils.fromSafeConstant(restriction.getSymbolRef()));
+            symbolImage = new com.google.gwt.user.client.ui.Image(
+                    UriUtils.fromSafeConstant(restriction.getSymbolRef()));
         }
         symbolImage.setWidth("30px");
         symbolImage.getElement().getStyle().setProperty("border", "1px solid black");
         symbolImage.getElement().getStyle().setProperty("verticalAlign", "middle");
         symbolColumn.add(symbolImage);
-        
+
         /*
-        symbolColumn.addMouseOverHandler(event -> {
-            GWT.log("mouse over symbol"); 
-         });
-        
-        symbolColumn.addMouseOutHandler(event -> {
-            GWT.log("mouse out symbol"); 
-         });
-        */
+         * symbolColumn.addMouseOverHandler(event -> { GWT.log("mouse over symbol"); });
+         * 
+         * symbolColumn.addMouseOutHandler(event -> { GWT.log("mouse out symbol"); });
+         */
 
         MaterialColumn shareColumn = new MaterialColumn();
         shareColumn.setTextAlign(TextAlign.RIGHT);
         shareColumn.setPadding(0);
         shareColumn.setGrid("s3");
         shareColumn.setFontSize(BODY_FONT_SIZE);
-        
+
         if (type == GeometryType.POLYGON) {
             HTML htmlArea;
             if (restriction.getAreaShare() < 0.1) {
@@ -1822,13 +1889,13 @@ public class AppEntryPoint implements EntryPoint {
             HTML htmlPoints = new HTML(fmtDefault.format(restriction.getNrOfPoints()));
             shareColumn.add(htmlPoints);
         }
-        
+
         MaterialColumn sharePercentColumn = new MaterialColumn();
         sharePercentColumn.setTextAlign(TextAlign.RIGHT);
         sharePercentColumn.setPadding(0);
         sharePercentColumn.setGrid("s2");
         sharePercentColumn.setFontSize(BODY_FONT_SIZE);
-                                        
+
         if (type == GeometryType.POLYGON && restriction.getPartInPercent() != null) {
             HTML htmlArea;
             if (restriction.getPartInPercent() < 0.1) {
@@ -1848,8 +1915,8 @@ public class AppEntryPoint implements EntryPoint {
 
         return informationRow;
     }
-    
+
     private static native void updateURLWithoutReloading(String newUrl) /*-{
-        $wnd.history.pushState(newUrl, "", newUrl);
-    }-*/;
+                                                                        $wnd.history.pushState(newUrl, "", newUrl);
+                                                                        }-*/;
 }
