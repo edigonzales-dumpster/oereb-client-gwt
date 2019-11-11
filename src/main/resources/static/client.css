@@ -1,3 +1,7 @@
+body {
+	font-family: Roboto,sans-serif !important;
+}
+
 #map {
 	height: 100%;
 }
@@ -37,9 +41,9 @@
 }
 
 #autocomplete {
-	border: 1px #455a64 solid;
+	/*border: 1px #757575 solid;
 	padding: 5px;
-	border-radius: 10px;	
+	border-radius: 10px;*/	
 }
 
 #resultCard {
@@ -67,17 +71,34 @@
 	bottom: 0px;
 	width: 100%;
 	padding: 30px 0px;
-	background-image: linear-gradient(rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
+	background-image: linear-gradient(rgba(250, 250, 250, 0) 0%, rgba(250, 250, 250, 1) 100%);
 }
 
-#resultButtonRow {
+#resultHeaderRow {
     background-color: #fafafa; /* GREY_LIGHTEN_5 */
     margin-bottom: 5px;
     position: sticky;
     top: 0px;
-    padding-top: 15px;
+    padding-top: 0px;
     padding-bottom: 15px;
     z-index: 10;
+    height: 58px;
+}
+
+#resultParcelColumn {
+    margin: 0px;
+    padding: 0px !important;
+    font-size: 18px;
+    font-weight: 700;
+    height: 58px;
+    line-height: 58px;    
+}
+
+#resultButtonColumn {
+    padding: 0px !important;
+    text-align: right;
+    height: 58px;
+    line-height: 58px;
 }
 
 #deleteExtractButtonColumn {
@@ -92,6 +113,94 @@
     background-color: #ef5350; /* RED_LIGHTEN_1 */
 }
 
+#tabRow {
+	margin-bottom: 0px !important;
+	martin-top: 0px !important;
+}
+
+#tabHeaderColumn {
+	padding: 0px !important;	
+} 
+
+#resultTab {
+	/*background-color: #aed634 !important;*/
+}
+
+.resultColumn {
+    padding: 15px 0px 0px 0px !important;    
+}
+
+.fakeColumn {
+    padding: 0px !important;
+    border-bottom: 1px #bdbdbd solid;
+}
+
+.mt15 {
+    margin: 15px 0px 0px 0px !important;
+
+}
+
+.cadastralSurveyingInfoHeader {
+    padding: 0px !important;
+    margin: 15px 0px 0px 0px !important;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.cadastralSurveyingInfoKeyColumn {
+    padding: 0px !important;
+    margin: 0px !important;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.cadastralSurveyingInfoValueColumn {
+    padding: 0px !important;
+    margin: 0px !important;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.cadastralSurveyingInfoHeaderSmall {
+    padding: 0px !important;
+    margin-right: 0px !important;
+    font-size: 12px;
+}   
+
+.textRight {
+	text-align: right !important;
+}
+
+.landCoverShareKeyColumn {
+    padding: 0px !important;
+    margin: 0px !important;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.landCoverShareValueColumn {
+    padding: 0px !important;
+    margin: 0px !important;
+    font-size: 14px;
+    font-weight: 400;
+    text-align: right;
+}
+
+.buildingColumn {
+    padding: 0px !important;
+    margin: 0px 0px 10px 0px !important;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+#plrPdfButtonColumn {
+    padding: 0px !important;
+    font-size: 14px;
+    font-weight: 700;	
+}
+
+
+/* */
 #pdfButtonColumn {
 	padding: 0px;
 	text-align: right;
@@ -100,7 +209,6 @@
 #pdfButton {
     background-color: #ef5350; /* RED_LIGHTEN_1 */
 }
-
 
 #generalInfoRow {
     margin-bottom: 10px;	
@@ -131,12 +239,12 @@
     font-weight: 400;
 }
 
-.topLevelCollapsible {
+.plrTopLevelCollapsible {
 	background-color: #fafafa; /* GREY_LIGHTEN_5 */
 	margin-top: 25px;	
 }
 
-.collapsibleThemeHeader {
+.plrCollapsibleThemeHeader {
     background-color: #eeeeee !important; /* GREY_LIGHTEN_3 */
 }
 
@@ -221,7 +329,7 @@ a.collapsibleThemeLayerLink:hover {
 
 .layerInfoHeaderRow {
 	padding: 10px 0px 0px 0px !important;
-	border-bottom: 1px #bdbdbd solid;
+	border-bottom: 0px #bdbdbd solid;
 	border-top: 1px #bdbdbd solid;
 	margin-top: 15px !important;
 	margin-bottom: 5px !important;	
@@ -241,7 +349,7 @@ a.collapsibleThemeLayerLink:hover {
 
 .layerShareColumn {
 	text-align: right;
-	padding: 0px !imporant;	
+	padding: 0px !important;	
 }
                  
 .layerPercentColumn {
@@ -306,7 +414,7 @@ a.resultLink:visited {
 }
 
 .collapsibleGeneralInformationBody {
-	background-color: white !importan;
+	background-color: white !important;
 	font-size: 14px;
 	padding: 5px 15px 5px 15px !important;
 }
@@ -318,9 +426,11 @@ a.resultLink:visited {
 }
 
 ::placeholder {
-    color: #455a64 !important;
+    /*color: #ff8a80 !important;*/
+    color: #9e9e9e !important;
     /*color: black !important;*/
     font-size: 16px;
+    font-family: Roboto !important;
 }   
 .gwt-Label {
     color: black;   
@@ -329,7 +439,7 @@ a.resultLink:visited {
     color: black;   
 }        
 ul.multiValueSuggestBox-list {
-    border-bottom: 0px solid #455a64 !important;
+    /*border-bottom: 1px solid #455a64 !important;*/
     /*background-color: #eeeeee !important;*/
     margin-bottom: 0px !important;
 }

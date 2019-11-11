@@ -18,8 +18,10 @@ public interface PLRMessages extends Messages {
     @DefaultMessage("Search: Real estates and addresses")
     String searchPlaceholder(); 
 
-    @DefaultMessage("Real estate {0} in {1}")
-    String resultHeader(String number, String municipality);
+    //@DefaultMessage("{0} Nr {1}")
+//  String resultHeader(String type, String number);    
+    @DefaultMessage("Real estate nr {0}")
+    String resultHeader(String number);
     
     @DefaultMessage("Area")
     String resultArea();
@@ -74,4 +76,14 @@ public interface PLRMessages extends Messages {
     
     @DefaultMessage("An error occured.")
     String responseError500();
+    
+    @DefaultMessage("Cadastral Surv.")
+    String tabTitleCadastralSurveying();
+
+    @DefaultMessage("Land Register")
+    String tabTitleLandRegister();
+
+    @DefaultMessage("PLR")
+    String tabTitlePlr();
+ 
 }

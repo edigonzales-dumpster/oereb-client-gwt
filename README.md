@@ -24,6 +24,10 @@ Build fat jar and docker image:
 TRAVIS_BUILD_NUMBER=9999 mvn package
 ```
 
+### Cadastral Surveying web service
+For developing just run `docker-compose up` in the local cadastral-web-service repository. This will start the service and a database.
+
+
 ## Running
 ```
 docker run -p 8080:8080 sogis/oereb-client

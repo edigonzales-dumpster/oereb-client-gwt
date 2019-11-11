@@ -1,7 +1,7 @@
-package ch.so.agi.oereb.webclient.shared.models;
+package ch.so.agi.oereb.webclient.shared.models.cadastralsurveying;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
@@ -24,14 +24,15 @@ public class RealEstateDPR implements IsSerializable {
     
     private int landRegistryArea;
     
-    // Wkt representation
-    private String limit;
+    private Office surveyorOffice;
     
-    private ArrayList<ThemeWithoutData> themesWithoutData;
+    private Office landRegisterOffice;
     
-    private ArrayList<NotConcernedTheme> notConcernedThemes;
+    private List<String> localNames;
     
-    private ArrayList<ConcernedTheme> concernedThemes;
+    private Map<String, Integer> landCoverShares;
+    
+    private List<Building> buildings;
 
     public String getRealEstateType() {
         return realEstateType;
@@ -105,35 +106,43 @@ public class RealEstateDPR implements IsSerializable {
         this.landRegistryArea = landRegistryArea;
     }
 
-    public String getLimit() {
-        return limit;
+    public Office getSurveyorOffice() {
+        return surveyorOffice;
     }
 
-    public void setLimit(String limit) {
-        this.limit = limit;
+    public void setSurveyorOffice(Office surveyorOffice) {
+        this.surveyorOffice = surveyorOffice;
     }
 
-    public ArrayList<ThemeWithoutData> getThemesWithoutData() {
-        return themesWithoutData;
+    public Office getLandRegisterOffice() {
+        return landRegisterOffice;
     }
 
-    public void setThemesWithoutData(ArrayList<ThemeWithoutData> themesWithoutData) {
-        this.themesWithoutData = themesWithoutData;
+    public void setLandRegisterOffice(Office landRegisterOffice) {
+        this.landRegisterOffice = landRegisterOffice;
     }
 
-    public ArrayList<NotConcernedTheme> getNotConcernedThemes() {
-        return notConcernedThemes;
+    public List<String> getLocalNames() {
+        return localNames;
     }
 
-    public void setNotConcernedThemes(ArrayList<NotConcernedTheme> notConcernedThemes) {
-        this.notConcernedThemes = notConcernedThemes;
+    public void setLocalNames(List<String> localNames) {
+        this.localNames = localNames;
     }
 
-    public ArrayList<ConcernedTheme> getConcernedThemes() {
-        return concernedThemes;
+    public Map<String, Integer> getLandCoverShares() {
+        return landCoverShares;
     }
 
-    public void setConcernedThemes(ArrayList<ConcernedTheme> concernedThemes) {
-        this.concernedThemes = concernedThemes;
+    public void setLandCoverShares(Map<String, Integer> landCoverShares) {
+        this.landCoverShares = landCoverShares;
+    }
+
+    public List<Building> getBuildings() {
+        return buildings;
+    }
+
+    public void setBuildings(List<Building> buildings) {
+        this.buildings = buildings;
     }
 }
