@@ -1,11 +1,13 @@
 package ch.so.agi.oereb.webclient.client;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -1605,10 +1607,14 @@ public class AppEntryPoint implements EntryPoint {
                         if (statusCode == com.google.gwt.http.client.Response.SC_OK) {
                             String responseBody = response.getText();
                             JSONObject responseObject = new JSONObject(JsonUtils.safeEval(responseBody));
-                            Feature[] features = (new GeoJson()).readFeatures(responseObject.toString());
+                            Feature[] unfilteredFeatures = (new GeoJson()).readFeatures(responseObject.toString());
 
+                            List<Feature> features = Arrays.stream(unfilteredFeatures)
+                                .filter(f -> f.getProperties().get("validityType").toString().equalsIgnoreCase("gueltig"))
+                                .collect(Collectors.toList());
+                            
                             String egrid;
-                            if (features.length > 1) {
+                            if (features.size() > 1) {
                                 realEstateWindow = new MaterialWindow();
                                 realEstateWindow.setTitle("Grundstücke");
                                 realEstateWindow.setFontSize("16px");
@@ -1663,7 +1669,7 @@ public class AppEntryPoint implements EntryPoint {
                                 realEstateWindow.add(realEstatePanel);
                                 realEstateWindow.open();
                             }  else {
-                                egrid = (String) features[0].getProperties().get("egrid");
+                                egrid = (String) features.get(0).getProperties().get("egrid");
                                 GWT.log("get extract from click for (single result): " + egrid);
 
                                 MaterialLoader.loading(true);
